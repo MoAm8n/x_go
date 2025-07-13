@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Store Book</title>
+    <meta name="description" content="This Is Our Book Store" />
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        p {
+            text-align: center;
+        }
+    </style>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1>Book Store</h1>
+    <p>book store</p>
+    <a>Store Book</a>
+
+    <ol>
+        <li>book1</li>
+        <li>book2</li>
+        <li>book3</li>
+        <li>book4</li>
+    </ol>
+    <ul>
+        <li>1book</li>
+        <li>2book</li>
+        <li>3book</li>
+        <li>4book</li>
+    </ul>
+    <dl>
+        <dt>booooooks</dt>
+        <dd>1dook store wfwvbcwewejhcwchjwecbwc</dd>
+    </dl>
+    <hr>
+
+    <p><q><code> the_scream</code></q></p>
+
+    <img src="img_the_scream.jpg" alt="the_scream" width="200" height="300">
+
+    <article>the_scream</article>
+    <hr>
+    <table>
+        <thead>
+            <tr>
+                <th>name</th>
+                <th>name1</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>name2</th>
+                <th>name4</th>
+            </tr>
+        </tfoot>
+        <tbody>
+            <tr>
+                <td>aminbbbbbb</td>
+                <td>mohamednnnnnnbn</td>
+            </tr>
+            <tr>
+                <td>amin1</td>
+                <td>ammin2</td>
+            </tr>
+            <tr>
+                <td>amin1</td>
+                <td>ammin2</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+    <video width="500" height="150" controls autoplay loop muted>
+        <!--controls مش دي معناها اول مفتح يشتغل-->
+
+        <source src="movie.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <hr>
+    <audio controls autoplay loop muted>
+        <source src="horse.ogv" type="audio/ogg">
+        Your browser does support the audio tag
+    </audio>
+    <hr>
+    <label for="browser">Choose your browser from the list:</label>
+    <input list="browsers" name="browser" id="browser" />
+    <datalist id="browsers">
+        <option value="Edge">
+        <option value="Firefox">
+        <option value="Chrome">
+        <option value="Opera">
+        <option value="Safari">
+    </datalist>
+    <input type="submit" />
+    <hr>
+    <dl>
+        <dt>Coffee</dt>
+        <dd>Black hot drink</dd>
+    </dl>
+    <hr>
+    <details>
+        <summary>Epcot Center</summary>
+        <p>Epcot is a theme park at Walt Disney World Resort featuring exciting attractions, international pavilions,
+            award-winning fireworks and seasonal special events.</p>
+    </details>
+    <hr>
+    <form action="/signup" method="post">
+        <p>
+            <label>Title</label><br>
+            <label>
+                <input type="radio" name="title" value="mr">
+                Mr
+            </label>
+            <label>
+                <input type="radio" name="title" value="mrs">
+                Mrs
+            </label>
+            <label>
+                <input type="radio" name="title" value="miss" checked>
+                Miss
+            </label>
+        </p>
+        <p>
+            <label>First name</label><br>
+            <input type="text" name="first_name">
+        </p>
+        <p>
+            <label>Last name</label><br>
+            <input type="text" name="last_name">
+        </p>
+        <p>
+            <label>Email</label><br>
+            <input type="email" name="email" required>
+        </p>
+        <p>
+            <label>Phone number</label><br>
+            <input type="tel" name="phone" placeholder="Number">
+        </p>
+        <p>
+            <label>Password</label><br>
+            <input type="password" name="password" minlength="8" maxlength="15">
+        </p>
+        <p>
+            <label>Country</label><br>
+            <select>
+                <option>China</option>
+                <option>India</option>
+                <option>United States</option>
+                <option>Indonesia</option>
+                <option>Brazil</option>
+            </select>
+        </p>
+        <p>
+            <label>
+                <input type="checkbox">
+                I accept the terms and conditions
+            </label>
+        </p>
+        <p>
+            <button>Sign up</button>
+            <button type="reset">Reset form</button>
+        </p>
+    </form>
+
+
+</body>
+
+</html>
