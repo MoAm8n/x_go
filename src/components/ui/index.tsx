@@ -1,2 +1,2 @@
 export {default as HowItWork} from './HowItWork';
-export {default as Footer} from './Footer';
+export {default as Footer} from '../Footer';
