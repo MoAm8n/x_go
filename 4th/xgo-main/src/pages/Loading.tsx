@@ -124,7 +124,7 @@ const Home = () => {
                     />
                         <div className="p-4">
                             <div className='flex justify-between items-center mb-2 max-md:flex-col'>
-                                <h3 className="font-bold text-lg">{car.brand_name}</h3>
+                                <h3 className="font-bold text-lg">{car.brand}</h3>
                                 <p className="text-lg">${car.price.toLocaleString()}
                                     <span className="text-sm text-gray-600"> / Day</span>
                                 </p>

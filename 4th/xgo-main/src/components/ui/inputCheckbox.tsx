@@ -3,47 +3,50 @@ import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
-export default function IndeterminateCheckbox() {
-  const [checked, setChecked] = React.useState([true, false]);
+interface IndeterminateCheckboxProps {
+  parentLabel: string;
+  childLabels: string[];
+  checked: boolean[];
+  onChange: (index: number, value: boolean) => void;
+}
 
-  const handleChange1 = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChecked([event.target.checked, event.target.checked]);
-  };
-
-  const handleChange2 = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChecked([event.target.checked, checked[1]]);
-  };
-
-  const handleChange3 = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChecked([checked[0], event.target.checked]);
-  };
-
-  const children = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', ml: 3 }}>
-      <FormControlLabel
-        label="Child 1"
-        control={<Checkbox checked={checked[0]} onChange={handleChange2} />}
-      />
-      <FormControlLabel
-        label="Child 2"
-        control={<Checkbox checked={checked[1]} onChange={handleChange3} />}
-      />
-    </Box>
-  );
+export default function IndeterminateCheckbox({
+  parentLabel,
+  childLabels,
+  checked,
+  onChange
+}: IndeterminateCheckboxProps) {
+  const allChecked = checked.every(Boolean);
+  const someChecked = checked.some(Boolean);
 
   return (
     <div>
       <FormControlLabel
-        label="Parent"
+        label={parentLabel}
         control={
           <Checkbox
-            checked={checked[0] && checked[1]}
-            indeterminate={checked[0] !== checked[1]}
-            onChange={handleChange1}
+            checked={allChecked}
+            indeterminate={someChecked && !allChecked}
+            onChange={e => {
+              childLabels.forEach((_, idx) => onChange(idx, e.target.checked));
+            }}
           />
         }
       />
-      {children}
+      <Box sx={{ display: 'flex', flexDirection: 'column', ml: 3 }}>
+        {childLabels.map((label, idx) => (
+          <FormControlLabel
+            key={label}
+            label={label}
+            control={
+              <Checkbox
+                checked={checked[idx]}
+                onChange={e => onChange(idx, e.target.checked)}
+              />
+            }
+          />
+        ))}
+      </Box>
     </div>
   );
 }

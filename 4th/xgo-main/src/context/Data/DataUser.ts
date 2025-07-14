@@ -9,7 +9,7 @@ export interface Brand {
   id: number;
   name: string;
   logo: string;
-  cartCount: number;
+  carCount: number;
 }
 
 export interface Type {
@@ -26,6 +26,7 @@ export interface CarItem {
   name: string;
   image?: string;
   brand?: string;
+  brandId?: number;
   seats?: number;
   luggage?: string;
   transmission?: string;
@@ -34,7 +35,6 @@ export interface CarItem {
   type?: string;
 }
 
-// دالة لجلب العلامات التجارية
 export const getBrands = async (): Promise<Brand[]> => {
   try {
     const response = await apiClient.get('/api/user/filter-Info');
@@ -86,51 +86,43 @@ export const getPriceRange = async (): Promise<PriceRange> => {
   }
 };
 
-
-// دالة لجلب السيارات مع إمكانية التصفية حسب العلامة التجارية
 export const getCars = async (
   brandId?: number,
   type?: string,
   priceRange?: [number, number]
 ): Promise<CarItem[]> => {
   try {
-    const params = new URLSearchParams();
-    if (brandId) params.append('brand_id', brandId.toString());
-    if (type) params.append('type', type);
-    if (priceRange) {
-      params.append('min_price', priceRange[0].toString());
-      params.append('max_price', priceRange[1].toString());
-    }
-    const response = await apiClient.post('/api/user/Home');
+    const response = await apiClient.post('/api/user/Home', {});
+    
     if (!response.data?.data) {
       throw new Error('No car data available');
     }
+
     return response.data.data
       .map((item: any) => ({
         id: String(item.id) || '',
         name: item.relationship?.['Model Names']?.model_name || '',
         image: item.attributes?.image || '',
         brand: item.relationship?.Brand?.brand_name || '',
+        brandId: Number(item.relationship?.Brand?.brand_id) || 0,
         seats: item.attributes?.seats_count || 0,
         luggage: item.attributes?.seat_type || '',
         transmission: item.attributes?.transmission_type || '',
         fuel: item.attributes?.engine_type || '',
         price: Number(item.attributes?.price) || 0,
-        type: item.relationship?.Types?.type_name || '',
-        brand_id: Number(item.relationship?.Brand?.brand_id) || 0,
-        model_id: Number(item.relationship?.['Model Names']?.model_id) || 0,
-        type_id: Number(item.relationship?.Types?.type_id) || 0,
-        brand_name: item.relationship?.Brand?.brand_name,
-        type_name: item.relationship?.Types?.type_name
+        type: item.relationship?.Types?.type_name || ''
       }))
       .filter((car: CarItem) => {
-        const brandMatch = !brandId || car.brand === response.data.data.find((d: any) => Number(d.relationship?.Brand?.brand_id) === brandId)?.relationship?.Brand?.brand_name;
+        const brandMatch = !brandId || car.brandId === brandId;
         const typeMatch = !type || car.type === type;
-        const priceMatch = !priceRange || (car.price >= priceRange[0] && car.price <= priceRange[1]);
+        const priceMatch = !priceRange || (
+          typeof car.price === 'number' && 
+          car.price >= priceRange[0] && 
+          car.price <= priceRange[1]
+        );
         return brandMatch && typeMatch && priceMatch;
       });
   } catch (error) {
-    alert('amin')
     console.error('Error fetching cars:', error);
     return [];
   }
