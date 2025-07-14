@@ -50,17 +50,12 @@ const Home = () => {
     return <div className="text-center text-red-500 py-8">{error}</div>;
     }
     const dataNeeds = [
-<<<<<<< HEAD
-        {id: 1, icon: <Calendar size={40} />, title: 'Flexible Dates', description: 'Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.'},
-        {id: 2, icon: <School size={40} />, title: 'Plan Your Trip', description: 'Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.'},
-        {id: 3, icon: <CarFront size={40} />, title: 'Flexible Dates', description: 'Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.'},
-        {id: 4, icon: <Headset size={40} />, title: 'Plan Your Trip', description: 'Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.'},
-=======
+
         {id: 1, icon: <Calendar size={30} />, title: 'Flexible Dates', description: 'Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.'},
         {id: 2, icon: <School size={30} />, title: 'Plan Your Trip', description: 'Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.'},
         {id: 3, icon: <CarFront size={30} />, title: 'Flexible Dates', description: 'Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.'},
         {id: 4, icon: <Headset size={30} />, title: 'Plan Your Trip', description: 'Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.'},
->>>>>>> f2bdbf85dde77f5d13f8c768064716a0fcbcb4d3
+
     ]
     const AppLinks = [
         {
