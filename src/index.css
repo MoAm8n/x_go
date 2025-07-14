@@ -1,0 +1,29 @@
+:root {
+}
+
+body{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Poppins, sans-serif;
+  /* background-color: #FDF9F2; */
+}
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Webkit */
+}
+
+
+/* .custom-button {
+  @apply bg-blue-500 text-white font-bold py-2 px-4 rounded;
+} */
