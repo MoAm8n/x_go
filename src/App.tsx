@@ -24,6 +24,7 @@ const App = () => {
         <Route path="/forgotpassword" element={<ForgotPassword />} />
 
         {/* باقي الصفحات داخل الـ Layout */}
+        
         <Route
           path="/"
           element={
