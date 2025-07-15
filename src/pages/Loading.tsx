@@ -56,7 +56,7 @@ const Home = () => {
         {id: 3, icon: <CarFront size={30} />, title: 'Flexible Dates', description: 'Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.'},
         {id: 4, icon: <Headset size={30} />, title: 'Plan Your Trip', description: 'Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.'},
 
-    ]
+   ]
     const AppLinks = [
         {
             id: 1,

@@ -1,4 +1,4 @@
-import logo from '/images/logo.png';
+import logo from '../../../public/images/logo.png';
 const FooterLinks = [
     {
         id: 1,
@@ -23,7 +23,7 @@ const FooterLinks = [
 ];
 const Footer: React.FC = () => (
 <footer>
-    <div className="max-w-6xl mx-auto mt-10 flex flex-col md:flex-row  justify-between items-start px-4 w-full md:w-[90%]">
+    <div className="max-w-6xl mx-auto flex flex-col md:flex-row  justify-between items-start px-4 w-full md:w-[90%]">
     <div className="max-md:w-full flex flex-col items-center md:items-start mb-6 md:mb-0 md:mr-20">
         <img src={logo} alt="XGO Car Rental" className="w-32 mb-2" />
         <p className="text-center text-black text-lg font-normal md:text-left max-w-xs">Stay Connected with us to get new update information</p>

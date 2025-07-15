@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import MainLayout from "./pages/MainLayout";
 import {
@@ -50,7 +49,7 @@ const App = () => {
           }
         />
         <Route
-          path="/car"
+          path="/car/:id"
           element={
             <MainLayout>
               <Car />
