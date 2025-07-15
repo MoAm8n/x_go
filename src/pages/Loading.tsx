@@ -150,7 +150,7 @@ const Home = () => {
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 md:gap-6 gap-2 md:px-10 py-8">
             {cars.length > 0 ? (
               cars.slice(1, 7).map((car) => (
-                <>
+                <Link to={`/car/${car.id}`}>
                   <div
                     key={car.id}
                     className="border rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
@@ -163,16 +163,24 @@ const Home = () => {
                     <div className="p-4">
                       <div className="flex justify-between items-center mb-2 max-md:flex-col">
                         <h3 className="font-bold text-lg">
-                          {car.brand_name} {car.name}
+                          {car.brand}
                         </h3>
-                        <p className="text-lg">
+                        <h3 className="font-bold text-lg">
+                          {car.name}
+                        </h3>
+                      </div>
+                      <div className="flex justify-between items-center mb-2 max-md:flex-col">
+                        <p className="text-lg font-bold">
                           ${car.price.toLocaleString()}
                           <span className="text-sm text-gray-600"> / Day</span>
                         </p>
+                        <h3 className="font-bold text-lg">
+                          {car.year}
+                        </h3>
                       </div>
                     </div>
                   </div>
-                </>
+                </Link>
               ))
             ) : (
               <div className="col-span-full text-center py-8 text-gray-500">

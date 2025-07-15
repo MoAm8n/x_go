@@ -109,7 +109,8 @@ export const getCars = async (
         transmission: item.attributes?.transmission_type || '',
         fuel: item.attributes?.engine_type || '',
         price: Number(item.attributes?.price) || 0,
-        type: item.relationship?.Types?.type_name || ''
+        type: item.relationship?.Types?.type_name || '',
+        year: Number(item.attributes?.year) || 0
       }))
       .filter((car: CarItem) => {
         const brandMatch = !brandId || car.brandId === brandId;
