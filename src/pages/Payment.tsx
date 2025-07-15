@@ -1,7 +1,7 @@
 import React from "react";
-import BookingStepper from "../components/ui/BookingStepper";
-import PaymentForm from "../components/ui/PaymentForm";
-import CarBookingSummary from "../components/ui/CarBookingSummary";
+import BookingStepper from "../components/uiUser/BookingStepper";
+import PaymentForm from "../components/uiUser/PaymentForm";
+import CarBookingSummary from "../components/uiUser/CarBookingSummary";
 import Frame225 from "../assets/Car Details Card Icon/Frame 225.png";
 import Group from "../assets/Car Details Card Icon/Group.png";
 import Vector6 from "../assets/Car Details Card Icon/Vector (6).png";

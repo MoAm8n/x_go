@@ -5,9 +5,6 @@ const apiClient = axios.create({
   baseURL: API_URL
 });
 
-
-
-// دالة لجلب العلامات التجارية
 export interface Brand {
   id: number;
   name: string;
@@ -43,7 +40,7 @@ export const getBrands = async (): Promise<Brand[]> => {
     const response = await apiClient.get('/api/user/filter-Info');
     
     if (!response.data?.brands) {
-       throw new Error('No brands data available');
+        throw new Error('No brands data available');
     }
 
     return response.data.brands.map((brand: any) => ({
@@ -126,5 +123,30 @@ export const getCars = async (
       });
   } catch (error) {
     console.error('Error fetching cars:', error);    return [];
+  }
+};
+export const showCarId = async (id: string): Promise<CarItem> => {
+  try {
+    const response = await apiClient.get(`/api/user/Model/${id}`);
+    if(!response.data?.data){
+      throw new Error('Car data not found in response');
+    }
+    const item = response.data.data;
+    return {
+      id: String(item.id) || '',
+      name: item.relationship?.['Model Names']?.model_name || '',
+      image: item.attributes?.image || '',
+      brand: item.relationship?.Brand?.brand_name || '',
+      brandId: Number(item.relationship?.Brand?.brand_id) || 0,
+      seats: item.attributes?.seats_count || 0,
+      luggage: item.attributes?.seat_type || '',
+      transmission: item.attributes?.transmission_type || '',
+      fuel: item.attributes?.engine_type || '',
+      price: Number(item.attributes?.price) || 0,
+      type: item.relationship?.Types?.type_name || ''
+    };
+  } catch (error) {
+    console.error('Error fetching car:', error);
+    throw error;
   }
 };

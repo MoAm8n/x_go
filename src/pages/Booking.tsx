@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-import CarBookingSummary from "../components/ui/CarBookingSummary";
-import BookingStepper from "../components/ui/BookingStepper";
+import CarBookingSummary from "../components/uiUser/CarBookingSummary";
+import BookingStepper from "../components/uiUser/BookingStepper";
 import Frame225 from "../assets/Car Details Card Icon/Frame 225.png";
 import Group from "../assets/Car Details Card Icon/Group.png";
 import Vector6 from "../assets/Car Details Card Icon/Vector (6).png";
@@ -11,14 +11,13 @@ import Frame290 from "../assets/Car Details Card Icon/Frame 290.png";
 const Booking: React.FC = () => {
   return (
     <div className="min-h-screen pb-10  flex flex-col ">
-      <main className="container mx-auto px-2 sm:px-4 pt-24 flex-1 flex flex-col">
+      <main className="container mx-auto px-2 sm:px-4 flex-1 flex flex-col">
         <BookingStepper currentStep={2} />
         <div className="flex flex-col md:flex-row gap-8 mt-8">
-          {/* القسم الأيسر: بيانات السيارة */}
           <div className="w-[100%] md:w-1/3 mb-6 md:mb-0">
             <div className="bg-white flex flex-col gap-12 ">
               <CarBookingSummary
-               transmissionIcon={Frame290}
+                transmissionIcon={Frame290}
                 seatsIcon={Group}
                 priceIcon={Vector6}
                 engineIcon={Frame225}

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'
 import AutoCarousel from '../components/AutoCarousel';
-import WhyChooseCard from '../components/ui/CardLoading';
+import WhyChooseCard from '../components/uiUser/CardLoading';
 import { getBrands, getCars } from '../context/Data/DataUser';
 import { Loader2, CarFront, Calendar, School, Headset } from 'lucide-react';
-import {HowItWork } from '../components/ui';
+import {HowItWork } from '../components/uiUser';
 import appStoreImg from '../../public/images/and app store.png';
 import playStoreImg from '../../public/images/app store.png';
 const Home = () => {
@@ -114,7 +114,7 @@ const Home = () => {
                 </button>
                 ))}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 md:gap-6 gap-2 md:px-10 py-8">
+            <div className="grid grid-cols-2  md:grid-cols-2 lg:grid-cols-3 md:gap-6 gap-2 md:px-10 py-8">
             {cars.length > 0 ? (
                 cars.slice(1, 7).map(car => (
                     <>

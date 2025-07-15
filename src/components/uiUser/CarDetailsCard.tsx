@@ -64,6 +64,7 @@ const CarDetailsCard: React.FC<Props> = ({ filters }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-4">
       {cars.map((car) => (
+      <Link key={car.id} to={`/car/${car.id}`}>
         <div key={car.id} className="bg-[#FAF7F2] rounded-xl p-4">
           <div>
             {car.image && (
@@ -85,27 +86,29 @@ const CarDetailsCard: React.FC<Props> = ({ filters }) => {
             </div>
             <div className="grid grid-cols-4 lg:px-2 py-4">
               {car.type && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 w-fit">
                   <AirlineSeatReclineExtraIcon fontSize="small" />
-                  <span className="text-sm">{car.seats} seats</span>
+                  <span className="text-xs lg:text-sm">
+                    {car.seats} seats
+                  </span>
                 </div>
               )}
               {car.seats && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 w-fit">
                   <DirectionsCarIcon fontSize="small" />
-                  <span className="font-medium text-sm">{car.type}</span>
+                  <span className="text-xs lg:text-sm">{car.type}</span>
                 </div>
               )}
               {car.transmission && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 w-fit">
                   <EarbudsIcon fontSize="small" />
-                  <span className="text-sm">{car.transmission}</span>
+                  <span className="text-xs lg:text-sm">{car.transmission}</span>
                 </div>
               )}
               {car.fuel && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 w-fit">
                   <LocalGasStationIcon fontSize="small" />
-                  <span className="text-sm">{car.fuel}</span>
+                  <span className="text-xs lg:text-sm">{car.fuel}</span>
                 </div>
               )}
             </div>
@@ -117,19 +120,17 @@ const CarDetailsCard: React.FC<Props> = ({ filters }) => {
                     ? car.price.toLocaleString()
                     : car.price}
                   <span className="font-medium text-black text-base ml-1">
-                    {" "}
                     / Per Day
                   </span>
                 </p>
-                <Link to={`/car/${car.id}`}>
                   <button className="border border-[#E6911E] rounded-full flex items-center justify-center h-10 w-10 hover:bg-[#E6911E] hover:text-white transition-colors">
                     <ArrowOutwardIcon fontSize="small" />
                   </button>
-                </Link>
               </div>
             )}
           </div>
         </div>
+        </Link>
       ))}
     </div>
   );
