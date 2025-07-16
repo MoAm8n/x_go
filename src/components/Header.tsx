@@ -4,12 +4,13 @@ import { HashLink } from "react-router-hash-link";
 import logo from "../../public/images/logo.png";
 import { HiMiniBars3CenterLeft } from "react-icons/hi2";
 import Sidebar from "./Sidebar";
+import { logoutUser } from "../context/Data/DataUser";
 
 // زر اللغة
 const LanguageDropdown = () => {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState("English");
-
+  const user = localStorage.getItem('user');
   const languages = [
     { code: "en", label: "English" },
     { code: "ar", label: "العربية" },
@@ -20,7 +21,6 @@ const LanguageDropdown = () => {
     setSelected(lang.label);
     setOpen(false);
   };
-
   return (
     <div className="relative inline-block">
       <button
@@ -82,6 +82,12 @@ const Header = () => {
     return location.pathname === path;
   };
 
+  const user = localStorage.getItem('user');
+  const handleLogout = async () => {
+    await logoutUser();
+    window.location.href = "/";
+  };
+
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 bg-white z-50">
@@ -136,11 +142,29 @@ const Header = () => {
             </div>
             {/* زر التطبيق */}
             <div>
-              <NavLink to="/">
-                <button className="lg:font-bold text-sm lg:text-lg text-white bg-[#E6911E] hover:bg-opacity-70 w-[96px] h-[30px] lg:w-[192px] lg:h-[44px] rounded-full transition duration-300">
-                  Get the app
+              {user && (
+                <button
+                  className="bg-[#E53935CC] w-48 h-11 rounded-3xl text-white"
+                  onClick={handleLogout}
+                  type="button"
+                >
+                  Logout
                 </button>
-              </NavLink>
+              )}
+              {!user && (
+                <>
+                <Link to={'/signin'}>
+                  <button className="bg-[#E6911E] rounded-3xl h-12 w-full text-white">
+                    Login
+                  </button>
+                </Link>
+                <NavLink to="/">
+                  <button className="lg:font-bold text-sm lg:text-lg text-white bg-[#E6911E] hover:bg-opacity-70 w-[96px] h-[30px] lg:w-[192px] lg:h-[44px] rounded-full transition duration-300">
+                    Get the app
+                  </button>
+                </NavLink>
+                </>
+              )}
             </div>
           </div>
         </div>

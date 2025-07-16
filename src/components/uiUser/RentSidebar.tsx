@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import type { CarItem } from "../../context/Data/DataUser";
-import { getCars } from "../../context/Data/DataUser";
+import { showCarId } from "../../context/Data/DataUser";
 import { useParams } from "react-router-dom";
 
 interface ExtraItem {
@@ -10,10 +10,7 @@ interface ExtraItem {
 }
 
 const extrasList: ExtraItem[] = [
-  { label: "GPS Navigation System", price: 55 },
-  { label: "Child Seat", price: 55 },
   { label: "Additional Driver", price: 55 },
-  { label: "Insurance Coverage", price: 55 },
 ];
 
 const RentSidebar: React.FC = () => {
@@ -29,8 +26,12 @@ const RentSidebar: React.FC = () => {
     const fetchCar = async () => {
       try {
         setLoading(true);
-        const carList = await getCars(Number(id));
-        setCar(carList[0] || null);
+        if (id) {
+          const carData = await showCarId(id as string);
+          setCar(carData);
+        } else {
+          setCar(null);
+        }
       } catch (err) {
         setError("Failed to load car details");
         console.error(err);
@@ -145,10 +146,8 @@ const RentSidebar: React.FC = () => {
           ))}
         </div>
       </div>
-
-      {/* Pricing Summary */}
       <div className="border-t border-gray-200 pt-4 text-sm space-y-1">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center py-1">
           <span>Sub Total</span>
           <p className="font-medium text-lg text-[#E6911E]">
             $
@@ -162,7 +161,7 @@ const RentSidebar: React.FC = () => {
           <span>$50.00</span>
         </div>
         {selectedExtras.length > 0 && (
-          <div className="flex justify-between">
+          <div className="flex justify-between py-1">
             <span>Extras</span>
             <span>
               $

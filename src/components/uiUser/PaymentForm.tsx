@@ -8,10 +8,9 @@ const PaymentForm: React.FC = () => {
   const [saveInfo, setSaveInfo] = useState(false);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 max-w-xl w-full mx-auto">
-      <h2 className="text-xl font-bold text-[#E6911E] mb-6">Payment</h2>
+    <div className="bg-white rounded-xl shadow-lg px-6 max-w-xl w-full mx-auto">
+      <h2 className="text-xl font-bold text-[#E6911E] mb-2">Payment</h2>
       <div className="flex flex-col gap-3 mb-6">
-        {/* Cash on delivery */}
         <div
           className={`flex items-center justify-between  px-4 py-3 cursor-pointer transition rounded-lg ${
             paymentMethod === "cash"
@@ -35,9 +34,8 @@ const PaymentForm: React.FC = () => {
               </div>
             </div>
           </div>
-         
               <span
-            className={`inline-block w-6 h-6 rounded-full border flex items-center justify-center relative ${
+            className={`inline-block w-6 h-6 rounded-full border items-center justify-center relative ${
               paymentMethod === "cash" ? "border-[#E6911E]" : "border-gray-300"
             }`}
           >
@@ -46,7 +44,6 @@ const PaymentForm: React.FC = () => {
             )}
           </span>
         </div>
-        {/* VISA */}
         <div
           className={`flex items-center justify-between  px-4 py-3 cursor-pointer transition rounded-lg ${
             paymentMethod === "visa"
@@ -71,7 +68,7 @@ const PaymentForm: React.FC = () => {
             </div>
           </div>
           <span
-            className={`inline-block w-6 h-6 rounded-full border flex items-center justify-center relative ${
+            className={`inline-block w-6 h-6 rounded-full border items-center justify-center relative ${
               paymentMethod === "visa" ? "border-[#E6911E]" : "border-gray-300"
             }`}
           >

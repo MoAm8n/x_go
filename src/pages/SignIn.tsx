@@ -1,83 +1,104 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import {authUsers} from '../context/Data/DataUser'
 
-const SignIn: React.FC = () => {
+const SignUp: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate()
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+  const [loginPasswordErrorCount, setLoginPasswordErrorCount] = useState(0);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // هنا منطق تسجيل الدخول
-    console.log(form);
+    setLoading(true);
+    setError(null);
+    try{
+      const { token, user } = await authUsers(form);
+      setLoginPasswordErrorCount(0);
+      console.log(token, user);
+      navigate('/')
+    }catch(error){
+      setLoginPasswordErrorCount(count => count + 1);
+      setError(error instanceof Error ? error.message : 'حدث خطأ غير متوقع');
+      console.error(error)
+    }finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFB347] via-[#FFE0B2] to-white px-2 sm:px-4 md:px-8">
-      <div className="flex flex-col md:flex-row justify-between w-full max-w-5xl bg-transparent overflow-hidden md:h-[500px] ">
-        {/* Left Side (Welcome Section) */}
-        <div className="w-full  flex flex-col justify-between p-6 md:pl-12 md:pr-8 bg-transparent">
-          <div>
-            <h2 className="text-3xl md:text-5xl font-extrabold mb-4 text-gray-900 leading-tight text-center md:text-left">
-              Login to unlock the road{" "}
+    <div className="min-h-screen -mt-20 flex items-center justify-center bg-gradient-to-b from-[#FFB347] via-[#FFE0B2] to-[#fdf9f2] sm:px-4 md:px-32">
+      <div className="flex flex-col lg:flex-row justify-between item-center w-full bg-transparent overflow-hidden ">
+        <div className="w-full flex flex-col justify-evenly max-lg:pt-16">
+          <div className="w-full max-lg:text-center">
+            <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 lg:w-3/4 max-lg:px-10 max-lg:py-2">
+              Welcome, Your next drive is waiting
             </h2>
-            <p className="text-gray-600 mb-10 max-w-md md:max-w-xs text-center md:text-left">
-              Lorem ipsum dolor sit amet consectetur. A tellus enim orci a eget
-              porttitor et.
+            <p className="text-gray-600 lg:w-3/4 text-lg max-lg:px-6">
+            Lorem ipsum dolor sit amet consectetur. A tellus enim orci a eget porttitor et.
             </p>
           </div>
-          <div className="relative flex flex-col sm:flex-row items-center gap-4 mt-4">
-            {/* زر تغيير اللغة Dropdown */}
+          <div className="relative flex flex-col sm:flex-row w-full max-lg:justify-center items-center gap-4 max-lg:py-8">
             <div className="relative">
               <button
                 onClick={() => setOpen((prev) => !prev)}
-                className="px-4 py-2 rounded-md font-medium text-[14px] border shadow-lg"
+                className="px-4 py-2 rounded-lg font-medium text-[14px] bg-inherit border border-gray-300 lg:mr-10"
                 type="button"
               >
                 🌐 Language
               </button>
               {open && (
-                <ul className="absolute left-0 bottom-full mb-2 bg-white border rounded-md shadow-md w-40 z-50">
-                  <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
-                    English
-                  </li>
+                <ul className="absolute left-0 bottom-full my-2 bg-white border shadow-md w-40 z-50 rounded-lg">
                   <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
                     العربية
                   </li>
                   <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
-                    Français
+                    English
+                  </li>
+                  <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
+                    Russian{" "}
                   </li>
                 </ul>
               )}
             </div>
             <nav className="flex gap-4">
-              <Link to="#" className="text-[14px] text-[#E6911E]">
+              <a href="#" className="text-[14px] text-[#E6911E]">
                 Terms
-              </Link>
-              <Link to="#" className="text-[14px] text-[#E6911E]">
+              </a>
+              <a href="#" className="text-[14px] text-[#E6911E]">
                 Plans
-              </Link>
-              <Link to="#" className="text-[14px] text-[#E6911E]">
+              </a>
+              <a href="#" className="text-[14px] text-[#E6911E]">
                 Contact Us
-              </Link>
+              </a>
             </nav>
           </div>
         </div>
-        {/* Right Side (Form) */}
-        <div className="w-full flex flex-col justify-center items-center p-6 bg-white rounded-lg">
-          <form className="w-full max-w-xs mx-auto" onSubmit={handleSubmit}>
+        <div className="w-full flex flex-col justify-center items-center bg-white shadow-lg rounded-lg">
+          <form className="w-full px-8 py-4 mx-auto" onSubmit={handleSubmit}>
+            {error && (
+              <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-sm">
+                {error}
+              </div>
+            )}
             <h3 className="text-2xl font-extrabold text-gray-900 my-3">
-              Sign In
+              Sign Up
             </h3>
-            <p className="mb-6">Enter your email and password to sign in</p>
+            <p className="mb-6">Enter your email to create your account</p>
             <div>
               <label
                 htmlFor="email"
-                className="block mb-2 text-sm font-semibold text-gray-700"
+                className="block my-2 text-sm font-semibold text-gray-700"
               >
                 Email
               </label>
@@ -87,13 +108,13 @@ const SignIn: React.FC = () => {
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                className="form-input py-1 px-4 block w-full rounded-lg border border-gray-300 focus:ring-[#E6911E] focus:border-[#E6911E] text-base"
+                className="w-full border border-gray-300 rounded-lg px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
                 placeholder="name@email.com"
                 required
               />
             </div>
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">
+              <label className="block my-2 text-sm font-semibold text-gray-700">
                 Password
               </label>
               <div className="relative">
@@ -113,7 +134,7 @@ const SignIn: React.FC = () => {
                   tabIndex={-1}
                 >
                   {showPassword ? (
-                    // أيقونة عين مفتوحة
+                    // Open eye icon
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -135,7 +156,7 @@ const SignIn: React.FC = () => {
                       />
                     </svg>
                   ) : (
-                    // أيقونة عين مغلقة
+                    // Closed eye icon
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -159,28 +180,26 @@ const SignIn: React.FC = () => {
                   )}
                 </button>
               </div>
-              <div className="flex justify-between items-center mt-2">
-                <Link
-                  to="/forgotpassword"
-                  className="text-xs text-[#E6911E] hover:underline"
-                >
-                  Forgot Password?
+              <p className="text-xs text-gray-400 mt-1">
+                Use 8 or more characters with a mix of letters, numbers &
+                symbols.
+              </p>
+              {loginPasswordErrorCount >= 2 && (
+                <Link to="/forgotPassword">
+                  <div className="mt-2 text-xs text-blue-600 cursor-pointer hover:underline">
+                    هل نسيت كلمة السر؟
+                  </div>
                 </Link>
-              </div>
+              )}
             </div>
-            <div className="flex flex-col sm:flex-row justify-between pt-10 gap-4 sm:gap-0">
+            <div className="flex justify-between pt-10">
               <button
                 type="submit"
-                className="w-full sm:w-[45%] text-white bg-[#E6911E] hover:bg-[#cc7f15] font-bold rounded-lg text-base px-5 py-2 text-center transition-colors shadow-lg"
+                className="w-full text-white bg-[#E6911E] hover:bg-[#cc7f15] font-bold rounded-lg text-base px-5 py-2 text-center transition-colors shadow-lg"
+                disabled={loading}
               >
-                Sign In
+                {loading ? 'Signing Up...' : 'Sign Up'}
               </button>
-              <Link
-                to="/signup"
-                className="w-full sm:w-[45%] text-black hover:bg-[#cc7f15] font-bold rounded-lg text-base px-5 py-2 text-center transition-colors shadow-lg flex items-center justify-center"
-              >
-                Sign Up
-              </Link>
             </div>
           </form>
         </div>
@@ -189,4 +208,4 @@ const SignIn: React.FC = () => {
   );
 };
 
-export default SignIn;
+export default SignUp;

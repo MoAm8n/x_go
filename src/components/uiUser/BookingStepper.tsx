@@ -16,14 +16,14 @@ const BookingStepper: React.FC<BookingStepperProps> = ({ currentStep }) => {
       <h2 className="text-2xl font-bold text-center my-6">
         <span className="text-[#E6911E]">P</span>ayment
       </h2>
-      <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 md:gap-0">
+      <div className="flex md:flex-row items-center justify-between w-full gap-4 md:gap-0">
         {steps.map((step, idx) => {
           const stepNumber = idx + 1;
           const isActive = currentStep === stepNumber;
           const isCompleted = currentStep > stepNumber;
           return (
             <React.Fragment key={step.label}>
-              <div className="flex flex-row md:flex-col items-center md:items-start w-full md:w-auto">
+              <div className="flex flex-col gap-2 items-center w-full md:w-auto">
                 <div
                   className={`flex items-center justify-center w-7 h-7 rounded-full transition-colors duration-200 border-2 ${
                     isActive

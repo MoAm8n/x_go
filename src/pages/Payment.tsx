@@ -2,30 +2,17 @@ import React from "react";
 import BookingStepper from "../components/uiUser/BookingStepper";
 import PaymentForm from "../components/uiUser/PaymentForm";
 import CarBookingSummary from "../components/uiUser/CarBookingSummary";
-import Frame225 from "../assets/Car Details Card Icon/Frame 225.png";
-import Group from "../assets/Car Details Card Icon/Group.png";
-import Vector6 from "../assets/Car Details Card Icon/Vector (6).png";
-import Frame290 from "../assets/Car Details Card Icon/Frame 290.png";
 const Payment: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-1 container mx-auto px-2 sm:px-4 pt-24">
+      <main className="container mx-auto px-2 sm:px-4 max-md:py-8">
         <BookingStepper currentStep={3} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-10 m-auto">
-          <div className="w-full flex flex-col items-end">
-            <div className="w-full max-w-md">
+        <div className="flex py-10">
+            <div className="flex flex-col w-2/4">
               <PaymentForm />
-            </div>
           </div>
-          <div className="w-full flex flex-col items-center">
-            <div className="w-full max-w-md">
-              <CarBookingSummary
-                transmissionIcon={Frame290}
-                seatsIcon={Group}
-                priceIcon={Vector6}
-                engineIcon={Frame225}
-              />
-            </div>
+          <div className="w-2/4">
+              <CarBookingSummary/>
           </div>
         </div>
       </main>

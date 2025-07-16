@@ -1,57 +1,83 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {signupUser} from '../context/Data/DataUser'
 
 const SignUp: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate()
   const [form, setForm] = useState({
+    name: "",
     email: "",
+    phone: "",
     password: "",
-    repeatPassword: "",
+    password_confirmation: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // هنا تضع منطق التسجيل أو التحقق من صحة البيانات
-    console.log(form);
+    setLoading(true)
+    setError(null)
+    if(form.password !== form.password_confirmation){
+      setError('كلمة السر غير مطابقه')
+      setLoading(false)
+      return
+    }
+    try{
+      const {user} = await signupUser({
+        name: form.name,
+        last_name: "user",
+        email: form.email,
+        phone: form.phone,
+        password: form.password,
+        password_confirmation: form.password_confirmation,
+      })
+      console.log(user);
+      navigate('/signin')
+    }catch(error){
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+      console.error(error)
+    }finally{
+      setLoading(false)
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#FFB347] via-[#FFE0B2] to-[#fdf9f2] px-2 sm:px-4 md:px-8">
-      <div className="flex flex-col md:flex-row justify-between item-center w-full max-w-5xl bg-transparent overflow-hidden md:h-[522px]">
-        {/* Left Side */}
-        <div className="w-full md:w-[60%] flex flex-col justify-between md:items-start p-6 md:pl-12 md:pr-8 pt-32">
-          <div>
-            <h2 className="md:text-5xl font-bold mb-4 text-gray-900 leading-tight text-center md:text-left">
+    <div className="min-h-screen -mt-20 flex items-center justify-center bg-gradient-to-b from-[#FFB347] via-[#FFE0B2] to-[#fdf9f2] sm:px-4 md:px-32">
+      <div className="flex flex-col lg:flex-row justify-between item-center w-full bg-transparent overflow-hidden ">
+        <div className="w-full flex flex-col justify-evenly max-lg:pt-16">
+          <div className="w-full max-lg:text-center">
+            <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 lg:w-3/4 max-lg:px-10 max-lg:py-2">
               Welcome, Your next drive is waiting
             </h2>
-            <p className="text-gray-600 mb-10 max-w-md md:max-w-xs text-center md:text-left">
-              Lorem ipsum dolor sit amet consectetur. A tellus enim orci a eget
-              porttitor et.
+            <p className="text-gray-600 lg:w-3/4 text-lg max-lg:px-6">
+            Lorem ipsum dolor sit amet consectetur. A tellus enim orci a eget porttitor et.
             </p>
           </div>
-          <div className="relative flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative flex flex-col sm:flex-row items-center gap-4 max-lg:py-8">
             <div className="relative">
               <button
                 onClick={() => setOpen((prev) => !prev)}
-                className="px-4 py-2 rounded-lg font-medium text-[14px] border  shadow-lg"
+                className="px-4 py-2 rounded-lg font-medium text-[14px] bg-inherit border border-gray-300 lg:mr-10"
                 type="button"
               >
                 🌐 Language
               </button>
               {open && (
-                <ul className="absolute left-0 bottom-full mb-2 bg-white border rounded-md shadow-md w-40 z-50 rounded-lg">
+                <ul className="absolute left-0 bottom-full my-2 bg-white border shadow-md w-40 z-50 rounded-lg">
                   <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
                     العربية
                   </li>
                   <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
                     English
                   </li>
-
                   <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
                     Russian{" "}
                   </li>
@@ -72,8 +98,13 @@ const SignUp: React.FC = () => {
           </div>
         </div>
         {/* Right Side (Form) */}
-        <div className="w-full md:w-[55%] flex flex-col justify-center items-center bg-white shadow-lg rounded-lg">
-          <form className="w-full max-w-xs mx-auto" onSubmit={handleSubmit}>
+        <div className="w-full flex flex-col justify-center items-center bg-white shadow-lg rounded-lg">
+          <form className="w-full px-8 py-4 mx-auto" onSubmit={handleSubmit}>
+            {error && (
+              <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-sm">
+                {error}
+              </div>
+            )}
             <h3 className="text-2xl font-extrabold text-gray-900 my-3">
               Sign Up
             </h3>
@@ -81,7 +112,25 @@ const SignUp: React.FC = () => {
             <div>
               <label
                 htmlFor="email"
-                className="block mb-2 text-sm font-semibold text-gray-700"
+                className="block my-2 text-sm font-semibold text-gray-700"
+              >
+                Name
+              </label>
+              <input
+                type="name"
+                id="name"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-4 py-1 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+                placeholder="name"
+                required
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="email"
+                className="block my-2 text-sm font-semibold text-gray-700"
               >
                 Email
               </label>
@@ -97,7 +146,25 @@ const SignUp: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">
+              <label
+                htmlFor="phone"
+                className="block my-2 text-sm font-semibold text-gray-700"
+              >
+                Phone
+              </label>
+              <input
+                type="phone"
+                id="phone"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+                placeholder="01000000000"
+                required
+              />
+            </div>
+            <div>
+              <label className="block my-2 text-sm font-semibold text-gray-700">
                 Password
               </label>
               <div className="relative">
@@ -169,14 +236,14 @@ const SignUp: React.FC = () => {
               </p>
             </div>
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">
+              <label className="block my-2 text-sm font-semibold text-gray-700">
                 Repeat Password
               </label>
               <div className="relative">
                 <input
                   type={showRepeatPassword ? "text" : "password"}
-                  name="repeatPassword"
-                  value={form.repeatPassword}
+                  name="password_confirmation"
+                  value={form.password_confirmation}
                   onChange={handleChange}
                   placeholder="••••••••"
                   className="w-full border border-gray-300 rounded-lg px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
@@ -244,8 +311,9 @@ const SignUp: React.FC = () => {
               <button
                 type="submit"
                 className="w-full text-white bg-[#E6911E] hover:bg-[#cc7f15] font-bold rounded-lg text-base px-5 py-2 text-center transition-colors shadow-lg"
+                disabled={loading}
               >
-                Sign Up
+                {loading ? 'Signing Up...' : 'Sign Up'}
               </button>
             </div>
           </form>
