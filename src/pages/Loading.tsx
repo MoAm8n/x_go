@@ -43,19 +43,16 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen w-full bg-white">
-        <div className="p-6 bg-white rounded-xl flex items-center gap-4 ">
-          <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-          <span className="text-lg font-medium text-gray-700 animate-pulse">
-            جاري تحميل البيانات...
-          </span>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E6911E]"></div>
       </div>
     );
   }
+
   if (error) {
     return <div className="text-center text-red-500 py-8">{error}</div>;
   }
+  
   const dataNeeds = [
     {
       id: 1,
@@ -150,7 +147,7 @@ const Home = () => {
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 md:gap-6 gap-2 md:px-10 py-8">
             {cars.length > 0 ? (
               cars.slice(1, 7).map((car) => (
-                <Link to={`/car/${car.id}`}>
+                <Link key={car.id} to={`/car/${car.id}`}>
                   <div
                     key={car.id}
                     className="border rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"

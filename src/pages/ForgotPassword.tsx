@@ -1,16 +1,25 @@
 import React, { useState } from "react";
-
+import { Link } from "react-router-dom";
+import { forgotPassword } from "../context/Data/DataUser";
 const ForgotPassword: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ email: "" });
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(form);
+    try {
+      const res = await forgotPassword(form.email);
+      setSuccessMessage(res.message);
+      console.log(res);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'حدث خطأ غير متوقع');
+    }
   };
 
   return (
@@ -65,6 +74,16 @@ const ForgotPassword: React.FC = () => {
           <form className="w-full px-8 py-10 mx-auto" onSubmit={handleSubmit}>
             <h3 className="text-2xl font-extrabold text-gray-900 my-3">Forgot Password</h3>
             <p className="mb-6">Enter your email to reset your password</p>
+            {error && (
+              <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-sm">
+                {error}
+              </div>
+            )}
+            {successMessage && (
+              <div className="mb-4 p-2 bg-green-100 text-green-700 rounded text-sm">
+                {successMessage}
+              </div>
+            )}
             <div>
               <label htmlFor="email" className="block mb-2 text-sm font-semibold text-gray-700">
                 Email
@@ -87,12 +106,14 @@ const ForgotPassword: React.FC = () => {
               >
                 Submit
               </button>
-              <button
-                type="submit"
-                className="w-full  rounded-lg  px-5 py-2 text-center transition-colors shadow-lg"
-              >
-                Cancle
-              </button>
+              <Link to={'/signin'}>
+                <button
+                  type="submit"
+                  className="w-full  rounded-lg  px-5 py-2 text-center transition-colors shadow-lg"
+                >
+                  Cancle
+                </button>
+              </Link>
             </div>
           </form>
         </div>

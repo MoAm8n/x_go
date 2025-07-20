@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { IoMdClose } from 'react-icons/io';
+import logo from "../../public/images/logo.png";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -43,6 +44,9 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
             >
               <IoMdClose size={24} />
             </button>
+            <div className='flex justify-center'>
+              <img src={logo} alt="logo" />
+            </div>
             <div className="flex flex-col gap-1 mt-5">
               {links.map((item) => (
                 <NavLink
@@ -50,8 +54,8 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
                   to={item.path}
                   className={({ isActive }) =>
                     isActive
-                      ? 'text-[#E6911E] pb-1 border-b-2 border-[#E6911E] font-bold py-2'
-                      : 'text-[#7B7B7B] hover:text-[#E6911E] transition duration-300 border-b border-slate-100 py-2'
+                      ? 'bg-orange-gradient text-white font-bold py-2 ps-4 rounded-md'
+                      : 'text-gray transition duration-300  py-2 ps-4'
                   }
                   onClick={closeSidebar}
                 >
