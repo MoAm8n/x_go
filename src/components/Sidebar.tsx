@@ -45,7 +45,7 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
               <IoMdClose size={24} />
             </button>
             <div className='flex justify-center'>
-              <img src={logo} alt="logo" />
+              <img src={logo} alt="logo" loading="lazy"/>
             </div>
             <div className="flex flex-col gap-1 mt-5">
               {links.map((item) => (

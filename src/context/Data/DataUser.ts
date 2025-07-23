@@ -54,6 +54,7 @@ export interface Brand {
 
 export interface Type {
   name: string;
+  id: number;
 }
 
 export interface PriceRange {
@@ -94,28 +95,35 @@ export interface BookingItem {
   end_date: string;
   final_price: string;
   status: string;
+  additional_driver: number;
   car_model: {
     id: number;
-    year: string;
-    price: string;
-    engine_type: string;
-    transmission_type: string;
-    seats_count: number;
-    image?: string;
-    model_name: {
-      id: number;
-      name: string;
-      type: {
-        id: number;
-        name: string;
-        brand: {
-          id: number;
-          name: string;
-        };
+    attributes: {
+      year: string;
+      price: string;
+      engine_type: string;
+      transmission_type: string;
+      seats_count: number;
+      image?: string;
+    };
+    relationship: {
+      Brand?: {
+        brand_id: number;
+        brand_name: string;
       };
+      Types?: {
+        type_id: number;
+        type_name: string;
+      };
+      Model_Names?: {
+        model_name_id: number;
+        model_name: string;
+      };
+      // Add other relationships you need
     };
   };
 }
+
 
 export const checkEmailExists = async (email: string) => {
   try {
@@ -210,18 +218,54 @@ export const forgotPassword = async (email: string): Promise<{ message: string }
   }
 };
 
-export const logoutUser = async (): Promise<AuthResponse> => {
+// export const logoutUser = async (): Promise<AuthResponse> => {
+//   try {
+//     const response = await apiClient.post('/api/user/logout');
+//     if (!response.data?.message) {
+//       throw new Error('لم يتم استلام بيانات المستخدم من الخادم');
+//     }
+//     localStorage.removeItem('tokenUser');
+//     localStorage.removeItem('user');
+    
+//     apiClient.defaults.headers.common['Authorization'] = '';
+//     window.location.href = '/';
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error logging out:', error);
+//     throw new Error('حدث خطأ غير متوقع أثناء تسجيل الخروج');
+//   }
+// };
+export const logoutUser = async (): Promise<{ message: string }> => {
   try {
     const response = await apiClient.post('/api/user/logout');
+    
+    // حتى لو السيرفر مردش بحاجة مهمة، نكمل عملية الخروج
     if (!response.data?.message) {
-      throw new Error('لم يتم استلام بيانات المستخدم من الخادم');
+      console.warn('لم يتم استلام رسالة من الخادم، جاري تسجيل الخروج محليًا');
     }
+
+    // تسجيل خروج محلي
     localStorage.removeItem('tokenUser');
     localStorage.removeItem('user');
     apiClient.defaults.headers.common['Authorization'] = '';
     window.location.href = '/';
-    return response.data;
-  } catch (error) {
+
+    return { message: response.data?.message || 'تم تسجيل الخروج بنجاح' };
+  } catch (error: any) {
+    // لو التوكن غير صالح أو انتهت صلاحيته
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      console.warn('Token invalid or expired. Logging out anyway.');
+
+      // تسجيل خروج محلي رغم الخطأ
+      localStorage.removeItem('tokenUser');
+      localStorage.removeItem('user');
+      apiClient.defaults.headers.common['Authorization'] = '';
+      window.location.href = '/';
+
+      return { message: 'تم تسجيل الخروج (بسبب انتهاء صلاحية الجلسة)' };
+    }
+
+    // أي خطأ آخر غير متوقع
     console.error('Error logging out:', error);
     throw new Error('حدث خطأ غير متوقع أثناء تسجيل الخروج');
   }
@@ -409,42 +453,43 @@ export const getBookingList = async (): Promise<BookingItem[]> => {
     if (!response.data?.data) {
       throw new Error('No booking data available');
     }
-    
-    // تحقق من بنية البيانات المرتجعة
-    const bookings = response.data.data.map((booking: any) => ({
+
+    return response.data.data.map((booking: any) => ({
       id: booking.id,
-      user_id: booking.user_id,
-      carmodel_id: booking.carmodel_id,
+      user_id: booking.user_id || 0,
+      carmodel_id: booking.carmodel_id || 0,
       start_date: booking.start_date,
       end_date: booking.end_date,
       final_price: booking.final_price,
       status: booking.status,
-      pickup_location: booking.pickup_location,
-      dropoff_location: booking.dropoff_location,
+      additional_driver: booking.additional_driver ? 1 : 0,
       car_model: {
         id: booking.car_model?.id || 0,
-        year: booking.car_model?.year || '',
-        price: booking.car_model?.price || '',
-        engine_type: booking.car_model?.engine_type || '',
-        transmission_type: booking.car_model?.transmission_type || '',
-        seats_count: booking.car_model?.seats_count || 0,
-        image: booking.car_model?.image || '',
-        model_name: {
-          id: booking.car_model?.model_name?.id || 0,
-          name: booking.car_model?.model_name?.name || '',
-          type: {
-            id: booking.car_model?.model_name?.type?.id || 0,
-            name: booking.car_model?.model_name?.type?.name || '',
-            brand: {
-              id: booking.car_model?.model_name?.type?.brand?.id || 0,
-              name: booking.car_model?.model_name?.type?.brand?.name || ''
-            }
+        attributes: {
+          year: booking.car_model?.attributes?.year || 'غير معروف',
+          price: booking.car_model?.attributes?.price || '0',
+          engine_type: booking.car_model?.attributes?.engine_type || 'غير معروف',
+          transmission_type: booking.car_model?.attributes?.transmission_type || 'تلقائي',
+          seat_type: booking.car_model?.attributes?.seat_type || 'غير معروف',
+          seats_count: booking.car_model?.attributes?.seats_count || 4,
+          image: booking.car_model?.attributes?.image || '/default-car.jpg',
+        },
+        relationship: {
+          Brand: {
+            brand_id: booking.car_model?.relationship?.Brand?.brand_id || 0,
+            brand_name: booking.car_model?.relationship?.Brand?.brand_name || 'غير معروف'
+          },
+          Types: {
+            type_id: booking.car_model?.relationship?.Types?.type_id || 0,
+            type_name: booking.car_model?.relationship?.Types?.type_name || 'غير معروف'
+          },
+          Model_Names: {
+            model_name_id: booking.car_model?.relationship?.Model_Names?.model_name_id || 0,
+            model_name: booking.car_model?.relationship?.Model_Names?.model_name || 'غير معروف'
           }
         }
       }
     }));
-    
-    return bookings;
   } catch (error) {
     console.error('Error fetching booking list:', error);
     throw new Error('Failed to fetch bookings. Please try again later.');

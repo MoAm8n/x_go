@@ -368,8 +368,8 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
   };
 
   return (
-    <form onSubmit={handleBooking} className="rental-form">
-      <h2 className="text-xl font-bold mb-4">Rent This Vehicle</h2>
+    <form onSubmit={handleBooking} className="rental-form rounded-xl bg-[#F7F8FA] hover:shadow-lg p-2 cursor-pointer">
+      <h2 className="text-xl font-bold py-4">Rent This Vehicle</h2>
       
       {error && <div className="error-message text-red-500 mb-4">{error}</div>}
 

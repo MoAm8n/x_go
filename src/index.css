@@ -10,9 +10,6 @@ body{
 }
 
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 
 .hide-scrollbar {
@@ -35,3 +32,6 @@ body{
 html {
   scroll-behavior: smooth;
 }
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;

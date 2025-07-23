@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import AutoCarousel from "../components/AutoCarousel";
 import WhyChooseCard from "../components/uiUser/CardLoading";
 import { getBrands, getCars } from "../context/Data/DataUser";
-import { Loader2, CarFront, Calendar, School, Headset } from "lucide-react";
+import { CarFront, Calendar, School, Headset } from "lucide-react";
 import { HowItWork } from "../components/uiUser";
 import appStoreImg from "../../public/images/and app store.png";
 import playStoreImg from "../../public/images/app store.png";
@@ -129,7 +129,7 @@ const Home = () => {
                 onClick={() => handleBrandFilter(brand.id)}
                 className={`flex items-center gap-1 md:p-2 p-2 rounded-lg ${
                   selectedBrand === brand.id
-                    ? "bg-orange-500 text-white"
+                    ? "bg-orange-500 bg-red text-white"
                     : "border-2 rounded-md"
                 }`}
               >
@@ -138,6 +138,7 @@ const Home = () => {
                     src={brand.logo}
                     alt={brand.name}
                     className="w-4 h-4 md:w-12 md:h-9 object-contain"
+                    loading="lazy"
                   />
                 )}
                 <span>{brand.name}</span>
@@ -156,6 +157,7 @@ const Home = () => {
                       src={car.image || "/placeholder-car.jpg"}
                       alt={car.name}
                       className="w-full h-44 md:h-48 md:object-cover mb-4 rounded-t-lg"
+                      loading="lazy"
                     />
                     <div className="p-4">
                       <div className="flex justify-between items-center mb-2 max-md:flex-col">
@@ -245,6 +247,7 @@ const Home = () => {
                     src={link.icon}
                     alt={link.alt}
                     className="w-48 h-24 object-contain"
+                    loading="lazy"
                   />
                 </a>
               ))}

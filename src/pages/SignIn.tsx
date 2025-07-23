@@ -257,7 +257,7 @@ const SignIn: React.FC = () => {
 
       // استعادة بيانات الحجز المؤقتة
       const tempBookingData = location.state?.tempBookingData || 
-                            JSON.parse(localStorage.getItem('tempBookingData') || null);
+      JSON.parse(localStorage.getItem('tempBookingData') || null);
 
       if (tempBookingData) {
         try {

@@ -10,7 +10,8 @@ const CarThumb: React.FC<CarThumbProps> = ({ image, text }) => (
     <img
       src={image}
       alt={text}
-      className=" w-[22px]   object-cover "
+      className=" w-[22px] object-cover "
+      loading="lazy"
     />
     <span className="text-base font-medium">{text}</span>
   </div>

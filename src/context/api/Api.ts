@@ -1,1 +1,1 @@
-export const API_URL = 'https://xgo.ibrahimbashaa.com'; 
+export const API_URL = 'https://firebrick-chough-287960.hostingersite.com'; 

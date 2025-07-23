@@ -102,7 +102,7 @@ const Header = () => {
               </button>
             </div>
             <Link to="loading" className="text-2xl font-bold text-gray-800">
-              <img src={logo} alt="الشعار" className="h-10" />
+              <img src={logo} alt="الشعار" className="h-10" loading="lazy" />
             </Link>
             <div className="space-x-4 max-md:hidden flex items-center">
               {links.map((link) => (

@@ -24,6 +24,7 @@ const PaymentForm: React.FC = () => {
               src={cashIcon}
               alt="Cash"
               className="w-10 h-10 object-contain"
+              loading="lazy"
             />
             <div>
               <div className=" text-lg text-gray-900">
@@ -57,6 +58,7 @@ const PaymentForm: React.FC = () => {
               src={visaIcon}
               alt="Visa"
               className="w-10 h-10 object-contain"
+              loading="lazy"
             />
             <div>
               <div className="text-lg text-gray-900">

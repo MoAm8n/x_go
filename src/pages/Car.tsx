@@ -182,6 +182,7 @@ const Car: React.FC = () => {
                         src={relatedCar.image || carImg}
                         alt={relatedCar.name || 'Car image'}
                         className="w-full h-48 object-cover mb-4 rounded-lg"
+                        loading="lazy"
                       />
                       <div className='flex justify-between items-center px-2'>
                         <h2 className="text-xl font-bold mb-2">{relatedCar.name || 'Unnamed Car'}</h2>

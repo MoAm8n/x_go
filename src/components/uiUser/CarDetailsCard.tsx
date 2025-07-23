@@ -72,6 +72,7 @@ const CarDetailsCard: React.FC<Props> = ({ filters }) => {
                 src={car.image}
                 alt={car.name || "Car image"}
                 className="w-full h-48 object-cover mb-4 rounded-lg"
+                loading="lazy"
               />
             )}
             <div className="flex justify-between items-center px-2">

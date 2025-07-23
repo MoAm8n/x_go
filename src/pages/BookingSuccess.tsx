@@ -204,9 +204,10 @@ const BookingSuccess: React.FC = () => {
       <div className="booking-summary">
         <h3>Booking Summary</h3>
         <div className="car-info">
-          <img src={carDetails.image} alt={carDetails.name} />
+          <img src={carDetails.image} alt={carDetails.name} loading="lazy"/>
           <h4>{carDetails.name}</h4>
           <p>{carDetails.brand} - {carDetails.type}</p>
+
         </div>
 
         <div className="timing-info">

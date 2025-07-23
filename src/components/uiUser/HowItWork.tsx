@@ -119,6 +119,7 @@ const HowItWorks: React.FC = () => (
                 src={car.image}
                 alt={car.name}
                 className="rounded-lg h-3/4 w-full object-cover mb-2 mx-auto "
+                loading="lazy"
             />
             <h5 className="font-normal text-xs sm:text-sm md:text-base text-center">
                 {car.name}
@@ -140,6 +141,7 @@ const HowItWorks: React.FC = () => (
             src={car.image}
             alt={car.name}
             className="rounded-lg h-3/5 w-full object-cover "
+            loading="lazy"
             />
             <div className="px-2">
             <p className="font-medium text-sm md:text-lg">{car.name}</p>
