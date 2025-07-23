@@ -1,7 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { getBrands, getTypes, getPriceRange, getCars } from '../../context/Data/DataUser';
-import type { CarItem } from '../../context/Data/DataUser';
-import { Checkbox, FormControlLabel, Button, CircularProgress } from '@mui/material';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  getBrands,
+  getTypes,
+  getPriceRange,
+  getCars,
+} from "../../context/Data/DataUser";
+import type { CarItem } from "../../context/Data/DataUser";
+import {
+  Checkbox,
+  FormControlLabel,
+  Button,
+  CircularProgress,
+} from "@mui/material";
 
 export interface Brand {
   id: number;
@@ -42,7 +52,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
   const [filters, setFilters] = useState<FilterState>({
     selectedBrands: [],
     selectedTypes: [],
-    priceRange: [0, 0]
+    priceRange: [0, 0],
   });
 
   useEffect(() => {
@@ -55,47 +65,53 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
     setAllTypesSelected(filters.selectedTypes.length === types.length);
   }, [filters.selectedTypes, types.length]);
 
-  const toggleAllBrands = useCallback((checked: boolean) => {
-    setFilters(prev => ({
-      ...prev,
-      selectedBrands: checked ? brands.map(b => b.id) : []
-    }));
-    setAllBrandsSelected(checked);
-  }, [brands]);
+  const toggleAllBrands = useCallback(
+    (checked: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        selectedBrands: checked ? brands.map((b) => b.id) : [],
+      }));
+      setAllBrandsSelected(checked);
+    },
+    [brands]
+  );
 
-  const toggleAllTypes = useCallback((checked: boolean) => {
-    setFilters(prev => ({
-      ...prev,
-      selectedTypes: checked ? types.map(t => t.name) : []
-    }));
-    setAllTypesSelected(checked);
-  }, [types]);
+  const toggleAllTypes = useCallback(
+    (checked: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        selectedTypes: checked ? types.map((t) => t.name) : [],
+      }));
+      setAllTypesSelected(checked);
+    },
+    [types]
+  );
 
   const fetchFilterOptions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const [brandsData, typesData, priceData, carsData] = await Promise.all([
         getBrands(),
         getTypes(),
         getPriceRange(),
-        getCars()
+        getCars(),
       ]);
-      
+
       setBrands(brandsData);
       setTypes(typesData);
       setPriceRange(priceData);
       setCars(carsData);
 
       setFilters({
-        selectedBrands: brandsData.map(b => b.id),
-        selectedTypes: typesData.map(t => t.name),
-        priceRange: priceData ? [priceData.min, priceData.max] : [0, 0]
+        selectedBrands: brandsData.map((b) => b.id),
+        selectedTypes: typesData.map((t) => t.name),
+        priceRange: priceData ? [priceData.min, priceData.max] : [0, 0],
       });
     } catch (error) {
-      console.error('Failed to load filters:', error);
-      setError('Failed to load filter options. Please try again.');
+      console.error("Failed to load filters:", error);
+      setError("Failed to load filter options. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -110,47 +126,52 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
   }, [filters, onFilterChange]);
 
   const handleBrandToggle = useCallback((brandId: number) => {
-    setFilters(prev => {
+    setFilters((prev) => {
       const newBrands = prev.selectedBrands.includes(brandId)
-        ? prev.selectedBrands.filter(b => b !== brandId)
+        ? prev.selectedBrands.filter((b) => b !== brandId)
         : [...prev.selectedBrands, brandId];
       return { ...prev, selectedBrands: newBrands };
     });
   }, []);
 
   const handleTypeToggle = useCallback((typeName: string) => {
-    setFilters(prev => {
+    setFilters((prev) => {
       const newTypes = prev.selectedTypes.includes(typeName)
-        ? prev.selectedTypes.filter(t => t !== typeName)
+        ? prev.selectedTypes.filter((t) => t !== typeName)
         : [...prev.selectedTypes, typeName];
       return { ...prev, selectedTypes: newTypes };
     });
   }, []);
 
-  const handlePriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!priceRange) return;
-    
-    const value = Number(e.target.value);
-    setFilters(prev => ({
-      ...prev,
-      priceRange: [prev.priceRange[0], value]
-    }));
-  }, [priceRange]);
+  const handlePriceChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!priceRange) return;
+
+      const value = Number(e.target.value);
+      setFilters((prev) => ({
+        ...prev,
+        priceRange: [prev.priceRange[0], value],
+      }));
+    },
+    [priceRange]
+  );
 
   const clearAllFilters = useCallback(() => {
     setFilters({
       selectedBrands: [],
       selectedTypes: [],
-      priceRange: priceRange ? [priceRange.min, priceRange.max] : [0, 0]
+      priceRange: priceRange ? [priceRange.min, priceRange.max] : [0, 0],
     });
   }, [priceRange]);
 
   const getCarCountForBrand = (brandId: number) => {
-    return cars.filter(car => car.brandId === brandId).length;
+    return cars.filter((car) => car.brandId === brandId).length;
   };
 
   const getCarCountForType = (typeName: string) => {
-    return cars.filter(car => car.type?.toLowerCase() === typeName.toLowerCase()).length;
+    return cars.filter(
+      (car) => car.type?.toLowerCase() === typeName.toLowerCase()
+    ).length;
   };
 
   const totalCarsCount = cars.length;
@@ -168,11 +189,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
     return (
       <div className="w-full p-6 text-center text-red-500">
         {error}
-        <Button 
-          variant="outlined" 
-          onClick={fetchFilterOptions}
-          sx={{ mt: 2 }}
-        >
+        <Button variant="outlined" onClick={fetchFilterOptions} sx={{ mt: 2 }}>
           Retry
         </Button>
       </div>
@@ -184,11 +201,13 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
       <div className="p-6 w-full max-w-lg min-w-[350px] flex flex-col gap-6">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold">Filters</h2>
-          <Button 
+          <Button
             onClick={clearAllFilters}
-            disabled={filters.selectedBrands.length === 0 && 
-                     filters.selectedTypes.length === 0 &&
-                     filters.priceRange[1] === (priceRange?.max || 0)}
+            disabled={
+              filters.selectedBrands.length === 0 &&
+              filters.selectedTypes.length === 0 &&
+              filters.priceRange[1] === (priceRange?.max || 0)
+            }
             size="small"
           >
             Clear All
@@ -206,7 +225,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
                       <Checkbox
                         checked={allBrandsSelected}
                         indeterminate={
-                          filters.selectedBrands.length > 0 && 
+                          filters.selectedBrands.length > 0 &&
                           filters.selectedBrands.length < brands.length
                         }
                         onChange={(e) => toggleAllBrands(e.target.checked)}
@@ -227,7 +246,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
                 </span>
               </div>
             </li>
-            
+
             {brands.map((brand) => (
               <li key={brand.id} className="flex items-center justify-between">
                 <FormControlLabel
@@ -287,7 +306,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
                       <Checkbox
                         checked={allTypesSelected}
                         indeterminate={
-                          filters.selectedTypes.length > 0 && 
+                          filters.selectedTypes.length > 0 &&
                           filters.selectedTypes.length < types.length
                         }
                         onChange={(e) => toggleAllTypes(e.target.checked)}
@@ -308,7 +327,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
                 </span>
               </div>
             </li>
-            
+
             {types.map((type) => (
               <li key={type.name} className="flex items-center justify-between">
                 <FormControlLabel

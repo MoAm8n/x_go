@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import CarDetailsCard from '../components/ui/CarDetailsCard';
-import CarFilterSidebar from '../components/ui/CarFilterSidebar';
+import CarDetailsCard from '../components/uiUser/CarDetailsCard';
+import CarFilterSidebar from '../components/uiUser/CarFilterSidebar';
 import carImg from '../assets/image.jpg';
 // import { FilterState } from '../components/ui/CarFilterSidebar';
 
