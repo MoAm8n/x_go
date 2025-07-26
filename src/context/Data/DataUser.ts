@@ -82,8 +82,9 @@ export interface BookingData {
   carmodel_id: string;
   user_id: string;
   additional_driver: string;
-  pickup_location?: string;
-  dropoff_location?: string;
+  pickup_location: string;
+  dropoff_location: string;
+  location_id: string;
   final_price?: string;
 }
 
@@ -395,46 +396,96 @@ export const showCarId = async (id: string): Promise<CarItem> => {
 
 export const saveBooking = async (id: string, bookingData: BookingData): Promise<any> => {
   try {
-    console.log('Sending booking data:', bookingData);
-    const response = await apiClient.post(`/api/user/Model/${id}/car-booking`, bookingData); 
-    console.log('Received response:', response.data);
+    // Verify all required fields
+    if (!bookingData.user_id || !bookingData.location_id) {
+      throw new Error("User authentication and location are required");
+    }
+
+    const payload = {
+      ...bookingData,
+      status: "pending",
+      payment_status: "unpaid"
+    };
+
+    console.log('Submitting booking:', payload);
+    
+    const response = await apiClient.post(
+      `/api/user/Model/${id}/car-booking`,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('tokenUser')}`
+        }
+      }
+    );
 
     if (!response.data?.data?.booking) {
-      throw new Error('لم يتم استلام بيانات الحجز من الخادم');
+      throw new Error("Invalid booking response from server");
     }
+
     return {
-      message: response.data.message,
       bookingId: response.data.data.booking.id,
-      bookingData: response.data.data.booking,
+      ...response.data.data.booking
     };
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      const errorMessage = error.response?.data?.message || 'حدث خطأ أثناء حفظ الحجز';
-      if (error.response?.status === 404) {
-        console.error('404 Error: Endpoint not found. Tried:', `/api/booking`);
-        throw new Error('الوجهة المطلوبة للحجز غير موجودة. يرجى التحقق من عنوان الـ API.');
-      }
       if (error.response?.status === 422) {
-        throw new Error('بيانات الحجز غير صالحة: ' + errorMessage);
+        const serverErrors = error.response.data?.errors || {};
+        throw new Error(
+          Object.entries(serverErrors)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            .join('\n')
+        );
       }
-      if (error.response?.status === 500) {
-        throw new Error('فشل في حفظ الحجز بسبب مشكلة في الخادم');
-      }
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-      console.warn('Token invalid or expired. Logging out anyway.');
-      localStorage.removeItem('tokenUser');
-      localStorage.removeItem('user');
-      apiClient.defaults.headers.common['Authorization'] = '';
-      window.location.href = '/signin';
-
-      return { message: 'تم تسجيل الخروج (بسبب انتهاء صلاحية الجلسة)' };
+      throw new Error(error.response?.data?.message || "Booking failed");
     }
-      throw new Error(errorMessage);
-    }
-    console.error('Error saving booking:', error);
-    throw new Error('حدث خطأ غير متوقع أثناء حفظ الحجز');
+    throw new Error("Network error. Please try again.");
   }
 };
+
+// export const saveBooking = async (id: string, bookingData: BookingData): Promise<any> => {
+//   try {
+//     console.log('Sending booking data:', bookingData);
+//     const response = await apiClient.post(`/api/user/Model/${id}/car-booking`, bookingData); 
+//     console.log('Received response:', response.data);
+
+//     if (!response.data?.data?.booking) {
+//       throw new Error('لم يتم استلام بيانات الحجز من الخادم');
+//     }
+//     return {
+//       message: response.data.message,
+//       bookingId: response.data.data.booking.id,
+//       bookingData: response.data.data.booking,
+//     };
+//   } catch (error) {
+//     if (axios.isAxiosError(error)) {
+//       const errorMessage = error.response?.data?.message || 'حدث خطأ أثناء حفظ الحجز';
+//       if (error.response?.status === 404) {
+//         console.error('404 Error: Endpoint not found. Tried:', `/api/booking`);
+//         throw new Error('الوجهة المطلوبة للحجز غير موجودة. يرجى التحقق من عنوان الـ API.');
+//       }
+//       if (error.response?.status === 422) {
+//         throw new Error('بيانات الحجز غير صالحة: ' + errorMessage);
+//       }
+//       if (error.response?.status === 500) {
+//         throw new Error('فشل في حفظ الحجز بسبب مشكلة في الخادم');
+//       }
+//       if (axios.isAxiosError(error) && error.response?.status === 401) {
+//       console.warn('Token invalid or expired. Logging out anyway.');
+//       localStorage.removeItem('tokenUser');
+//       localStorage.removeItem('user');
+//       apiClient.defaults.headers.common['Authorization'] = '';
+//       window.location.href = '/signin';
+
+//       return { message: 'تم تسجيل الخروج (بسبب انتهاء صلاحية الجلسة)' };
+//     }
+//       throw new Error(errorMessage);
+//     }
+//     console.error('Error saving booking:', error);
+//     throw new Error('حدث خطأ غير متوقع أثناء حفظ الحجز');
+//   }
+// };
 export const getBookingList = async (): Promise<BookingItem[]> => {
   try {
     const response = await apiClient.get('/api/user/booking-list');
@@ -548,43 +599,71 @@ export interface Location {
 }
 
 export const locationService = {
-  async addLocation(locationData: Omit<Location, 'id' | 'user_id' | 'is_active'>) {
-    try {
-      const response = await apiClient.post('/api/user/user-locations', locationData);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        throw new Error('Session expired. Please login again.');
-      }
-      throw error;
-    }
-  },
-
-  async getLocations() {
+  async getActiveLocations(): Promise<Location[]> {
     try {
       const response = await apiClient.get('/api/user/user-locations');
-      return response.data.data as Location[];
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        // إذا كان الخطأ 401، نقوم بتسجيل خروج المستخدم
-        localStorage.removeItem('tokenUser');
-        localStorage.removeItem('user');
-        window.location.href = '/signin';
-        throw new Error('Session expired. Redirecting to login...');
+      if (!response.data?.data) {
+        throw new Error('No locations data available');
       }
-      throw error;
+      
+      // تصفية المواقع النشطة وتحويل البيانات
+      return response.data.data
+        .filter((loc: any) => loc.is_active === 1)
+        .map((loc: any) => ({
+          id: loc.id,
+          user_id: loc.user_id,
+          location: loc.location,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          is_active: loc.is_active
+        }));
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          // معالجة انتهاء صلاحية التوكن
+          localStorage.removeItem('tokenUser');
+          localStorage.removeItem('user');
+          window.location.href = '/signin';
+          return [];
+        }
+        throw new Error(error.response?.data?.message || 'Failed to fetch locations');
+      }
+      throw new Error('An unexpected error occurred');
     }
   },
 
-  async updateLocation(id: number, updates: Partial<Location>) {
+  async addLocation(newLocation: Omit<Location, 'id' | 'user_id' | 'is_active'>): Promise<Location> {
     try {
-      const response = await apiClient.put(`/api/user/user-locations/${id}`, updates);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        throw new Error('Session expired. Please login again.');
+      // التحقق من البيانات المدخلة
+      if (!newLocation.location || !newLocation.latitude || !newLocation.longitude) {
+        throw new Error('All location fields are required');
       }
-      throw error;
+
+      const response = await apiClient.post('/api/user/user-locations', newLocation);
+      
+      if (!response.data?.data) {
+        throw new Error('Invalid response from server');
+      }
+
+      return {
+        id: response.data.data.id,
+        user_id: response.data.data.user_id,
+        location: response.data.data.location,
+        latitude: response.data.data.latitude,
+        longitude: response.data.data.longitude,
+        is_active: response.data.data.is_active
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          localStorage.removeItem('tokenUser');
+          localStorage.removeItem('user');
+          window.location.href = '/signin';
+          throw new Error('Session expired. Please login again.');
+        }
+        throw new Error(error.response?.data?.message || 'Failed to add location');
+      }
+      throw new Error('An unexpected error occurred');
     }
   }
-};
+}
