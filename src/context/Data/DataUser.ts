@@ -119,11 +119,9 @@ export interface BookingItem {
         model_name_id: number;
         model_name: string;
       };
-      // Add other relationships you need
     };
   };
 }
-
 
 export const checkEmailExists = async (email: string) => {
   try {
@@ -218,23 +216,6 @@ export const forgotPassword = async (email: string): Promise<{ message: string }
   }
 };
 
-// export const logoutUser = async (): Promise<AuthResponse> => {
-//   try {
-//     const response = await apiClient.post('/api/user/logout');
-//     if (!response.data?.message) {
-//       throw new Error('لم يتم استلام بيانات المستخدم من الخادم');
-//     }
-//     localStorage.removeItem('tokenUser');
-//     localStorage.removeItem('user');
-    
-//     apiClient.defaults.headers.common['Authorization'] = '';
-//     window.location.href = '/';
-//     return response.data;
-//   } catch (error) {
-//     console.error('Error logging out:', error);
-//     throw new Error('حدث خطأ غير متوقع أثناء تسجيل الخروج');
-//   }
-// };
 export const logoutUser = async (): Promise<{ message: string }> => {
   try {
     const response = await apiClient.post('/api/user/logout');
@@ -421,7 +402,6 @@ export const saveBooking = async (id: string, bookingData: BookingData): Promise
     if (!response.data?.data?.booking) {
       throw new Error('لم يتم استلام بيانات الحجز من الخادم');
     }
-
     return {
       message: response.data.message,
       bookingId: response.data.data.booking.id,
@@ -440,6 +420,15 @@ export const saveBooking = async (id: string, bookingData: BookingData): Promise
       if (error.response?.status === 500) {
         throw new Error('فشل في حفظ الحجز بسبب مشكلة في الخادم');
       }
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+      console.warn('Token invalid or expired. Logging out anyway.');
+      localStorage.removeItem('tokenUser');
+      localStorage.removeItem('user');
+      apiClient.defaults.headers.common['Authorization'] = '';
+      window.location.href = '/signin';
+
+      return { message: 'تم تسجيل الخروج (بسبب انتهاء صلاحية الجلسة)' };
+    }
       throw new Error(errorMessage);
     }
     console.error('Error saving booking:', error);
@@ -493,5 +482,109 @@ export const getBookingList = async (): Promise<BookingItem[]> => {
   } catch (error) {
     console.error('Error fetching booking list:', error);
     throw new Error('Failed to fetch bookings. Please try again later.');
+  }
+};
+
+export interface PaymentResponse {
+  success: boolean;
+  message: string;
+  transactionId?: string;
+  paymentDetails?: any;
+}
+
+export const processPayment = async (
+  modelId: string,
+  bookingId: string,
+  paymentData: {
+    payment_method: string;
+    card_details?: {
+      cardNumber: string;
+      expiryDate: string;
+      cvv: string;
+      cardHolderName: string;
+    };
+    amount: string | number;
+    save_payment_info?: boolean;
+  }
+): Promise<PaymentResponse> => {
+  try {
+    const response = await apiClient.post(
+      `/api/user/Model/${modelId}/car-booking/${bookingId}/payment-method`,
+      paymentData
+    );
+
+    if (!response.data) {
+      throw new Error('No data received from server');
+    }
+
+    return {
+      success: true,
+      message: response.data.message || 'Payment processed successfully',
+      transactionId: response.data.transactionId,
+      paymentDetails: response.data.paymentDetails
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const errorMessage = error.response?.data?.message || 'Payment processing failed';
+      if (error.response?.status === 401) {
+        localStorage.removeItem('tokenUser');
+        localStorage.removeItem('user');
+        apiClient.defaults.headers.common['Authorization'] = '';
+        return { success: false, message: 'Session expired. Please login again.' };
+      }
+      return { success: false, message: errorMessage };
+    }
+    return { success: false, message: 'An unexpected error occurred' };
+  }
+};
+
+export interface Location {
+  id?: number;
+  user_id?: number;
+  location: string;
+  latitude: string;
+  longitude: string;
+  is_active?: number;
+}
+
+export const locationService = {
+  async addLocation(locationData: Omit<Location, 'id' | 'user_id' | 'is_active'>) {
+    try {
+      const response = await apiClient.post('/api/user/user-locations', locationData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        throw new Error('Session expired. Please login again.');
+      }
+      throw error;
+    }
+  },
+
+  async getLocations() {
+    try {
+      const response = await apiClient.get('/api/user/user-locations');
+      return response.data.data as Location[];
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        // إذا كان الخطأ 401، نقوم بتسجيل خروج المستخدم
+        localStorage.removeItem('tokenUser');
+        localStorage.removeItem('user');
+        window.location.href = '/signin';
+        throw new Error('Session expired. Redirecting to login...');
+      }
+      throw error;
+    }
+  },
+
+  async updateLocation(id: number, updates: Partial<Location>) {
+    try {
+      const response = await apiClient.put(`/api/user/user-locations/${id}`, updates);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        throw new Error('Session expired. Please login again.');
+      }
+      throw error;
+    }
   }
 };

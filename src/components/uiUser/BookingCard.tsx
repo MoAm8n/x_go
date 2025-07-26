@@ -80,17 +80,19 @@ interface BookingCardProps {
 }
 
 const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPayment, onCancel }) => {
-  const [cancel, setCancel] = useState(false)
-  const handelRemoveItem = async()=> {
-    setCancel(true)
-    try{
-     await onCancel(booking.id)
-    }catch(err){
-      console.log(err)
-    }finally{
-      setCancel(false)
-    }
+const [isCanceling, setIsCanceling] = useState(false);
+  
+  const handelRemoveItem = async () => {
+  setIsCanceling(true);
+  try {
+    await onCancel(booking.id);
+  } catch (err) {
+    console.log(err);
+  } finally {
+    setIsCanceling(false);
   }
+};
+
   const formatDisplayDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('ar-SA', {
@@ -200,10 +202,9 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
                   </button>
                 )}
             </div>
-            {cancel ? (
+            {booking.can_cancel && (
               <button
                 onClick={handelRemoveItem}
-
                 className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
                 aria-label={`إلغاء الحجز ${booking.id}`}
               >
@@ -214,7 +215,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
                   )}
                   إلغاء
               </button>
-            ):(null)}
+            )}
           </div>
         </div>
       </div>

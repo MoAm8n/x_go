@@ -349,6 +349,7 @@ const SignUp: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const [open, setOpen] = useState(false);
 
   const [form, setForm] = useState({
     name: '',
@@ -400,7 +401,7 @@ const SignUp: React.FC = () => {
 
       // استعادة بيانات الحجز المؤقتة
       const tempBookingData = location.state?.tempBookingData || 
-                            JSON.parse(localStorage.getItem('tempBookingData') || null);
+        JSON.parse(localStorage.getItem('tempBookingData') || null);
 
       if (tempBookingData) {
         try {
@@ -433,7 +434,6 @@ const SignUp: React.FC = () => {
         }
       }
 
-      // إذا لم يكن هناك حجز مؤقت
       navigate('/bookings');
     } catch (error) {
       let errorMessage = 'حدث خطأ غير متوقع أثناء التسجيل';
@@ -446,10 +446,53 @@ const SignUp: React.FC = () => {
     }
   };
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#FFB347] via-[#FFE0B2] to-[#fdf9f2] sm:px-4 md:px-32 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#FFB347] via-[#FFE0B2] to-[#fdf9f2] sm:px-4 md:px-32 -mt-[70px]">
       <div className="flex flex-col lg:flex-row justify-between item-center w-full bg-transparent overflow-hidden">
-        {/* ... الجزء الأيسر من الصفحة (نفس الكود الأصلي) ... */}
-
+        <div className="w-full flex flex-col justify-evenly max-lg:pt-16">
+           <div className="w-full max-lg:text-center">
+             <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 lg:w-3/4 max-lg:px-10 max-lg:py-2">
+               Welcome, Your next drive is waiting
+             </h2>
+             <p className="text-gray-600 lg:w-3/4 text-lg max-lg:px-6">
+               Lorem ipsum dolor sit amet consectetur. A tellus enim orci a eget porttitor et.
+             </p>
+           </div>
+           <div className="relative flex flex-col sm:flex-row items-center gap-4 max-lg:py-8">
+             <div className="relative">
+               <button
+                 onClick={() => setOpen((prev) => !prev)}
+                 className="px-4 py-2 rounded-lg font-medium text-[14px] bg-inherit border border-gray-300 lg:mr-10"
+                 type="button"
+               >
+                 🌐 Language
+               </button>
+               {open && (
+                 <ul className="absolute left-0 bottom-full my-2 bg-white border shadow-md w-40 z-50 rounded-lg">
+                   <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
+                     العربية
+                   </li>
+                   <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
+                     English
+                   </li>
+                   <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
+                     Russian
+                   </li>
+                 </ul>
+               )}
+             </div>
+             <nav className="flex gap-4">
+               <a href="#" className="text-[14px] text-[#E6911E]">
+                 Terms
+               </a>
+               <a href="#" className="text-[14px] text-[#E6911E]">
+                 Plans
+               </a>
+               <a href="#" className="text-[14px] text-[#E6911E]">
+                 Contact Us
+               </a>
+             </nav>
+           </div>
+         </div>
         <div className="w-full flex flex-col justify-center items-center bg-white shadow-lg rounded-lg">
           <form className="w-full px-8 py-2 mx-auto" onSubmit={handleSubmit}>
             {error && (

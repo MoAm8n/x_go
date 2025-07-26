@@ -187,7 +187,7 @@ const Home = () => {
               </div>
             )}
             <div className="col-span-full flex justify-center">
-              <Link to={"/cartCollection"}>
+              <Link to={"/carCollection"}>
                 <button className="col-span-fit bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-colors mt-4">
                   See All Collection
                 </button>

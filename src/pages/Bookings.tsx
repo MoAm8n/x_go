@@ -157,7 +157,7 @@ const BookingsPage: React.FC = () => {
   };
 
   const handlePayment = (bookingId: number) => {
-    navigate(`/payment/${bookingId}`);
+    navigate(`/bookings/${bookingId}/payment`);
   };
 
   if (loading) {
