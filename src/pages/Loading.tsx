@@ -187,7 +187,7 @@ const Home = () => {
               </Link>
             </div>
           </div>
-          </div>
+        </div>
       </section>
       <section id="about">
         <div className="container mx-auto px-14 py-8">
