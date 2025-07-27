@@ -441,7 +441,7 @@ export const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
       )}
 
       {/* Map Preview */}
-      <div className="h-96 w-full md:w-1/2">
+      {/* <div className="h-96 w-full md:w-1/2">
         {currentPosition && (
           <MapContainer
             center={[currentPosition.lat, currentPosition.lng]}
@@ -491,7 +491,7 @@ export const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
             )}
           </MapContainer>
         )}
-      </div>
+      </div> */}
     </div>
   );
 };

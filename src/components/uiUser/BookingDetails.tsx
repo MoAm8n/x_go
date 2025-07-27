@@ -73,11 +73,13 @@ interface BookingDetailsProps {
   onBack: () => void;
   formatDisplayDate: (date: string) => string;
   formatTime: (date: string) => string;
+  onPayment: (id: number) => void;
 }
 
 const BookingDetails: React.FC<BookingDetailsProps> = ({ 
   booking, 
   onBack,
+  onPayment,
   formatDisplayDate,
   formatTime
 }) => {
@@ -231,15 +233,15 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                   </span>
                 </div>
               </div>
-              {booking.status === 'initiated' && (
-                <button
-                  onClick={() => handlePayment(booking.id)}
-                  className="mt-6 w-full bg-[#E6911E] hover:bg-[#D6820E] text-white py-3 rounded-lg transition-colors"
-                  aria-label={`اتمام الدفع للحجز ${booking.id}`}
-                >
-                  اتمام الدفع
-                </button>
-              )}
+                {booking.status === 'initiated' && (
+                  <button
+                    onClick={() => onPayment(booking.id)}
+                    className="bg-[#E6911E] hover:bg-[#D6820E] text-white px-4 py-2 rounded-lg transition-colors"
+                    aria-label={`اتمام الدفع للحجز ${booking.id}`}
+                  >
+                    اتمام الدفع
+                  </button>
+                )}
             </div>
           </div>
         </div>

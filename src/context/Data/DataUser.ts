@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_URL } from '../api/Api';
 
+// إعداد عميل Axios
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
@@ -9,6 +10,7 @@ const apiClient = axios.create({
   },
 });
 
+// إضافة Interceptor لطلبات API لإرفاق التوكن
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('tokenUser');
@@ -20,6 +22,16 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// دالة لمعالجة انتهاء صلاحية التوكن
+const handleUnauthorized = () => {
+  console.warn("انتهت صلاحية التوكن، يتم تسجيل الخروج");
+  localStorage.removeItem('tokenUser');
+  localStorage.removeItem('user');
+  apiClient.defaults.headers.common['Authorization'] = '';
+  window.location.href = '/signin';
+};
+
+// واجهات البيانات
 export interface User {
   id: string;
   email: string;
@@ -49,7 +61,7 @@ export interface Brand {
   id: number;
   name: string;
   logo: string;
-  carCount: number;
+  carCount?: number;
 }
 
 export interface Type {
@@ -124,28 +136,48 @@ export interface BookingItem {
   };
 }
 
-export const checkEmailExists = async (email: string) => {
+export interface PaymentResponse {
+  success: boolean;
+  message: string;
+  transaction_id?: string;
+  iframe_url?: string;
+  payment_token?: string;
+}
+
+export interface Location {
+  id?: number;
+  user_id?: number;
+  location: string;
+  latitude: string;
+  longitude: string;
+  is_active?: number;
+}
+
+// التحقق من وجود بريد إلكتروني
+export const checkEmailExists = async (email: string): Promise<boolean> => {
   try {
+    console.log("جارٍ التحقق من البريد الإلكتروني:", email);
     const response = await axios.get(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
-    return response.data.exists;
+    return response.data?.exists || false;
   } catch (error) {
-    console.error('Error checking email:', error);
+    console.error('خطأ في التحقق من البريد الإلكتروني:', error);
     return false;
   }
 };
+
+// تسجيل مستخدم جديد
 export const signupUser = async (userData: SignUpData): Promise<AuthResponse> => {
   try {
-    // التحقق من تطابق كلمات المرور
     if (userData.password !== userData.password_confirmation) {
       throw new Error('كلمة المرور غير متطابقة');
     }
 
-    // التحقق من وجود البريد الإلكتروني مسبقاً
     const emailExists = await checkEmailExists(userData.email);
     if (emailExists) {
       throw new Error('هذا البريد الإلكتروني مسجل بالفعل');
     }
 
+    console.log("جارٍ تسجيل مستخدم جديد:", userData.email);
     const response = await apiClient.post('/api/user/register', {
       name: userData.name,
       last_name: userData.last_name || 'user',
@@ -159,7 +191,7 @@ export const signupUser = async (userData: SignUpData): Promise<AuthResponse> =>
       throw new Error('هذا البريد الإلكتروني مسجل بالفعل');
     }
 
-    if (!response.data.token || !response.data.user) {
+    if (!response.data?.token || !response.data?.user) {
       throw new Error('لم يتم استلام بيانات المستخدم من الخادم');
     }
 
@@ -167,8 +199,13 @@ export const signupUser = async (userData: SignUpData): Promise<AuthResponse> =>
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const errorMessage = error.response?.data?.message || 'حدث خطأ أثناء التسجيل';
+      console.error("خطأ أثناء التسجيل:", errorMessage);
       if (error.response?.status === 400) {
         throw new Error('بيانات التسجيل غير صالحة');
+      }
+      if (error.response?.status === 401) {
+        handleUnauthorized();
+        throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
       }
       if (error.response?.status === 409) {
         throw new Error('هذا البريد الإلكتروني مسجل بالفعل');
@@ -179,14 +216,16 @@ export const signupUser = async (userData: SignUpData): Promise<AuthResponse> =>
   }
 };
 
+// تسجيل دخول المستخدم
 export const authUsers = async (credentials: SignInData): Promise<AuthResponse> => {
   try {
+    console.log("جارٍ تسجيل الدخول:", credentials.email);
     const response = await apiClient.post('/api/user/login', {
       email: credentials.email,
       password: credentials.password,
     });
 
-    if (!response.data.token || !response.data.user) {
+    if (!response.data?.token || !response.data?.user) {
       throw new Error('لم يتم استلام بيانات المستخدم من الخادم');
     }
 
@@ -194,6 +233,7 @@ export const authUsers = async (credentials: SignInData): Promise<AuthResponse> 
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const errorMessage = error.response?.data?.message || 'حدث خطأ أثناء تسجيل الدخول';
+      console.error("خطأ أثناء تسجيل الدخول:", errorMessage);
       if (error.response?.status === 401) {
         throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
       }
@@ -203,110 +243,121 @@ export const authUsers = async (credentials: SignInData): Promise<AuthResponse> 
   }
 };
 
-
+// إعادة تعيين كلمة المرور
 export const forgotPassword = async (email: string): Promise<{ message: string }> => {
   try {
+    console.log("جارٍ إرسال طلب إعادة تعيين كلمة المرور:", email);
     const response = await apiClient.post('/api/user/forgot-password', { email });
     if (!response.data?.message) {
-      throw new Error('لم يتم استلام بيانات المستخدم من الخادم');
+      throw new Error('لم يتم استلام رسالة من الخادم');
     }
     return { message: response.data.message };
   } catch (error) {
-    console.error('Error sending email:', error);
+    if (axios.isAxiosError(error)) {
+      console.error("خطأ أثناء إرسال طلب إعادة تعيين كلمة المرور:", error);
+      if (error.response?.status === 401) {
+        handleUnauthorized();
+        throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+      }
+      throw new Error(error.response?.data?.message || 'حدث خطأ أثناء إرسال البريد الإلكتروني');
+    }
     throw new Error('حدث خطأ غير متوقع أثناء إرسال البريد الإلكتروني');
   }
 };
 
+// تسجيل الخروج
 export const logoutUser = async (): Promise<{ message: string }> => {
   try {
+    console.log("جارٍ تسجيل الخروج");
     const response = await apiClient.post('/api/user/logout');
-    
-    // حتى لو السيرفر مردش بحاجة مهمة، نكمل عملية الخروج
-    if (!response.data?.message) {
-      console.warn('لم يتم استلام رسالة من الخادم، جاري تسجيل الخروج محليًا');
-    }
-
-    // تسجيل خروج محلي
-    localStorage.removeItem('tokenUser');
-    localStorage.removeItem('user');
-    apiClient.defaults.headers.common['Authorization'] = '';
-    window.location.href = '/';
-
+    handleUnauthorized();
     return { message: response.data?.message || 'تم تسجيل الخروج بنجاح' };
-  } catch (error: any) {
-    // لو التوكن غير صالح أو انتهت صلاحيته
+  } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
-      console.warn('Token invalid or expired. Logging out anyway.');
-
-      // تسجيل خروج محلي رغم الخطأ
-      localStorage.removeItem('tokenUser');
-      localStorage.removeItem('user');
-      apiClient.defaults.headers.common['Authorization'] = '';
-      window.location.href = '/';
-
+      handleUnauthorized();
       return { message: 'تم تسجيل الخروج (بسبب انتهاء صلاحية الجلسة)' };
     }
-
-    // أي خطأ آخر غير متوقع
-    console.error('Error logging out:', error);
+    console.error('خطأ أثناء تسجيل الخروج:', error);
     throw new Error('حدث خطأ غير متوقع أثناء تسجيل الخروج');
   }
 };
 
+// جلب العلامات التجارية
 export const getBrands = async (): Promise<Brand[]> => {
   try {
+    console.log("جارٍ جلب العلامات التجارية");
     const response = await apiClient.get('/api/user/filter-Info');
     if (!response.data?.brands) {
-      throw new Error('No brands data available');
+      throw new Error('لا توجد بيانات للعلامات التجارية');
     }
     return response.data.brands.map((brand: { id: number; attributes: { name: string; logo: string } }) => ({
       id: Number(brand.id) || 0,
       name: brand.attributes?.name || '',
       logo: brand.attributes?.logo || '',
+      carCount: brand.attributes?.carCount || 0,
     }));
   } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      handleUnauthorized();
+      throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+    }
     console.error('خطأ في جلب العلامات التجارية:', error);
     return [];
   }
 };
 
+// جلب أنواع السيارات
 export const getTypes = async (): Promise<Type[]> => {
   try {
+    console.log("جارٍ جلب أنواع السيارات");
     const response = await apiClient.get('/api/user/filter-Info');
     if (!response.data?.types) {
-      throw new Error('No types data available');
+      throw new Error('لا توجد بيانات لأنواع السيارات');
     }
-    return response.data.types.map((type: { name: string }) => ({
+    return response.data.types.map((type: { name: string; id: number }) => ({
       name: type.name || '',
+      id: type.id || 0,
     }));
   } catch (error) {
-    console.error('Error fetching types:', error);
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      handleUnauthorized();
+      throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+    }
+    console.error('خطأ في جلب أنواع السيارات:', error);
     return [];
   }
 };
 
+// جلب نطاق الأسعار
 export const getPriceRange = async (): Promise<PriceRange> => {
   try {
+    console.log("جارٍ جلب نطاق الأسعار");
     const response = await apiClient.get('/api/user/filter-Info');
     return {
       min: Number(response.data?.min_price) || 0,
       max: Number(response.data?.max_price) || 0,
     };
   } catch (error) {
-    console.error('Error fetching price range:', error);
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      handleUnauthorized();
+      throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+    }
+    console.error('خطأ في جلب نطاق الأسعار:', error);
     return { min: 0, max: 0 };
   }
 };
 
+// جلب قائمة السيارات
 export const getCars = async (
   brandId?: number,
   type?: string,
   priceRange?: [number, number]
 ): Promise<CarItem[]> => {
   try {
+    console.log("جارٍ جلب قائمة السيارات", { brandId, type, priceRange });
     const response = await apiClient.post('/api/user/Home', {});
     if (!response.data?.data) {
-      throw new Error('No car data available');
+      throw new Error('لا توجد بيانات للسيارات');
     }
     return response.data.data
       .map((item: {
@@ -347,16 +398,22 @@ export const getCars = async (
         return brandMatch && typeMatch && priceMatch;
       });
   } catch (error) {
-    console.error('Error fetching cars:', error);
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      handleUnauthorized();
+      throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+    }
+    console.error('خطأ في جلب السيارات:', error);
     return [];
   }
 };
 
+// جلب تفاصيل سيارة محددة
 export const showCarId = async (id: string): Promise<CarItem> => {
   try {
+    console.log("جارٍ جلب تفاصيل السيارة:", id);
     const response = await apiClient.get(`/api/user/Model/${id}`);
     if (!response.data?.data) {
-      throw new Error('Car data not found in response');
+      throw new Error('لم يتم العثور على بيانات السيارة');
     }
     const item: {
       id: string;
@@ -389,47 +446,52 @@ export const showCarId = async (id: string): Promise<CarItem> => {
       type: item.relationship?.Types?.type_name || '',
     };
   } catch (error) {
-    console.error('Error fetching car:', error);
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      handleUnauthorized();
+      throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+    }
+    console.error('خطأ في جلب السيارة:', error);
     throw error;
   }
 };
 
+// حفظ حجز
 export const saveBooking = async (id: string, bookingData: BookingData): Promise<any> => {
   try {
-    // Verify all required fields
+    console.log("جارٍ حفظ الحجز:", { id, bookingData });
     if (!bookingData.user_id || !bookingData.location_id) {
-      throw new Error("User authentication and location are required");
+      throw new Error('المصادقة ومعلومات الموقع مطلوبة');
     }
 
     const payload = {
       ...bookingData,
-      status: "pending",
-      payment_status: "unpaid"
+      status: 'pending',
+      payment_status: 'unpaid',
     };
 
-    console.log('Submitting booking:', payload);
-    
-    const response = await apiClient.post(
-      `/api/user/Model/${id}/car-booking`,
-      payload,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('tokenUser')}`
-        }
-      }
-    );
+    const response = await apiClient.post(`/api/user/Model/${id}/car-booking`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('tokenUser')}`,
+      },
+    });
 
     if (!response.data?.data?.booking) {
-      throw new Error("Invalid booking response from server");
+      throw new Error('استجابة الحجز غير صالحة من الخادم');
     }
 
+    console.log("تم حفظ الحجز بنجاح:", response.data.data.booking);
     return {
       bookingId: response.data.data.booking.id,
-      ...response.data.data.booking
+      ...response.data.data.booking,
     };
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      console.error("خطأ أثناء حفظ الحجز:", error.response?.data);
+      if (error.response?.status === 401) {
+        handleUnauthorized();
+        throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+      }
       if (error.response?.status === 422) {
         const serverErrors = error.response.data?.errors || {};
         throw new Error(
@@ -438,70 +500,33 @@ export const saveBooking = async (id: string, bookingData: BookingData): Promise
             .join('\n')
         );
       }
-      throw new Error(error.response?.data?.message || "Booking failed");
+      if (error.response?.status === 404) {
+        throw new Error('الوجهة المطلوبة للحجز غير موجودة');
+      }
+      throw new Error(error.response?.data?.message || 'فشل الحجز');
     }
-    throw new Error("Network error. Please try again.");
+    console.error("خطأ غير متوقع أثناء حفظ الحجز:", error);
+    throw new Error('خطأ في الشبكة، يرجى المحاولة مرة أخرى');
   }
 };
 
-// export const saveBooking = async (id: string, bookingData: BookingData): Promise<any> => {
-//   try {
-//     console.log('Sending booking data:', bookingData);
-//     const response = await apiClient.post(`/api/user/Model/${id}/car-booking`, bookingData); 
-//     console.log('Received response:', response.data);
-
-//     if (!response.data?.data?.booking) {
-//       throw new Error('لم يتم استلام بيانات الحجز من الخادم');
-//     }
-//     return {
-//       message: response.data.message,
-//       bookingId: response.data.data.booking.id,
-//       bookingData: response.data.data.booking,
-//     };
-//   } catch (error) {
-//     if (axios.isAxiosError(error)) {
-//       const errorMessage = error.response?.data?.message || 'حدث خطأ أثناء حفظ الحجز';
-//       if (error.response?.status === 404) {
-//         console.error('404 Error: Endpoint not found. Tried:', `/api/booking`);
-//         throw new Error('الوجهة المطلوبة للحجز غير موجودة. يرجى التحقق من عنوان الـ API.');
-//       }
-//       if (error.response?.status === 422) {
-//         throw new Error('بيانات الحجز غير صالحة: ' + errorMessage);
-//       }
-//       if (error.response?.status === 500) {
-//         throw new Error('فشل في حفظ الحجز بسبب مشكلة في الخادم');
-//       }
-//       if (axios.isAxiosError(error) && error.response?.status === 401) {
-//       console.warn('Token invalid or expired. Logging out anyway.');
-//       localStorage.removeItem('tokenUser');
-//       localStorage.removeItem('user');
-//       apiClient.defaults.headers.common['Authorization'] = '';
-//       window.location.href = '/signin';
-
-//       return { message: 'تم تسجيل الخروج (بسبب انتهاء صلاحية الجلسة)' };
-//     }
-//       throw new Error(errorMessage);
-//     }
-//     console.error('Error saving booking:', error);
-//     throw new Error('حدث خطأ غير متوقع أثناء حفظ الحجز');
-//   }
-// };
+// جلب قائمة الحجوزات
 export const getBookingList = async (): Promise<BookingItem[]> => {
   try {
+    console.log("جارٍ جلب قائمة الحجوزات");
     const response = await apiClient.get('/api/user/booking-list');
-    
     if (!response.data?.data) {
-      throw new Error('No booking data available');
+      throw new Error('لا توجد بيانات للحجوزات');
     }
 
     return response.data.data.map((booking: any) => ({
-      id: booking.id,
+      id: booking.id || 0,
       user_id: booking.user_id || 0,
       carmodel_id: booking.carmodel_id || 0,
-      start_date: booking.start_date,
-      end_date: booking.end_date,
-      final_price: booking.final_price,
-      status: booking.status,
+      start_date: booking.start_date || '',
+      end_date: booking.end_date || '',
+      final_price: booking.final_price || '0',
+      status: booking.status || 'unknown',
       additional_driver: booking.additional_driver ? 1 : 0,
       car_model: {
         id: booking.car_model?.id || 0,
@@ -517,153 +542,96 @@ export const getBookingList = async (): Promise<BookingItem[]> => {
         relationship: {
           Brand: {
             brand_id: booking.car_model?.relationship?.Brand?.brand_id || 0,
-            brand_name: booking.car_model?.relationship?.Brand?.brand_name || 'غير معروف'
+            brand_name: booking.car_model?.relationship?.Brand?.brand_name || 'غير معروف',
           },
           Types: {
             type_id: booking.car_model?.relationship?.Types?.type_id || 0,
-            type_name: booking.car_model?.relationship?.Types?.type_name || 'غير معروف'
+            type_name: booking.car_model?.relationship?.Types?.type_name || 'غير معروف',
           },
           Model_Names: {
             model_name_id: booking.car_model?.relationship?.Model_Names?.model_name_id || 0,
-            model_name: booking.car_model?.relationship?.Model_Names?.model_name || 'غير معروف'
-          }
-        }
-      }
+            model_name: booking.car_model?.relationship?.Model_Names?.model_name || 'غير معروف',
+          },
+        },
+      },
     }));
   } catch (error) {
-    console.error('Error fetching booking list:', error);
-    throw new Error('Failed to fetch bookings. Please try again later.');
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      handleUnauthorized();
+      throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+    }
+    console.error('خطأ في جلب قائمة الحجوزات:', error);
+    throw new Error('فشل جلب الحجوزات، يرجى المحاولة لاحقًا');
   }
 };
 
-export interface PaymentResponse {
-  success: boolean;
-  message: string;
-  transactionId?: string;
-  paymentDetails?: any;
-}
-
-export const processPayment = async (
-  modelId: string,
-  bookingId: string,
-  paymentData: {
-    payment_method: string;
-    card_details?: {
-      cardNumber: string;
-      expiryDate: string;
-      cvv: string;
-      cardHolderName: string;
-    };
-    amount: string | number;
-    save_payment_info?: boolean;
-  }
-): Promise<PaymentResponse> => {
-  try {
-    const response = await apiClient.post(
-      `/api/user/Model/${modelId}/car-booking/${bookingId}/payment-method`,
-      paymentData
-    );
-
-    if (!response.data) {
-      throw new Error('No data received from server');
-    }
-
-    return {
-      success: true,
-      message: response.data.message || 'Payment processed successfully',
-      transactionId: response.data.transactionId,
-      paymentDetails: response.data.paymentDetails
-    };
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const errorMessage = error.response?.data?.message || 'Payment processing failed';
-      if (error.response?.status === 401) {
-        localStorage.removeItem('tokenUser');
-        localStorage.removeItem('user');
-        apiClient.defaults.headers.common['Authorization'] = '';
-        return { success: false, message: 'Session expired. Please login again.' };
-      }
-      return { success: false, message: errorMessage };
-    }
-    return { success: false, message: 'An unexpected error occurred' };
-  }
-};
-
-export interface Location {
-  id?: number;
-  user_id?: number;
-  location: string;
-  latitude: string;
-  longitude: string;
-  is_active?: number;
-}
-
+// خدمة إدارة المواقع
 export const locationService = {
   async getActiveLocations(): Promise<Location[]> {
     try {
+      console.log("جارٍ جلب المواقع النشطة");
       const response = await apiClient.get('/api/user/user-locations');
       if (!response.data?.data) {
-        throw new Error('No locations data available');
+        throw new Error('لا توجد بيانات للمواقع');
       }
-      
-      // تصفية المواقع النشطة وتحويل البيانات
+
       return response.data.data
         .filter((loc: any) => loc.is_active === 1)
         .map((loc: any) => ({
-          id: loc.id,
-          user_id: loc.user_id,
-          location: loc.location,
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-          is_active: loc.is_active
+          id: loc.id || 0,
+          user_id: loc.user_id || 0,
+          location: loc.location || '',
+          latitude: loc.latitude || '',
+          longitude: loc.longitude || '',
+          is_active: loc.is_active || 0,
         }));
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          // معالجة انتهاء صلاحية التوكن
-          localStorage.removeItem('tokenUser');
-          localStorage.removeItem('user');
-          window.location.href = '/signin';
-          return [];
-        }
-        throw new Error(error.response?.data?.message || 'Failed to fetch locations');
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        handleUnauthorized();
+        return [];
       }
-      throw new Error('An unexpected error occurred');
+      console.error("خطأ في جلب المواقع:", error);
+      throw new Error(
+        axios.isAxiosError(error)
+          ? error.response?.data?.message || 'فشل جلب المواقع'
+          : 'حدث خطأ غير متوقع'
+      );
     }
   },
 
   async addLocation(newLocation: Omit<Location, 'id' | 'user_id' | 'is_active'>): Promise<Location> {
     try {
-      // التحقق من البيانات المدخلة
+      console.log("جارٍ إضافة موقع جديد:", newLocation);
       if (!newLocation.location || !newLocation.latitude || !newLocation.longitude) {
-        throw new Error('All location fields are required');
+        throw new Error('جميع حقول الموقع مطلوبة');
       }
 
       const response = await apiClient.post('/api/user/user-locations', newLocation);
-      
+
       if (!response.data?.data) {
-        throw new Error('Invalid response from server');
+        throw new Error('استجابة غير صالحة من الخادم');
       }
 
+      console.log("تم إضافة الموقع بنجاح:", response.data.data);
       return {
-        id: response.data.data.id,
-        user_id: response.data.data.user_id,
-        location: response.data.data.location,
-        latitude: response.data.data.latitude,
-        longitude: response.data.data.longitude,
-        is_active: response.data.data.is_active
+        id: response.data.data.id || 0,
+        user_id: response.data.data.user_id || 0,
+        location: response.data.data.location || '',
+        latitude: response.data.data.latitude || '',
+        longitude: response.data.data.longitude || '',
+        is_active: response.data.data.is_active || 0,
       };
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          localStorage.removeItem('tokenUser');
-          localStorage.removeItem('user');
-          window.location.href = '/signin';
-          throw new Error('Session expired. Please login again.');
-        }
-        throw new Error(error.response?.data?.message || 'Failed to add location');
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        handleUnauthorized();
+        throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
       }
-      throw new Error('An unexpected error occurred');
+      console.error("خطأ في إضافة الموقع:", error);
+      throw new Error(
+        axios.isAxiosError(error)
+          ? error.response?.data?.message || 'فشل إضافة الموقع'
+          : 'حدث خطأ غير متوقع'
+      );
     }
-  }
-}
+  },
+};
