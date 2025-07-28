@@ -24,11 +24,12 @@ apiClient.interceptors.request.use(
 
 // دالة لمعالجة انتهاء صلاحية التوكن
 const handleUnauthorized = () => {
-  console.warn("انتهت صلاحية التوكن، يتم تسجيل الخروج");
-  localStorage.removeItem('tokenUser');
-  localStorage.removeItem('user');
-  apiClient.defaults.headers.common['Authorization'] = '';
-  window.location.href = '/signin';
+  if(localStorage.getItem('tokenUser')){
+    localStorage.removeItem('tokenUser');
+    localStorage.removeItem('user');
+    apiClient.defaults.headers.common['Authorization'] = '';
+    window.location.href = '/signin';
+  }
 };
 
 // واجهات البيانات
@@ -150,7 +151,7 @@ export interface Location {
   location: string;
   latitude: string;
   longitude: string;
-  is_active?: number;
+  is_active: number;
 }
 
 // التحقق من وجود بريد إلكتروني
@@ -456,60 +457,119 @@ export const showCarId = async (id: string): Promise<CarItem> => {
 };
 
 // حفظ حجز
+// export const saveBooking = async (id: string, bookingData: BookingData): Promise<any> => {
+//   try {
+//     console.log("جارٍ حفظ الحجز:", { id, bookingData });
+//     if (!bookingData.user_id || !bookingData.location_id) {
+//       throw new Error('المصادقة ومعلومات الموقع مطلوبة');
+//     }
+
+//     const payload = {
+//       ...bookingData,
+//       status: 'pending',
+//       payment_status: 'unpaid',
+//     };
+
+//     const response = await apiClient.post(`/api/user/Model/${id}/car-booking`, payload, {
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Authorization': `Bearer ${localStorage.getItem('tokenUser')}`,
+//       },
+//     });
+
+//     if (!response.data?.data?.booking) {
+//       throw new Error('استجابة الحجز غير صالحة من الخادم');
+//     }
+
+//     console.log("تم حفظ الحجز بنجاح:", response.data.data.booking);
+//     return {
+//       bookingId: response.data.data.booking.id,
+//       ...response.data.data.booking,
+//     };
+//   } catch (error) {
+//     if (axios.isAxiosError(error)) {
+//       console.error("خطأ أثناء حفظ الحجز:", error.response?.data);
+//       if (error.response?.status === 401) {
+//         handleUnauthorized();
+//         throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+//       }
+//       if (error.response?.status === 422) {
+//         const serverErrors = error.response.data?.errors || {};
+//         throw new Error(
+//           Object.entries(serverErrors)
+//             .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+//             .join('\n')
+//         );
+//       }
+//       if (error.response?.status === 404) {
+//         throw new Error('الوجهة المطلوبة للحجز غير موجودة');
+//       }
+//       throw new Error(error.response?.data?.message || 'فشل الحجز');
+//     }
+//     console.error("خطأ غير متوقع أثناء حفظ الحجز:", error);
+//     throw new Error('خطأ في الشبكة، يرجى المحاولة مرة أخرى');
+//   }
+// };
 export const saveBooking = async (id: string, bookingData: BookingData): Promise<any> => {
   try {
     console.log("جارٍ حفظ الحجز:", { id, bookingData });
-    if (!bookingData.user_id || !bookingData.location_id) {
-      throw new Error('المصادقة ومعلومات الموقع مطلوبة');
+    
+    // التحقق من البيانات المطلوبة
+    if (!bookingData.start_date || !bookingData.end_date || !bookingData.carmodel_id) {
+      throw new Error('بيانات الحجز غير مكتملة');
+    }
+
+    if (bookingData.additional_driver === "1") {
+      if (!bookingData.pickup_location || !bookingData.dropoff_location) {
+        throw new Error('يجب تحديد مواقع الالتقاط والتسليم عند اختيار سائق إضافي');
+      }
     }
 
     const payload = {
       ...bookingData,
       status: 'pending',
       payment_status: 'unpaid',
+      car_id: id,
+      user_id: bookingData.user_id,
+      pickup_location_id: bookingData.pickup_location,
+      dropoff_location_id: bookingData.dropoff_location
     };
 
-    const response = await apiClient.post(`/api/user/Model/${id}/car-booking`, payload, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('tokenUser')}`,
-      },
-    });
+    const response = await apiClient.post(`/api/user/Model/${id}/car-booking`, payload);
+    
+    console.log("استجابة الحجز:", response.data);
 
-    if (!response.data?.data?.booking) {
-      throw new Error('استجابة الحجز غير صالحة من الخادم');
+    if (!response.data?.data) {
+      throw new Error('استجابة غير صالحة من الخادم');
     }
 
-    console.log("تم حفظ الحجز بنجاح:", response.data.data.booking);
     return {
-      bookingId: response.data.data.booking.id,
-      ...response.data.data.booking,
+      bookingId: response.data.data.id || response.data.data.booking_id,
+      ...response.data.data
     };
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error("خطأ أثناء حفظ الحجز:", error.response?.data);
+      console.error("تفاصيل الخطأ:", error.response?.data);
+      
+      if (error.response?.status === 422) {
+        const validationErrors = error.response.data?.errors || {};
+        const errorMessages = Object.entries(validationErrors)
+          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .join('\n');
+        
+        throw new Error(`بيانات غير صالحة:\n${errorMessages}`);
+      }
+      
       if (error.response?.status === 401) {
         handleUnauthorized();
         throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
       }
-      if (error.response?.status === 422) {
-        const serverErrors = error.response.data?.errors || {};
-        throw new Error(
-          Object.entries(serverErrors)
-            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
-            .join('\n')
-        );
-      }
-      if (error.response?.status === 404) {
-        throw new Error('الوجهة المطلوبة للحجز غير موجودة');
-      }
-      throw new Error(error.response?.data?.message || 'فشل الحجز');
+      
+      throw new Error(error.response?.data?.message || 'فشل في حفظ الحجز');
     }
-    console.error("خطأ غير متوقع أثناء حفظ الحجز:", error);
-    throw new Error('خطأ في الشبكة، يرجى المحاولة مرة أخرى');
+    throw new Error('حدث خطأ غير متوقع أثناء حفظ الحجز');
   }
 };
-
 // جلب قائمة الحجوزات
 export const getBookingList = async (): Promise<BookingItem[]> => {
   try {
@@ -599,39 +659,39 @@ export const locationService = {
     }
   },
 
-  async addLocation(newLocation: Omit<Location, 'id' | 'user_id' | 'is_active'>): Promise<Location> {
+  async addLocation(newLocation: Omit<Location, 'id' | 'user_id'>): Promise<Location> {
     try {
-      console.log("جارٍ إضافة موقع جديد:", newLocation);
-      if (!newLocation.location || !newLocation.latitude || !newLocation.longitude) {
-        throw new Error('جميع حقول الموقع مطلوبة');
+      console.log("جارٍ حفظ الموقع الجديد:", newLocation);
+      const response = await apiClient.post('/api/user/user-locations', {
+        ...newLocation,
+        is_active: 1
+      });
+
+      if (!response.data?.data?.id) {
+        console.error("استجابة غير متوقعة:", response.data);
+        throw new Error('فشل في إضافة الموقع: معرف الموقع غير موجود');
       }
 
-      const response = await apiClient.post('/api/user/user-locations', newLocation);
-
-      if (!response.data?.data) {
-        throw new Error('استجابة غير صالحة من الخادم');
-      }
-
-      console.log("تم إضافة الموقع بنجاح:", response.data.data);
-      return {
-        id: response.data.data.id || 0,
+      const savedLocation: Location = {
+        id: response.data.data.id,
         user_id: response.data.data.user_id || 0,
-        location: response.data.data.location || '',
-        latitude: response.data.data.latitude || '',
-        longitude: response.data.data.longitude || '',
-        is_active: response.data.data.is_active || 0,
+        location: response.data.data.location || newLocation.location,
+        latitude: response.data.data.latitude || newLocation.latitude,
+        longitude: response.data.data.longitude || newLocation.longitude,
+        is_active: response.data.data.is_active || 1
       };
+
+      console.log("تم حفظ الموقع بنجاح:", savedLocation);
+      return savedLocation;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        handleUnauthorized();
-        throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
-      }
       console.error("خطأ في إضافة الموقع:", error);
-      throw new Error(
-        axios.isAxiosError(error)
-          ? error.response?.data?.message || 'فشل إضافة الموقع'
-          : 'حدث خطأ غير متوقع'
-      );
+      if (axios.isAxiosError(error)) {
+        const serverMessage = error.response?.data?.message || 
+                            error.response?.data?.error ||
+                            'فشل في إضافة الموقع';
+        throw new Error(serverMessage);
+      }
+      throw new Error('حدث خطأ غير متوقع أثناء إضافة الموقع');
     }
-  },
+  }
 };

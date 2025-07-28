@@ -26,7 +26,7 @@ const AutoCarousel = () => {
                 {slides.map((slide) => (
                     <SwiperSlide>
                         <div key={slide.id} className="swiper-slide relative">
-                            <img src={slide.image} alt={slide.name} className="w-full lg:h-[580px] object-cover" loading='lazy' />
+                            <img src={slide.image} alt={slide.name} className="w-full h-screen lg:h-[580px] xl:h-[710px] object-cover" loading='lazy' />
                             <h3 className="lg:text-3xl md:text-sm text-xs font-bold text-white absolute bottom-2 left-1/2 -translate-x-1/2">{slide.name}</h3>                        </div>
                     </SwiperSlide>
                 ))}

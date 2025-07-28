@@ -2,22 +2,20 @@ import { Route, Routes, Navigate } from 'react-router-dom'
 import { Car, CarCollection, SignIn, SignUp, Payment, BookingSuccess, Loading, Bookings } from './pages'
 import Header from './components/Header'
 import Footer from './components/Footer'
-import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+// import { useEffect } from 'react'
+// import { useLocation } from 'react-router-dom'
 
 const App = () => {
-  const location = useLocation()
+  // const location = useLocation()
 
-  useEffect(() => {
-    // تنظيف بيانات الحجز المؤقتة عند الخروج من صفحة الحجز
-    if (!location.pathname.includes('/booking') && 
-        !location.pathname.includes('/signin') && 
-        !location.pathname.includes('/signup')) {
-      localStorage.removeItem('tempBookingData')
-    }
-  }, [location])
+  // useEffect(() => {
+  //   if (!location.pathname.includes('/booking') && 
+  //       !location.pathname.includes('/signin') && 
+  //       !location.pathname.includes('/signup')) {
+  //     localStorage.removeItem('tempBookingData')
+  //   }
+  // }, [location])
 
-  // تحقق إذا كانت الصفحة الحالية هي SignIn أو SignUp
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup'
 
   return (

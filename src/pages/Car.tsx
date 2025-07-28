@@ -82,7 +82,7 @@ const Car: React.FC = () => {
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <p className="text-lg mb-4">Car not found</p>
         <Link 
-          to="/" 
+          to="loading" 
           className="bg-[#E6911E] text-white px-4 py-2 rounded-lg hover:bg-[#D6820E] transition"
         >
           Back to Home
@@ -95,7 +95,6 @@ const Car: React.FC = () => {
     <div className="min-h-screen pb-10 flex flex-col bg-gray-50">
       <div className="container mx-auto px-2 sm:px-4 md:px-8">
         <div className="max-w-6xl mx-auto mt-10 gap-10">
-          {/* Car Images Section */}
           <section className="flex-1 flex flex-col md:flex-row gap-6">
             <div className="lg:w-[70%]">
               <img
@@ -120,10 +119,7 @@ const Car: React.FC = () => {
               </div>
             </div>
           </section>
-
-          {/* Car Details and Booking Section */}
           <section className="flex flex-col lg:flex-row w-full gap-6 mt-8">
-            {/* Car Details */}
             <div className="flex flex-col my-6 lg:w-[70%] bg-white p-6 rounded-xl shadow-sm">
               <div className='flex justify-between items-center mb-4'>
                 <h2 className="text-2xl font-bold">{car.name || 'Unnamed Car'}</h2>
@@ -133,8 +129,6 @@ const Car: React.FC = () => {
                   </div>
                 )}
               </div>
-              
-              {/* Car Specifications */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-6">
                 {car.type && (
                   <div className='flex justify-center items-center gap-2 bg-gray-100 p-3 rounded-xl'>
