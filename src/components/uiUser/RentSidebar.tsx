@@ -2,43 +2,48 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveBooking, locationService } from '../../context/Data/DataUser';
 import LocationMap from './LocationMap';
-import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { VITE_OPENCAGE_API_KEY } from '../../context/api/Api';
 
-// Helper function to get city name from coordinates
+// دالة لجلب اسم المدينة من الإحداثيات
 export async function getCityName(lat: number, lng: number): Promise<string> {
+  const apiKey = VITE_OPENCAGE_API_KEY || '9b3d92d856bb4f64bc6d08b3831d3e41';
+  const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${apiKey}&language=en&pretty=1&no_annotations=1&limit=1`;
+
   try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`
-    );
-    
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
     const data = await response.json();
-    
-    // ترتيب الأولوية لأسماء المواقع
-    return data.address?.city || 
-           data.address?.town || 
-           data.address?.village || 
-           data.address?.county || 
-           data.address?.state || 
-           `موقع مخصص (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+    if (data.results && data.results.length > 0) {
+      const result = data.results[0];
+      const cityName =
+        result.components.city ||
+        result.components.town ||
+        result.components.village ||
+        result.components.county ||
+        result.components.state ||
+        `Custom Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+      console.log(`OpenCage response for (${lat}, ${lng}):`, cityName);
+      return cityName;
+    }
+    throw new Error('No results found');
   } catch (error) {
-    console.error("Error fetching city name:", error);
-    return `موقع مخصص (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+    console.error('Error fetching city name:', error);
+    return `Custom Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
   }
 }
 
 const EXTRAS_LIST = [
-  { label: "سائق إضافي", price: 55, id: "driver" }
+  { label: "Additional Driver", price: 55, id: "driver" }
 ];
 
 const FIXED_PICKUP_LOCATION = {
-  lat: 24.7136, 
+  lat: 24.7136,
   lng: 46.6753,
-  location: "الموقع الرئيسي"
+  location: "Main Location",
+  id: 0
 };
 
 interface Location {
@@ -48,6 +53,13 @@ interface Location {
   latitude: string;
   longitude: string;
   is_active?: number;
+}
+
+interface DropoffLocation {
+  lat: number;
+  lng: number;
+  location?: string;
+  id?: number;
 }
 
 interface CarItem {
@@ -72,7 +84,7 @@ interface RentSidebarProps {
   carId: string;
 }
 
-const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
+const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
   const [formData, setFormData] = useState({
     pickupDate: "",
     dropoffDate: "",
@@ -81,15 +93,31 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
   });
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
-  const [pickupLocation, setPickupLocation] = useState<Location | null>(null);
-  const [dropoffLocation, setDropoffLocation] = useState<{lat: number, lng: number, location?: string} | null>(null);
+  const [pickupLocation, setPickupLocation] = useState<Location | null>(FIXED_PICKUP_LOCATION);
+  const [dropoffLocation, setDropoffLocation] = useState<DropoffLocation | null>(null);
   const [selectingType, setSelectingType] = useState<"pickup" | "dropoff" | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [isDropoffUserSelected, setIsDropoffUserSelected] = useState(false);
   const navigate = useNavigate();
+
+  // تسجيل تغييرات dropoffLocation
+  useEffect(() => {
+    console.log("Current dropoffLocation:", dropoffLocation);
+  }, [dropoffLocation]);
+
+  // استعادة dropoffLocation من localStorage عند تحميل المكون
+  useEffect(() => {
+    const savedDropoff = localStorage.getItem('dropoffLocation');
+    if (savedDropoff && !dropoffLocation) {
+      const parsed = JSON.parse(savedDropoff);
+      setDropoffLocation(parsed);
+      setIsDropoffUserSelected(true);
+    }
+  }, []);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -98,20 +126,43 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
 
   const fetchLocations = useCallback(async () => {
     try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const token = localStorage.getItem('tokenUser');
+      if (!user?.id || !token) {
+        console.warn("المستخدم غير مسجل دخوله، لن يتم جلب المواقع");
+        setError("يرجى تسجيل الدخول لتحميل المواقع");
+        setTimeout(() => navigate('/signin'), 2000);
+        return;
+      }
+      console.log("جارٍ جلب المواقع النشطة للمستخدم:", user.id);
       const data = await locationService.getActiveLocations();
       setLocations(data);
-      if (data.length > 0) {
-        setPickupLocation(data[0]);
+      // فقط إذا لم يكن هناك dropoffLocation محدد من المستخدم
+      if (data.length > 0 && !isDropoffUserSelected && !dropoffLocation) {
         setDropoffLocation({
           lat: parseFloat(data[0].latitude),
           lng: parseFloat(data[0].longitude),
-          location: data[0].location
+          location: data[0].location,
+          id: data[0].id
         });
+        localStorage.setItem('dropoffLocation', JSON.stringify({
+          lat: parseFloat(data[0].latitude),
+          lng: parseFloat(data[0].longitude),
+          location: data[0].location,
+          id: data[0].id
+        }));
       }
-    } catch (err) {
-      setError("فشل في تحميل المواقع");
+    } catch (err: any) {
+      console.error("فشل تحميل المواقع:", err);
+      if (err.message === 'يجب تسجيل الدخول لجلب المواقع النشطة' || 
+          err.message === 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى') {
+        setError('يرجى تسجيل الدخول لتحميل المواقع');
+        setTimeout(() => navigate('/signin'), 2000);
+        return;
+      }
+      setError(err.message || "فشل تحميل المواقع");
     }
-  }, []);
+  }, [isDropoffUserSelected, dropoffLocation, navigate]);
 
   const calculateTotal = useCallback((): number => {
     const basePrice = typeof car.price === "number" ? car.price : parseFloat(car.price);
@@ -124,30 +175,30 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
     const errors: string[] = [];
 
     if (!formData.pickupDate || !formData.dropoffDate) {
-      errors.push("الرجاء تحديد تاريخي الالتقاط والتسليم");
+      errors.push("يرجى تحديد تاريخي الاستلام والتسليم");
     }
 
     if (!formData.pickupTime || !formData.dropoffTime) {
-      errors.push("الرجاء تحديد وقت الالتقاط والتسليم");
+      errors.push("يرجى تحديد وقتي الاستلام والتسليم");
     }
 
     if (selectedExtras.includes("driver")) {
-      if (!pickupLocation || !pickupLocation.id) {
-        errors.push("الرجاء تحديد موقع الالتقاط صالح");
+      if (!pickupLocation || !pickupLocation.location) {
+        errors.push("يرجى تحديد مكان استلام صالح");
       }
-      if (!dropoffLocation) {
-        errors.push("الرجاء تحديد موقع التسليم صالح");
+      if (!dropoffLocation || (!dropoffLocation.location)) {
+        errors.push("يرجى تحديد مكان تسليم صالح");
       }
     }
 
     const start = new Date(`${formData.pickupDate}T${formData.pickupTime}`);
     const end = new Date(`${formData.dropoffDate}T${formData.dropoffTime}`);
     const durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-    
+
     if (start >= end) {
-      errors.push("يجب أن يكون وقت التسليم بعد وقت الالتقاط");
+      errors.push("وقت التسليم يجب أن يكون بعد وقت الاستلام");
     } else if (durationHours < 4) {
-      errors.push("أقل مدة للحجز هي 4 ساعات");
+      errors.push("الحد الأدنى لمدة الحجز هو 4 ساعات");
     }
 
     if (errors.length > 0) {
@@ -161,56 +212,50 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
   const handleDropoffSelect = async (lat: number, lng: number) => {
     try {
       setLoadingLocation(true);
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const token = localStorage.getItem('tokenUser');
+      if (!user?.id || !token) {
+        console.warn("المستخدم غير مسجل دخوله، سيتم توجيهه إلى صفحة تسجيل الدخول");
+        setError("يرجى تسجيل الدخول لإضافة موقع");
+        setTimeout(() => navigate('/signin'), 2000);
+        return;
+      }
+
       const locationName = await getCityName(lat, lng);
-      setDropoffLocation({ lat, lng, location: locationName });
+      console.log("اسم الموقع من OpenCage:", locationName);
+
+      // حفظ الموقع مؤقتًا
+      const tempLocation = { lat, lng, location: locationName };
+      setDropoffLocation(tempLocation);
+      localStorage.setItem('dropoffLocation', JSON.stringify(tempLocation));
+      setIsDropoffUserSelected(true);
+
+      // محاولة إضافة الموقع إلى قاعدة البيانات
+      try {
+        const newLocation = await locationService.addLocation({
+          location: locationName,
+          latitude: lat.toString(),
+          longitude: lng.toString(),
+          is_active: 1
+        });
+        console.log("تمت إضافة الموقع بنجاح:", newLocation);
+        const dropoff = { lat, lng, location: locationName, id: newLocation.id };
+        setDropoffLocation(dropoff);
+        localStorage.setItem('dropoffLocation', JSON.stringify(dropoff));
+      } catch (error: any) {
+        console.warn("فشل إضافة الموقع إلى قاعدة البيانات:", error.message);
+        setError("تم حفظ الموقع مؤقتًا، لكن فشل في إضافته إلى قاعدة البيانات. يمكنك متابعة الحجز.");
+      }
+
       setShowMap(false);
-    } catch (err) {
-      console.error("Error getting location name:", err);
-      setError("حدث خطأ أثناء تحديد الموقع");
+      setSelectingType(null);
+    } catch (err: any) {
+      console.error("خطأ أثناء معالجة اختيار الموقع:", err);
+      setError(err.message || "حدث خطأ أثناء تحديد الموقع");
     } finally {
       setLoadingLocation(false);
     }
   };
-  
-  const handleLocationSelect = useCallback(async (lat: number, lng: number) => {
-    if (!selectingType) return;
-
-    try {
-      setLoadingLocation(true);
-      const cityName = await getCityName(lat, lng);
-      
-      const newLocation = {
-        location: cityName,
-        latitude: lat.toString(),
-        longitude: lng.toString(),
-      };
-
-      const savedLocation = await locationService.addLocation(newLocation);
-      
-      setLocations(prev => {
-        const existing = prev.find(loc => 
-          loc.latitude === savedLocation.latitude && 
-          loc.longitude === savedLocation.longitude
-        );
-        return existing ? prev : [...prev, savedLocation];
-      });
-
-      if (selectingType === "pickup") {
-        setPickupLocation(savedLocation);
-      } else {
-        setDropoffLocation({
-          lat: parseFloat(savedLocation.latitude),
-          lng: parseFloat(savedLocation.longitude),
-          location: savedLocation.location
-        });
-      }
-    } catch (err) {
-      console.error("Error saving location:", err);
-      setError("فشل في حفظ الموقع. يرجى المحاولة مرة أخرى.");
-    } finally {
-      setLoadingLocation(false);
-    }
-  }, [selectingType]);
 
   const handleBooking = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,8 +267,11 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
 
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (!user?.id) {
-        throw new Error('يجب تسجيل الدخول أولاً');
+      const token = localStorage.getItem('tokenUser');
+      if (!user?.id || !token) {
+        setError('يجب تسجيل الدخول لإتمام الحجز. سيتم توجيهك إلى صفحة تسجيل الدخول.');
+        setTimeout(() => navigate('/signin'), 2000);
+        return;
       }
 
       const bookingData: BookingData = {
@@ -232,22 +280,22 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
         carmodel_id: carId,
         user_id: user.id.toString(),
         additional_driver: selectedExtras.includes("driver") ? "1" : "0",
-        pickup_location: selectedExtras.includes("driver") && pickupLocation?.id 
-          ? pickupLocation.id.toString() 
-          : "",
+        pickup_location: selectedExtras.includes("driver") && pickupLocation?.location
+          ? pickupLocation.location
+          : FIXED_PICKUP_LOCATION.location,
         dropoff_location: selectedExtras.includes("driver") && dropoffLocation
-          ? `${dropoffLocation.lat},${dropoffLocation.lng}`
+          ? dropoffLocation.id?.toString() || dropoffLocation.location || ""
           : "",
-        location_id: selectedExtras.includes("driver") 
-          ? pickupLocation?.id?.toString() || ""
-          : "",
+        location_id: selectedExtras.includes("driver") && pickupLocation?.id
+          ? pickupLocation.id.toString()
+          : "0",
       };
 
       console.log("بيانات الحجز المرسلة:", bookingData);
 
       const res = await saveBooking(carId, bookingData);
       setSuccess("تم تأكيد الحجز بنجاح!");
-      
+
       navigate(`/bookings/${res.bookingId}`, {
         state: {
           carDetails: car,
@@ -260,15 +308,24 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
       });
     } catch (err: any) {
       console.error("تفاصيل خطأ الحجز:", err);
-      setError(err.message || "فشل الحجز. الرجاء التحقق من البيانات والمحاولة مرة أخرى.");
+      if (err.message === 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى') {
+        setError('انتهت صلاحية الجلسة. سيتم توجيهك إلى صفحة تسجيل الدخول.');
+        setTimeout(() => navigate('/signin'), 2000);
+        return;
+      }
+      setError(err.message || "فشل الحجز. يرجى التحقق من البيانات والمحاولة مرة أخرى.");
     } finally {
       setIsBooking(false);
     }
   }, [validateForm, formData, pickupLocation, dropoffLocation, carId, selectedExtras, navigate, car, calculateTotal]);
 
   useEffect(() => {
-    fetchLocations();
-  }, [fetchLocations]);
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const token = localStorage.getItem('tokenUser');
+    if (user?.id && token && !isDropoffUserSelected && !dropoffLocation) {
+      fetchLocations();
+    }
+  }, [fetchLocations, isDropoffUserSelected, dropoffLocation]);
 
   return (
     <div className="flex flex-col md:flex-row gap-6 relative">
@@ -278,7 +335,7 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
             <React.Fragment key={type}>
               <div className="form-group">
                 <label className="block mb-2 text-sm font-medium">
-                  {type === 'pickup' ? 'تاريخ الالتقاط' : 'تاريخ التسليم'}
+                  {type === 'pickup' ? 'تاريخ الاستلام' : 'تاريخ التسليم'}
                 </label>
                 <input
                   type="date"
@@ -293,7 +350,7 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
 
               <div className="form-group">
                 <label className="block mb-2 text-sm font-medium">
-                  {type === 'pickup' ? 'وقت الالتقاط' : 'وقت التسليم'}
+                  {type === 'pickup' ? 'وقت الاستلام' : 'وقت التسليم'}
                 </label>
                 <input
                   type="time"
@@ -309,7 +366,7 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
         </div>
 
         <div className="extras-section my-4">
-          <h3 className="font-medium mb-2 text-sm">إضافات:</h3>
+          <h3 className="font-medium mb-2 text-sm">الإضافات:</h3>
           {EXTRAS_LIST.map((extra) => (
             <label key={extra.id} className="flex items-center mb-2 text-sm">
               <input
@@ -324,15 +381,15 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
                 }
                 className="mr-2 w-4 h-4 text-[#E6911E] focus:ring-[#E6911E] border-gray-300 rounded"
               />
-              {extra.label} (+{extra.price} ر.س)
+              {extra.label === "Additional Driver" ? "سائق إضافي" : extra.label} (+{extra.price} ريال)
             </label>
           ))}
         </div>
 
         <div className="my-4">
-          <label className="block mb-2 text-sm font-medium">مكان الالتقاط</label>
+          <label className="block mb-2 text-sm font-medium">مكان الاستلام</label>
           <div className="p-2 bg-gray-100 rounded-lg">
-            <p className="font-medium">{FIXED_PICKUP_LOCATION.location}</p>
+            <p className="font-medium">{pickupLocation?.location || FIXED_PICKUP_LOCATION.location}</p>
           </div>
         </div>
 
@@ -344,7 +401,7 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
                 {dropoffLocation ? (
                   <p className="font-medium">{dropoffLocation.location}</p>
                 ) : (
-                  <p className="text-gray-500">لم يتم تحديد موقع التسليم</p>
+                  <p className="text-gray-500">لم يتم تحديد مكان التسليم</p>
                 )}
               </div>
               <button
@@ -365,21 +422,21 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
           <h3 className="font-bold mb-3 text-lg">ملخص السعر:</h3>
           <div className="price-row flex justify-between mb-2 text-sm">
             <span>السعر الأساسي:</span>
-            <span>{typeof car.price === "number" ? car.price.toFixed(2) : parseFloat(car.price).toFixed(2)} ر.س</span>
+            <span>{typeof car.price === "number" ? car.price.toFixed(2) : parseFloat(car.price).toFixed(2)} ريال</span>
           </div>
           {selectedExtras.length > 0 && (
             <div className="price-row flex justify-between mb-2 text-sm">
               <span>الإضافات:</span>
-              <span>{selectedExtras.includes("driver") ? "55.00" : "0.00"} ر.س</span>
+              <span>{selectedExtras.includes("driver") ? "55.00" : "0.00"} ريال</span>
             </div>
           )}
           <div className="price-row flex justify-between mb-2 text-sm">
             <span>الضريبة:</span>
-            <span>50.00 ر.س</span>
+            <span>50.00 ريال</span>
           </div>
           <div className="price-row flex justify-between font-bold text-lg pt-2 border-t border-gray-200">
-            <span>المجموع:</span>
-            <span className="text-[#E6911E]">{calculateTotal().toFixed(2)} ر.س</span>
+            <span>الإجمالي:</span>
+            <span className="text-[#E6911E]">{calculateTotal().toFixed(2)} ريال</span>
           </div>
         </div>
 
@@ -397,7 +454,7 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
         )}
         {success && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-            <strong className="font-bold">تم بنجاح!</strong>
+            <strong className="font-bold">نجاح!</strong>
             <span className="block sm:inline"> {success}</span>
           </div>
         )}
@@ -413,7 +470,7 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              جاري المعالجة...
+              جارٍ المعالجة...
             </>
           ) : (
             "احجز الآن"
@@ -425,11 +482,12 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
         <div className="fixed inset-0 z-50 bg-white flex flex-col">
           <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
             <h2 className="text-lg font-semibold">
-              {selectingType === "pickup" ? "حدد موقع الالتقاط" : "حدد موقع التسليم"}
+              {selectingType === "pickup" ? "تحديد مكان الاستلام" : "تحديد مكان التسليم"}
             </h2>
             <div className="flex gap-2">
               <button
                 onClick={() => {
+                  console.log("Closing map, dropoffLocation:", dropoffLocation);
                   setShowMap(false);
                   setSelectingType(null);
                 }}
@@ -439,6 +497,7 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
               </button>
               <button
                 onClick={() => {
+                  console.log("Cancelling map, dropoffLocation:", dropoffLocation);
                   setShowMap(false);
                   setSelectingType(null);
                 }}
@@ -453,19 +512,10 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
 
           <div className="relative flex-1">
             <LocationMap 
-              center={
-                (selectingType === "pickup" && pickupLocation) ? 
-                  { lat: parseFloat(pickupLocation.latitude), lng: parseFloat(pickupLocation.longitude) } :
-                (selectingType === "dropoff" && dropoffLocation) ?
-                  { lat: dropoffLocation.lat, lng: dropoffLocation.lng } :
-                  { lat: 24.7136, lng: 46.6753 } // إحداثيات الرياض الافتراضية
-              }
-              onLocationSelect={handleLocationSelect} 
               pickupLocation={FIXED_PICKUP_LOCATION}
               dropoffLocation={dropoffLocation}
               onDropoffSelect={handleDropoffSelect}
               className="h-full w-full"
-              selectingType={selectingType}
             />
             
             {loadingLocation && (
@@ -475,7 +525,7 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>جاري تحديد الموقع...</span>
+                  <span>جارٍ تحميل الموقع...</span>
                 </div>
               </div>
             )}
@@ -484,6 +534,6 @@ const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
       )}
     </div>
   );
-};
+});
 
 export default RentSidebar;

@@ -65,11 +65,11 @@ const CarDetailsCard: React.FC<Props> = ({ filters }) => {
             )}
             <div className="flex justify-between items-center px-2">
               <h2 className="text-xl font-bold mb-2">
-                {car.name || "Unnamed Car"}
+                {car.brand || "Unnamed Car"}
               </h2>
-              {car.brand && (
+              {car.name && (
                 <div className="bg-[#E5393533] w-16 h-7 rounded-2xl flex items-center justify-center text-sm">
-                  {car.brand}
+                  {car.name}
                 </div>
               )}
             </div>

@@ -169,13 +169,13 @@ const Home = () => {
                         </h3>
                       </div>
                       <div className="flex justify-between items-center mb-2 max-md:flex-col">
-                        <p className="text-lg font-bold">
-                          ${car.price.toLocaleString()}
-                          <span className="text-sm text-gray-600"> / Day</span>
-                        </p>
                         <h3 className="font-bold text-lg">
                           {car.year}
                         </h3>
+                        <p className="text-lg font-bold text-[#E6911E]">
+                          ${car.price.toLocaleString()}
+                          <span className="text-sm text-gray-600"> / Day</span>
+                        </p>
                       </div>
                     </div>
                   </div>

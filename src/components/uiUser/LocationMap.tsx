@@ -45,7 +45,6 @@ const MapClickHandler: React.FC<{
   
   useMapEvents({
     click(e) {
-      // Ensure we're using the exact clicked position
       const { lat, lng } = e.latlng;
       setClickedPosition(L.latLng(lat, lng));
       map.flyTo(e.latlng, map.getZoom());
@@ -57,7 +56,7 @@ const MapClickHandler: React.FC<{
       <Marker 
         position={clickedPosition} 
         icon={dropoffIcon}
-        interactive={false} // Make marker non-interactive to avoid event conflicts
+        interactive={false}
       >
         <Popup>موقع التسليم المقترح</Popup>
       </Marker>
@@ -68,6 +67,7 @@ const MapClickHandler: React.FC<{
             <button 
               className="px-3 py-1 bg-green-500 text-white rounded"
               onClick={() => {
+                console.log("Confirming dropoff:", { lat: clickedPosition.lat, lng: clickedPosition.lng });
                 onDropoffSelect(clickedPosition.lat, clickedPosition.lng);
                 setClickedPosition(null);
               }}
@@ -76,7 +76,10 @@ const MapClickHandler: React.FC<{
             </button>
             <button 
               className="px-3 py-1 bg-red-500 text-white rounded"
-              onClick={() => setClickedPosition(null)}
+              onClick={() => {
+                console.log("Cancelling dropoff selection");
+                setClickedPosition(null);
+              }}
             >
               إلغاء
             </button>
@@ -117,7 +120,6 @@ const LocationMap: React.FC<LocationMapProps> = React.memo(({
 }) => {
   const mapRef = useRef<L.Map>(null);
 
-  // Ensure CSS is loaded properly for the map container
   React.useEffect(() => {
     const leafletContainer = mapRef.current?.getContainer();
     if (leafletContainer) {
@@ -144,7 +146,6 @@ const LocationMap: React.FC<LocationMapProps> = React.memo(({
         style={{ height: '100%', width: '100%' }}
         ref={mapRef}
         whenCreated={(map) => {
-          // Ensure map is properly initialized
           map.invalidateSize();
         }}
       >
@@ -160,16 +161,14 @@ const LocationMap: React.FC<LocationMapProps> = React.memo(({
           dropoffLocation={dropoffLocation}
         />
 
-        {/* مكان الالتقاط الثابت */}
         <Marker 
           position={[pickupLocation.lat, pickupLocation.lng]} 
           icon={pickupIcon}
           interactive={false}
         >
-          <Popup>مكان الالتقاط الثابت</Popup>
+          <Popup>مكان الاستلام الثابت</Popup>
         </Marker>
 
-        {/* مكان التسليم المحدد */}
         {dropoffLocation && (
           <Marker 
             position={[dropoffLocation.lat, dropoffLocation.lng]} 
@@ -180,7 +179,6 @@ const LocationMap: React.FC<LocationMapProps> = React.memo(({
           </Marker>
         )}
 
-        {/* الخط بين الموقعين */}
         {routePoints.length === 2 && (
           <Polyline 
             positions={routePoints}

@@ -229,14 +229,13 @@ return (
                       <>
                         <h1 className='text-2xl text-gray-800 mb-5 text-center'>Welcome {user.name}</h1>
                         <div className='my-4'>
-                          <Link to={'/'} className="block">
                             <button 
+                              onPayment={handlePayment}
                               className='bg-[#E6911E] hover:bg-[#D58217] text-white w-full h-10 rounded transition-colors flex items-center justify-center gap-2 disabled:opacity-70'
                             >
                               <FaMoneyBillAlt /> 
                               Pay for booking
                             </button>
-                          </Link>
                         </div>
                       </>
                     ) : (
