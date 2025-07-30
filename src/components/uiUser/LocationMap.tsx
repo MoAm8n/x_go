@@ -1,195 +1,128 @@
-import React, { useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents, useMap } from "react-leaflet";
+import React from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, Polyline  } from 'react-leaflet';
 import L from 'leaflet';
-import "leaflet/dist/leaflet.css";
+import 'leaflet/dist/leaflet.css';
 
-// Fix for default marker icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-const pickupIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-  iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-});
-
-const dropoffIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-  iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-});
+// أنواع البيانات
+interface Location {
+  lat: number;
+  lng: number;
+}
 
 interface LocationMapProps {
-  pickupLocation: { lat: number; lng: number };
-  onDropoffSelect: (lat: number, lng: number) => void;
-  dropoffLocation: { lat: number; lng: number } | null;
+  pickupLocation: Location;
+  dropoffLocation: Location | null;
+  onLocationSelect: (location: Location) => void;
   className?: string;
   zoom?: number;
 }
 
-const MapClickHandler: React.FC<{ 
-  onDropoffSelect: (lat: number, lng: number) => void;
-}> = ({ onDropoffSelect }) => {
-  const map = useMap();
-  const [clickedPosition, setClickedPosition] = React.useState<L.LatLng | null>(null);
-  
-  useMapEvents({
-    click(e) {
-      const { lat, lng } = e.latlng;
-      setClickedPosition(L.latLng(lat, lng));
-      map.flyTo(e.latlng, map.getZoom());
-    },
-  });
-
-  return clickedPosition ? (
-    <>
-      <Marker 
-        position={clickedPosition} 
-        icon={dropoffIcon}
-        interactive={false}
-      >
-        <Popup>موقع التسليم المقترح</Popup>
-      </Marker>
-      <div className="leaflet-top leaflet-right">
-        <div className="leaflet-control leaflet-bar p-2 bg-white shadow-lg rounded">
-          <p className="mb-2">تأكيد موقع التسليم؟</p>
-          <div className="flex gap-2">
-            <button 
-              className="px-3 py-1 bg-green-500 text-white rounded"
-              onClick={() => {
-                console.log("Confirming dropoff:", { lat: clickedPosition.lat, lng: clickedPosition.lng });
-                onDropoffSelect(clickedPosition.lat, clickedPosition.lng);
-                setClickedPosition(null);
-              }}
-            >
-              تأكيد
-            </button>
-            <button 
-              className="px-3 py-1 bg-red-500 text-white rounded"
-              onClick={() => {
-                console.log("Cancelling dropoff selection");
-                setClickedPosition(null);
-              }}
-            >
-              إلغاء
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
-  ) : null;
+// إعداد أيقونات العلامات (مخبأة للكفاءة)
+const markerIcons = {
+  pickup: new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+    iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+  }),
+  dropoff: new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+    iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+  })
 };
 
-const FitBounds: React.FC<{
-  pickupLocation: { lat: number; lng: number };
-  dropoffLocation: { lat: number; lng: number } | null;
-}> = ({ pickupLocation, dropoffLocation }) => {
+// مكون التحكم في الخريطة
+const MapController: React.FC<{ onLocationSelect: (location: Location) => void }> = ({ 
+  onLocationSelect 
+}) => {
   const map = useMap();
 
-  React.useEffect(() => {
-    if (dropoffLocation) {
-      const bounds = L.latLngBounds(
-        [pickupLocation.lat, pickupLocation.lng],
-        [dropoffLocation.lat, dropoffLocation.lng]
-      );
-      map.fitBounds(bounds, { padding: [50, 50] });
+  useMapEvents({
+  click: (e) => {
+    const { lat, lng } = e.latlng;
+    if (typeof lat === 'number' && typeof lng === 'number') {
+      onLocationSelect(lat, lng);
+      map.flyTo(e.latlng, map.getZoom());
     } else {
-      map.flyTo([pickupLocation.lat, pickupLocation.lng], 15);
+      console.error('Invalid coordinates received:', e.latlng);
     }
-  }, [pickupLocation, dropoffLocation, map]);
+  },
+  });
 
   return null;
 };
 
-const LocationMap: React.FC<LocationMapProps> = React.memo(({ 
+// مكون الخريطة الرئيسي
+const LocationMap: React.FC<LocationMapProps> = ({
   pickupLocation,
-  onDropoffSelect,
   dropoffLocation,
-  className = "h-[500px] w-full rounded-xl",
-  zoom = 13,
+  onLocationSelect,
+  className = 'h-[500px] w-full rounded-xl',
+  zoom = 13
 }) => {
-  const mapRef = useRef<L.Map>(null);
+  const mapRef = React.useRef<L.Map | null>(null);
 
+  // ضبط حجم الخريطة عند تغيير الأبعاد
   React.useEffect(() => {
-    const leafletContainer = mapRef.current?.getContainer();
-    if (leafletContainer) {
-      leafletContainer.style.height = '100%';
-      leafletContainer.style.width = '100%';
-    }
+    const handleResize = () => {
+      mapRef.current?.invalidateSize();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const routePoints = React.useMemo(() => {
-    if (dropoffLocation) {
-      return [
-        [pickupLocation.lat, pickupLocation.lng],
-        [dropoffLocation.lat, dropoffLocation.lng]
-      ] as L.LatLngExpression[];
-    }
-    return [];
-  }, [pickupLocation, dropoffLocation]);
-
   return (
-    <div className={className} style={{ position: 'relative' }}>
-      <MapContainer 
-        center={pickupLocation} 
-        zoom={zoom} 
+    <div className={className}>
+      <MapContainer
+        center={pickupLocation}
+        zoom={zoom}
         style={{ height: '100%', width: '100%' }}
-        ref={mapRef}
-        whenCreated={(map) => {
-          map.invalidateSize();
+        whenCreated={(map) => { 
+          mapRef.current = map;
+          // تحقق من صحة الإحداثيات الأولية
+          if (isNaN(pickupLocation.lat) || isNaN(pickupLocation.lng)) {
+            console.error('إحداثيات أولية غير صالحة:', pickupLocation);
+            map.setView([24.7136, 46.6753], zoom); // استخدم إحداثيات افتراضية كحل بديل
+          }
         }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        
-        <MapClickHandler onDropoffSelect={onDropoffSelect} />
 
-        <FitBounds 
-          pickupLocation={pickupLocation}
-          dropoffLocation={dropoffLocation}
-        />
-
-        <Marker 
-          position={[pickupLocation.lat, pickupLocation.lng]} 
-          icon={pickupIcon}
-          interactive={false}
-        >
-          <Popup>مكان الاستلام الثابت</Popup>
+        <Marker position={pickupLocation} icon={markerIcons.pickup}>
+          <Popup>مكان الاستلام</Popup>
         </Marker>
 
         {dropoffLocation && (
-          <Marker 
-            position={[dropoffLocation.lat, dropoffLocation.lng]} 
-            icon={dropoffIcon}
-            interactive={false}
-          >
+          <Marker position={dropoffLocation} icon={markerIcons.dropoff}>
             <Popup>مكان التسليم</Popup>
           </Marker>
         )}
+        {pickupLocation && dropoffLocation && (
+        <Polyline 
+          positions={[
+            [pickupLocation.lat, pickupLocation.lng],
+            [dropoffLocation.lat, dropoffLocation.lng]
+          ]}
+          color="#E6911E"
+          weight={3}
+          opacity={0.7}
+        />
+      )}
 
-        {routePoints.length === 2 && (
-          <Polyline 
-            positions={routePoints}
-            color="#E6911E"
-            weight={3}
-            dashArray="5, 5"
-          />
-        )}
+        <MapController onLocationSelect={onLocationSelect} />
       </MapContainer>
     </div>
   );
-});
+};
 
-export default LocationMap;
+export default React.memo(LocationMap); 
