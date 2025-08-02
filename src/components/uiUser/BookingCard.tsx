@@ -44,6 +44,7 @@ export interface CarAttributes {
 }
 
 export interface CarRelationships {
+  [x: string]: any;
   "Model Names": ModelName;
   Types: Type;
   Brand: Brand;
@@ -64,7 +65,10 @@ export interface BookingItem {
   status: string;
   additional_driver: number;
   car_model: CarModel;
-  location: string;
+  location?: {
+    location: string;
+  }
+  location_id: number;
   user?: {
     id: number;
     name: string;
@@ -193,7 +197,9 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gray-50 p-3 rounded-lg">
               <p className="text-gray-500 text-sm">مكان التسليم</p>
-              <p className="font-medium">{booking.location || "غير محدد"}</p>
+                  <p className="font-medium">
+                    {booking.car_model.relationship?.Location?.location}
+                  </p>
             </div>
           </div>
 

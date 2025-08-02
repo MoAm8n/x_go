@@ -2,12 +2,14 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import '../../node_modules/swiper/swiper-bundle.css';
 import { Autoplay } from 'swiper/modules';
 import carCollection from "../assets/image.jpg";
+import { useTranslation } from "react-i18next";
 
 const AutoCarousel = () => {
+    const { t } = useTranslation();
     const slides = [
-        { id: 1, name: "Own the Thrill - Rent the Drive", image: carCollection },
-        { id: 2, name: "Own the Thrill - Rent the Drive", image: carCollection },
-        { id: 3, name: "Own the Thrill - Rent the Drive", image: carCollection },
+        { id: 1, name: t("Own the Thrill - Rent the Drive"), image: carCollection },
+        { id: 2, name: t("Own the Thrill - Rent the Drive"), image: carCollection },
+        { id: 3, name: t("Own the Thrill - Rent the Drive"), image: carCollection },
     ]
     return (
         <>

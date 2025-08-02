@@ -2,19 +2,16 @@ import { Route, Routes, Navigate } from 'react-router-dom'
 import { Car, CarCollection, SignIn, SignUp, Payment, BookingSuccess, Loading, Bookings } from './pages'
 import Header from './components/Header'
 import Footer from './components/Footer'
-// import { useEffect } from 'react'
-// import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 
 const App = () => {
-  // const location = useLocation()
+  const { i18n } = useTranslation();
 
-  // useEffect(() => {
-  //   if (!location.pathname.includes('/booking') && 
-  //       !location.pathname.includes('/signin') && 
-  //       !location.pathname.includes('/signup')) {
-  //     localStorage.removeItem('tempBookingData')
-  //   }
-  // }, [location])
+  useEffect(() => {
+    const currentLang = i18n.language;
+    document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  }, [i18n.language]);
 
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup'
 

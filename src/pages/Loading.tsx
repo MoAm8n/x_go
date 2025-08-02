@@ -7,6 +7,7 @@ import { CarFront, Calendar, School, Headset } from "lucide-react";
 import { HowItWork } from "../components/uiUser";
 import appStoreImg from "../../public/images/and app store.png";
 import playStoreImg from "../../public/images/app store.png";
+import { useTranslation } from "react-i18next";
 
 const Home = () => {
   const [cars, setCars] = useState<any[]>([]);
@@ -14,6 +15,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,30 +59,30 @@ const Home = () => {
     {
       id: 1,
       icon: <Calendar size={30} />,
-      title: "Flexible Dates",
+      title: t("Flexible Dates"),
       description:
-        "Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.",
+        t("Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra."),
     },
     {
       id: 2,
       icon: <School size={30} />,
-      title: "Plan Your Trip",
+      title: t("Plan Your Trip"),
       description:
-        "Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.",
+        t("Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra."),
     },
     {
       id: 3,
       icon: <CarFront size={30} />,
-      title: "Flexible Dates",
+      title: t("Flexible Dates"),
       description:
-        "Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.",
+        t("Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra."),
     },
     {
       id: 4,
       icon: <Headset size={30} />,
-      title: "Plan Your Trip",
+      title: t("Plan Your Trip"),
       description:
-        "Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.",
+        t("Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra."),
     },
   ];
   const AppLinks = [
@@ -88,13 +90,13 @@ const Home = () => {
       id: 1,
       icon: appStoreImg,
       path: "https://apps.apple.com/app/id1234567890",
-      alt: "Download on the App Store",
+      alt: t("Download on the App Store"),
     },
     {
       id: 2,
       icon: playStoreImg,
       path: "https://play.google.com/store/apps/details?id=com.example.app",
-      alt: "Download on Google Play",
+      alt: t("Download on Google Play"),
     },
   ];
   return (
@@ -106,10 +108,10 @@ const Home = () => {
         <div className="container mx-auto px-6 md:px-12 py-10">
           <div className="text-center mb-8">
             <h1 className="text-[#E6911E] font-semibold text-xl md:text-3xl pb-2 md:pb-4">
-              Collection
+              {t("Collection")}
             </h1>
             <h1 className="font-semibold text-xl md:text-4xl">
-              Explore Our Collection Cars
+              {t("Explore Our Collection Cars")}
             </h1>
           </div>
           <div className="flex flex-wrap justify-center md:gap-4 gap-2 items-center">
@@ -121,7 +123,7 @@ const Home = () => {
                   : "border-2 rounded-md"
               }`}
             >
-              <span>All Type</span>
+              <span>{t("All Type")}</span>
             </button>
             {brands.map((brand) => (
               <button
@@ -141,7 +143,7 @@ const Home = () => {
                     loading="lazy"
                   />
                 )}
-                <span>{brand.name}</span>
+                <span>{t(`brand.${brand.name}`)}</span>
               </button>
             ))}
           </div>
@@ -162,19 +164,19 @@ const Home = () => {
                     <div className="p-4">
                       <div className="flex justify-between items-center mb-2 max-md:flex-col">
                         <h3 className="font-bold text-lg">
-                          {car.brand}
-                        </h3>
+                              {t(`brand.${car.brand}`)}
+                            </h3>
                         <h3 className="font-bold text-lg">
-                          {car.name}
+                          {t(`name.${car.name}`)}
                         </h3>
                       </div>
                       <div className="flex justify-between items-center mb-2 max-md:flex-col">
                         <h3 className="font-bold text-lg">
-                          {car.year}
+                          {t(car.year)}
                         </h3>
                         <p className="text-lg font-bold text-[#E6911E]">
-                          ${car.price.toLocaleString()}
-                          <span className="text-sm text-gray-600"> / Day</span>
+                          ${t(car.price.toLocaleString())}
+                          <span className="text-sm text-gray-600"> / {t("Day")}</span>
                         </p>
                       </div>
                     </div>
@@ -183,13 +185,13 @@ const Home = () => {
               ))
             ) : (
               <div className="col-span-full text-center py-8 text-gray-500">
-                لا توجد سيارات متاحة للعرض
+                {t("No cars available for display")}
               </div>
             )}
             <div className="col-span-full flex justify-center">
               <Link to={"/carCollection"}>
                 <button className="col-span-fit bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-colors mt-4">
-                  See All Collection
+                  {t("See All Collection")}
                 </button>
               </Link>
             </div>
@@ -200,11 +202,11 @@ const Home = () => {
         <div className="container mx-auto px-14 py-8">
           <div className=" flex flex-col mb-8">
             <h4 className="text-[#E6911E] mb-2 mt-2 tracking-wide text-center font-semibold text-xl md:text-3xl">
-              WHY CHOOSE US
+              {t("WHY CHOOSE US")}
             </h4>
             <h2 className="text-center font-semibold text-xl md:text-4xl">
-              Unmatched Quality & Service
-              <br /> For Your Needs
+              {t("Unmatched Quality & Service")}
+              <br /> {t("For Your Needs")}
             </h2>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
@@ -212,8 +214,8 @@ const Home = () => {
               <WhyChooseCard
                 key={item.id}
                 icon={item.icon}
-                title={item.title}
-                description={item.description}
+                title={t(item.title)}
+                description={t(item.description)}
               />
             ))}
           </div>
@@ -228,12 +230,10 @@ const Home = () => {
         <div className="container mx-auto px-6 py-8 flex flex-col items-center justify-center">
           <div className="sm:w-[90%] md:w-[80%] bg-gradient-to-t from-[#e69220] via-[#f7c26c] to-[#fff8ff] py-8 md:py-12 text-center rounded-3xl px-2 sm:px-6 md:px-12">
             <h2 className="text-xl md:text-3xl font-bold mb-4 md:mb-6 text-center ">
-              Download the app. Drive the thrill!
+              {t("Download the app. Drive the thrill!")}
             </h2>
             <p className="mb-6 md:mb-8 text-center max-w-md mx-auto text-sm md:text-base">
-              Lorem ipsum dolor sit amet consectetur. Dictum id faucibus mattis
-              malesuada egestas potenti dui felis mattis. Varius amet ac aliquet
-              quis. Quis a risus sed
+              {t("Lorem ipsum dolor sit amet consectetur. Dictum id faucibus mattis malesuada egestas potenti dui felis mattis. Varius amet ac aliquet quis. Quis a risus sed")}
             </p>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full max-w-xs md:max-w-md m-auto justify-items-center items-center">
               {AppLinks.map((link) => (
