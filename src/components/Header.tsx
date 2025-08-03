@@ -4,12 +4,13 @@ import { HashLink } from "react-router-hash-link";
 import logo from "../../public/images/logo.png";
 import { HiMiniBars3CenterLeft } from "react-icons/hi2";
 import Sidebar from "./Sidebar";
+import { logoutUser } from "../context/Data/DataUser";
 
 // زر اللغة
 const LanguageDropdown = () => {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState("English");
-
+  const user = localStorage.getItem('user');
   const languages = [
     { code: "en", label: "English" },
     { code: "ar", label: "العربية" },
@@ -20,7 +21,6 @@ const LanguageDropdown = () => {
     setSelected(lang.label);
     setOpen(false);
   };
-
   return (
     <div className="relative inline-block">
       <button
@@ -61,7 +61,6 @@ const Header = () => {
   const [sidebar, setSidebar] = useState(false);
   const toggleSidebar = () => setSidebar(!sidebar);
 
-  // روابط الناف بار
   const links = [
     { name: "Home", path: "/#home" },
     { name: "Vehicles", path: "/#vehicles" },
@@ -69,7 +68,6 @@ const Header = () => {
     { name: "How it works", path: "/#how-it-work" },
   ];
 
-  // لتحديد الـ active للهاش
   const location = useLocation();
   const isHashActive = (path) => {
     if (path.includes("#")) {
@@ -82,12 +80,17 @@ const Header = () => {
     return location.pathname === path;
   };
 
+  const tokenUser = localStorage.getItem('tokenUser');
+  const handleLogout = async () => {
+    await logoutUser();
+    window.location.href = "/loading";
+  };
+
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 bg-white z-50">
         <div className="container mx-auto px-6 lg:px-8 py-4 ">
           <div className="flex items-center justify-between">
-            {/* زرار السايدبار للموبايل */}
             <div className="md:hidden">
               <button
                 className="text-2xl text-[#83744d] hover:text-[#E6911E] transition duration-300"
@@ -98,11 +101,9 @@ const Header = () => {
                 <HiMiniBars3CenterLeft />
               </button>
             </div>
-            {/* اللوجو */}
-            <Link to="/" className="text-2xl font-bold text-gray-800">
-              <img src={logo} alt="الشعار" className="h-10" />
+            <Link to="loading" className="text-2xl font-bold text-gray-800">
+              <img src={logo} alt="الشعار" className="h-10" loading="lazy" />
             </Link>
-            {/* روابط الناف بار */}
             <div className="space-x-4 max-md:hidden flex items-center">
               {links.map((link) => (
                 <div key={link.name} className="inline-block lg:pe-4">
@@ -131,16 +132,24 @@ const Header = () => {
                   )}
                 </div>
               ))}
-              {/* زر اللغة */}
               <LanguageDropdown />
             </div>
-            {/* زر التطبيق */}
             <div>
-              <NavLink to="/">
-                <button className="lg:font-bold text-sm lg:text-lg text-white bg-[#E6911E] hover:bg-opacity-70 w-[96px] h-[30px] lg:w-[192px] lg:h-[44px] rounded-full transition duration-300">
-                  Get the app
+              {tokenUser? (
+                <button
+                  className="bg-[#E53935CC] w-32 md:w-48 h-11 md:rounded-3xl rounded-xl text-white"
+                  onClick={handleLogout}
+                  type="button"
+                >
+                  Logout
                 </button>
-              </NavLink>
+              ): (
+                <Link to={'/signin'}>
+                  <button className="bg-[#E6911E] md:rounded-3xl h-12 w-32 md:w-48 rounded-xl text-white">
+                    Login
+                  </button>
+                </Link>
+              )}
             </div>
           </div>
         </div>

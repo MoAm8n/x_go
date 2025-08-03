@@ -24,24 +24,29 @@ const FooterLinks = [
     links: ["Blog", "Help Center", "Privacy Policy", "Terms of Service"],
   },
 ];
+
 const Footer: React.FC = () => (
   <footer>
-    <div className="max-w-6xl mx-auto mt-10 flex flex-col md:flex-row  justify-between items-start px-4 w-full md:w-[90%]">
+    <div className="max-w-6xl mx-auto mt-10 flex flex-col md:flex-row justify-between items-start px-4 w-full md:w-[90%]">
       <div className="max-md:w-full flex flex-col items-center md:items-start mb-6 md:mb-0 md:mr-20">
-        <img src={logo} alt="XGO Car Rental" className="w-32 mb-2" />
+        <img
+          src={logo}
+          alt="XGO Car Rental"
+          className="w-32 mb-2"
+          loading="lazy"
+        />
         <p className="text-center text-black text-lg font-normal md:text-left max-w-xs">
           Stay Connected with us to get new update information
         </p>
         <Link
           to="/SignInDashboard"
-          className="flex items-center gap-1 text-xs text-[#7B7B7B] hover:text-black transition"
+          className="flex items-center gap-1 text-xs text-[#7B7B7B] hover:text-black transition mt-2"
         >
           Admin Login
-          <span>
-            <Lock size={14} />
-          </span>
+          <Lock size={14} />
         </Link>
       </div>
+
       <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 w-full text-center md:text-left">
         {FooterLinks.map((section) => (
           <div key={section.id} className="flex flex-col">
@@ -62,6 +67,7 @@ const Footer: React.FC = () => (
         ))}
       </div>
     </div>
+
     <div className="text-center text-gray-400 text-xs mt-8 mb-8">
       &copy; {new Date().getFullYear()} Car App. All rights reserved.
     </div>

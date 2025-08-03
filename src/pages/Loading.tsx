@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import AutoCarousel from "../components/AutoCarousel";
 import WhyChooseCard from "../components/uiUser/CardLoading";
 import { getBrands, getCars } from "../context/Data/DataUser";
-import { Loader2, CarFront, Calendar, School, Headset } from "lucide-react";
+import { CarFront, Calendar, School, Headset } from "lucide-react";
 import { HowItWork } from "../components/uiUser";
 import appStoreImg from "../../public/images/and app store.png";
 import playStoreImg from "../../public/images/app store.png";
@@ -43,19 +43,16 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen w-full bg-white">
-        <div className="p-6 bg-white rounded-xl flex items-center gap-4 ">
-          <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-          <span className="text-lg font-medium text-gray-700 animate-pulse">
-            جاري تحميل البيانات...
-          </span>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E6911E]"></div>
       </div>
     );
   }
+
   if (error) {
     return <div className="text-center text-red-500 py-8">{error}</div>;
   }
+  
   const dataNeeds = [
     {
       id: 1,
@@ -132,7 +129,7 @@ const Home = () => {
                 onClick={() => handleBrandFilter(brand.id)}
                 className={`flex items-center gap-1 md:p-2 p-2 rounded-lg ${
                   selectedBrand === brand.id
-                    ? "bg-orange-500 text-white"
+                    ? "bg-orange-500 bg-red text-white"
                     : "border-2 rounded-md"
                 }`}
               >
@@ -141,6 +138,7 @@ const Home = () => {
                     src={brand.logo}
                     alt={brand.name}
                     className="w-4 h-4 md:w-12 md:h-9 object-contain"
+                    loading="lazy"
                   />
                 )}
                 <span>{brand.name}</span>
@@ -150,7 +148,7 @@ const Home = () => {
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 md:gap-6 gap-2 md:px-10 py-8">
             {cars.length > 0 ? (
               cars.slice(1, 7).map((car) => (
-                <>
+                <Link key={car.id} to={`/car/${car.id}`}>
                   <div
                     key={car.id}
                     className="border rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
@@ -159,20 +157,29 @@ const Home = () => {
                       src={car.image || "/placeholder-car.jpg"}
                       alt={car.name}
                       className="w-full h-44 md:h-48 md:object-cover mb-4 rounded-t-lg"
+                      loading="lazy"
                     />
                     <div className="p-4">
                       <div className="flex justify-between items-center mb-2 max-md:flex-col">
                         <h3 className="font-bold text-lg">
-                          {car.brand_name} {car.name}
+                          {car.brand}
                         </h3>
-                        <p className="text-lg">
+                        <h3 className="font-bold text-lg">
+                          {car.name}
+                        </h3>
+                      </div>
+                      <div className="flex justify-between items-center mb-2 max-md:flex-col">
+                        <p className="text-lg font-bold">
                           ${car.price.toLocaleString()}
                           <span className="text-sm text-gray-600"> / Day</span>
                         </p>
+                        <h3 className="font-bold text-lg">
+                          {car.year}
+                        </h3>
                       </div>
                     </div>
                   </div>
-                </>
+                </Link>
               ))
             ) : (
               <div className="col-span-full text-center py-8 text-gray-500">
@@ -180,7 +187,7 @@ const Home = () => {
               </div>
             )}
             <div className="col-span-full flex justify-center">
-              <Link to={"/cartCollection"}>
+              <Link to={"/carCollection"}>
                 <button className="col-span-fit bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-colors mt-4">
                   See All Collection
                 </button>
@@ -240,6 +247,7 @@ const Home = () => {
                     src={link.icon}
                     alt={link.alt}
                     className="w-48 h-24 object-contain"
+                    loading="lazy"
                   />
                 </a>
               ))}
