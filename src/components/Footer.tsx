@@ -7,22 +7,22 @@ const Footer: React.FC = () => {
         {
             id: 1,
             title: t('Product'),
-            links: ['Features', 'Solutions', 'Releases']
+            links: [t('Features'), t('Solutions'), t('Releases')]
         },
         {
             id: 2,
             title: t('Company'),
-            links: ['About us', 'Careers', 'News', 'Support', 'Contact']
+            links: [t('About us'), t('Careers'), t('News'), t('Support'), t('Contact')]
         },
         {
             id: 3,
             title: t('Social'),
-            links: ['Facebook', 'Twitter', 'Instagram', 'LinkedIn']
+            links: [t('Facebook'), t('Twitter'), t('Instagram'), t('LinkedIn')]
         },
         {
             id: 4,
             title: t('Resources'),
-            links: ['Blog', 'Help Center', 'Privacy Policy', 'Terms of Service']
+            links: [t('Blog'), t('Help Center'), t('Privacy Policy'), t('Terms of Service')]
         }
     ];
     return (

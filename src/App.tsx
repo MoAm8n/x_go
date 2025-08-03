@@ -12,7 +12,7 @@ const App = () => {
     const currentLang = i18n.language;
     document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
   }, [i18n.language]);
-
+  
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup'
 
   return (
