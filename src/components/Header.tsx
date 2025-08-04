@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
+import { useTranslation } from 'react-i18next';
 import logo from "../../public/images/logo.png";
 import { HiMiniBars3CenterLeft } from "react-icons/hi2";
 import Sidebar from "./Sidebar";
@@ -8,24 +9,31 @@ import { logoutUser } from "../context/Data/DataUser";
 
 // زر اللغة
 const LanguageDropdown = () => {
+  const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState("English");
-  const user = localStorage.getItem('user');
+
   const languages = [
-    { code: "en", label: "English" },
     { code: "ar", label: "العربية" },
     { code: "ru", label: "Русский" },
+    { code: "en", label: "English" },
   ];
+
+  const currentLang = i18n.language || "en";
+  const defaultLang = languages.find((l) => l.code === currentLang)?.label || "English";
+  const [selected, setSelected] = useState(defaultLang);
 
   const handleSelect = (lang) => {
     setSelected(lang.label);
+    i18n.changeLanguage(lang.code);
     setOpen(false);
   };
+
+
   return (
     <div className="relative inline-block">
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="rounded-md font-medium text-[14px]  flex items-center gap-2"
+        className="rounded-md font-medium text-[14px] flex items-center gap-2"
         type="button"
       >
         {selected}
@@ -40,12 +48,11 @@ const LanguageDropdown = () => {
         </svg>
       </button>
       {open && (
-        <ul className="absolute -left-5 top-11 bottom-full mb-2 bg-white border w-28 z-50 text-center">
+        <ul className="absolute h-fit -left-5 top-11 bottom-full mb-2 bg-white border w-28 z-50 text-center">
           {languages.map((lang) => (
             <li
               key={lang.code}
-              className={`px-4 py-2 cursor-pointer text-[14px] transition bg-white
-                `}
+              className="px-4 py-2 cursor-pointer text-[14px] hover:bg-gray-100"
               onClick={() => handleSelect(lang)}
             >
               {lang.label}
@@ -60,12 +67,13 @@ const LanguageDropdown = () => {
 const Header = () => {
   const [sidebar, setSidebar] = useState(false);
   const toggleSidebar = () => setSidebar(!sidebar);
+  const { t } = useTranslation(); 
 
   const links = [
-    { name: "Home", path: "/#home" },
-    { name: "Vehicles", path: "/#vehicles" },
-    { name: "About", path: "/#about" },
-    { name: "How it works", path: "/#how-it-work" },
+    { name: t("header.home"), path: "/#home" },
+    { name: t("header.vehicles"), path: "/#vehicles" },
+    { name: t("header.about"), path: "/#about" },
+    { name: t("header.how_it_works"), path: "/#how-it-work" },
   ];
 
   const location = useLocation();
@@ -141,12 +149,13 @@ const Header = () => {
                   onClick={handleLogout}
                   type="button"
                 >
-                  Logout
+                  {t("header.logout")}
                 </button>
               ): (
                 <Link to={'/signin'}>
-                  <button className="bg-[#E6911E] md:rounded-3xl h-12 w-32 md:w-48 rounded-xl text-white">
-                    Login
+                  <button 
+                    className="bg-[#E6911E] md:rounded-3xl h-12 w-32 md:w-48 rounded-xl text-white">
+                    {t("header.login")}
                   </button>
                 </Link>
               )}

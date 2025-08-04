@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import CarDetailsCard from '../components/uiUser/CarDetailsCard';
 import CarFilterSidebar from '../components/uiUser/CarFilterSidebar';
 import carImg from '../assets/image.jpg';
-// import { FilterState } from '../components/ui/CarFilterSidebar';
 
 const CarCollection = () => {
   const [filters, setFilters] = useState<FilterState>({

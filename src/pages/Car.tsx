@@ -82,7 +82,7 @@ const Car: React.FC = () => {
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <p className="text-lg mb-4">Car not found</p>
         <Link 
-          to="/" 
+          to="loading" 
           className="bg-[#E6911E] text-white px-4 py-2 rounded-lg hover:bg-[#D6820E] transition"
         >
           Back to Home
@@ -95,46 +95,40 @@ const Car: React.FC = () => {
     <div className="min-h-screen pb-10 flex flex-col bg-gray-50">
       <div className="container mx-auto px-2 sm:px-4 md:px-8">
         <div className="max-w-6xl mx-auto mt-10 gap-10">
-          {/* Car Images Section */}
-          <section className="flex-1 flex flex-col md:flex-row gap-6">
+          <section className="flex-1 flex flex-col lg:flex-row gap-6">
             <div className="lg:w-[70%]">
               <img
                 src={car.image || carImg}
                 alt={car.name || 'Car'}
-                className="w-full h-auto max-h-[480px] rounded-3xl object-cover"
+                className="w-full max-sm:h-52 lg:h-[400px] lg:rounded-3xl object-cover"
                 loading="lazy"
               />
             </div>
             
-            <div className="lg:w-[30%] flex flex-col gap-2 mt-16">
+            <div className="lg:w-[30%] flex flex-col gap-2 lg:mt-16">
               <div className="grid grid-cols-2 gap-2">
                 {[...Array(4)].map((_, i) => (
                   <img
                     key={i}
                     src={car.image || carImg}
                     alt={`${car.name || 'Car'} thumbnail ${i}`}
-                    className="h-32 w-full object-cover rounded-lg cursor-pointer"
+                    className="h-32 w-full object-cover lg:rounded-lg cursor-pointer"
                     loading="lazy"
                   />
                 ))}
               </div>
             </div>
           </section>
-
-          {/* Car Details and Booking Section */}
-          <section className="flex flex-col lg:flex-row w-full gap-6 mt-8">
-            {/* Car Details */}
+          <section className="flex flex-col lg:flex-row w-full gap-6 lg:mt-8">
             <div className="flex flex-col my-6 lg:w-[70%] bg-white p-6 rounded-xl shadow-sm">
               <div className='flex justify-between items-center mb-4'>
-                <h2 className="text-2xl font-bold">{car.name || 'Unnamed Car'}</h2>
-                {car.brand && (
+                <h2 className="text-2xl font-bold">{car.brand || 'Unnamed Car'}</h2>
+                {car.name && (
                   <div className='bg-[#E5393533] px-4 py-1 rounded-2xl flex items-center justify-center text-sm font-medium'>
-                    {car.brand}
+                    {car.name}
                   </div>
                 )}
               </div>
-              
-              {/* Car Specifications */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-6">
                 {car.type && (
                   <div className='flex justify-center items-center gap-2 bg-gray-100 p-3 rounded-xl'>

@@ -1,0 +1,65 @@
+{
+  "header": {
+    "home": "Home",
+    "vehicles": "Vehicles",
+    "about": "About",
+    "how_it_works": "How it works",
+    "login": "Login",
+    "logout": "Logout"
+  },
+  "price": {
+    "title": "Price",
+    "description": "Price per vehicle"
+  },
+  "vehicle": {
+    "title": "Vehicle",
+    "description": "Vehicle description"
+  },
+  "register": {
+    "title": "Register",
+    "description": "Register a new account"
+  },
+  "contact": {
+    "title": "Contact",
+    "description": "Contact us"
+  },
+  "footer": {
+    "title": "Footer",
+    "description": "Footer description"
+  },
+  "button": {
+    "submit": "Submit",
+    "cancel": "Cancel"
+  },
+  "form": {
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password"
+  },
+  "message": {
+    "success": "Success",
+    "error": "Error"
+  },
+  "login": {
+    "title": "Login",
+    "description": "Login to your account"
+  },
+  "logout": {
+    "title": "Logout",
+    "description": "Logout from your account"
+  },
+  "Collection": "Collection",
+  "Explore Our Collection Cars": "Explore Our Collection Cars",
+  "No cars available for display": "No cars available for display",
+  "WHY CHOOSE US": "WHY CHOOSE US",
+  "Unmatched Quality & Service": "Unmatched Quality & Service",
+  "For Your Needs": "For Your Needs",
+  "Download the app. Drive the thrill!": "Download the app. Drive the thrill!",
+  "Lorem ipsum dolor sit amet consectetur. Dictum id faucibus mattis": "Lorem ipsum dolor sit amet consectetur. Dictum id faucibus mattis",
+  "malesuada egestas potenti dui felis mattis. Varius amet ac aliquet": "malesuada egestas potenti dui felis mattis. Varius amet ac aliquet",
+  "quis. Quis a risus sed": "quis. Quis a risus sed",
+  "See All": "See All",
+  "See All Collection": "See All Collection"
+}
+

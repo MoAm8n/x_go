@@ -48,19 +48,7 @@ const CarDetailsCard: React.FC<Props> = ({ filters }) => {
 
     fetchCars();
   }, [filters]);
-
-  // if (loading) {
-  //     return <div className="p-4 text-center">Loading car details...</div>;
-  // }
-
-  // if (error) {
-  //     return <div className="p-4 text-center text-red-500">{error}</div>;
-  // }
-
-  // if (cars.length === 0) {
-  //     return <div className="p-4 text-center">No cars match the current filters.</div>;
-  // }
-
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-4">
       {cars.map((car) => (
@@ -77,11 +65,11 @@ const CarDetailsCard: React.FC<Props> = ({ filters }) => {
             )}
             <div className="flex justify-between items-center px-2">
               <h2 className="text-xl font-bold mb-2">
-                {car.name || "Unnamed Car"}
+                {car.brand || "Unnamed Car"}
               </h2>
-              {car.brand && (
+              {car.name && (
                 <div className="bg-[#E5393533] w-16 h-7 rounded-2xl flex items-center justify-center text-sm">
-                  {car.brand}
+                  {car.name}
                 </div>
               )}
             </div>

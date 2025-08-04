@@ -24,11 +24,12 @@ apiClient.interceptors.request.use(
 
 // دالة لمعالجة انتهاء صلاحية التوكن
 const handleUnauthorized = () => {
-  console.warn("انتهت صلاحية التوكن، يتم تسجيل الخروج");
-  localStorage.removeItem('tokenUser');
-  localStorage.removeItem('user');
-  apiClient.defaults.headers.common['Authorization'] = '';
-  window.location.href = '/signin';
+  if (localStorage.getItem('tokenUser')) {
+    localStorage.removeItem('tokenUser');
+    localStorage.removeItem('user');
+    apiClient.defaults.headers.common['Authorization'] = '';
+    window.location.href = '/signin';
+  }
 };
 
 // واجهات البيانات
@@ -92,11 +93,10 @@ export interface BookingData {
   start_date: string;
   end_date: string;
   carmodel_id: string;
-  user_id: string;
-  additional_driver: string;
-  pickup_location: string;
-  dropoff_location: string;
-  location_id: string;
+  user_id?: string;
+  additional_driver: number;
+  location: string;
+  location_id?: number;
   final_price?: string;
 }
 
@@ -150,7 +150,7 @@ export interface Location {
   location: string;
   latitude: string;
   longitude: string;
-  is_active?: number;
+  is_active: number;
 }
 
 // التحقق من وجود بريد إلكتروني
@@ -195,6 +195,8 @@ export const signupUser = async (userData: SignUpData): Promise<AuthResponse> =>
       throw new Error('لم يتم استلام بيانات المستخدم من الخادم');
     }
 
+    localStorage.setItem('tokenUser', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -229,6 +231,8 @@ export const authUsers = async (credentials: SignInData): Promise<AuthResponse> 
       throw new Error('لم يتم استلام بيانات المستخدم من الخادم');
     }
 
+    localStorage.setItem('tokenUser', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -388,6 +392,7 @@ export const getCars = async (
         fuel: item.attributes?.engine_type || '',
         price: Number(item.attributes?.price) || 0,
         type: item.relationship?.Types?.type_name || '',
+        year: item.attributes?.year || '2020'
       }))
       .filter((car: CarItem) => {
         const brandMatch = !brandId || car.brandId === brandId;
@@ -455,58 +460,51 @@ export const showCarId = async (id: string): Promise<CarItem> => {
   }
 };
 
-// حفظ حجز
+// حفظ الحجز
 export const saveBooking = async (id: string, bookingData: BookingData): Promise<any> => {
   try {
-    console.log("جارٍ حفظ الحجز:", { id, bookingData });
-    if (!bookingData.user_id || !bookingData.location_id) {
-      throw new Error('المصادقة ومعلومات الموقع مطلوبة');
+    // التحقق من البيانات المطلوبة
+    if (!bookingData.start_date || !bookingData.end_date || !bookingData.carmodel_id) {
+      throw new Error('Missing required booking data');
+    }
+
+    // التحقق من صحة location_id إذا كان هناك سائق إضافي
+    if (bookingData.additional_driver === 1) {
+      if (!bookingData.location_id || typeof bookingData.location_id !== 'number') {
+        throw new Error('Invalid dropoff location for additional driver');
+      }
     }
 
     const payload = {
       ...bookingData,
       status: 'pending',
-      payment_status: 'unpaid',
+      payment_status: 'unpaid'
     };
 
-    const response = await apiClient.post(`/api/user/Model/${id}/car-booking`, payload, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('tokenUser')}`,
-      },
-    });
+    const response = await apiClient.post(`/api/user/Model/${id}/car-booking`, payload);
 
-    if (!response.data?.data?.booking) {
-      throw new Error('استجابة الحجز غير صالحة من الخادم');
+    if (!response.data) {
+      throw new Error('No response data received');
     }
 
-    console.log("تم حفظ الحجز بنجاح:", response.data.data.booking);
+    if (response.data.message !== 'Booking created successfully') {
+      throw new Error(response.data.message || 'Booking creation failed');
+    }
+
     return {
-      bookingId: response.data.data.booking.id,
-      ...response.data.data.booking,
+      bookingId: response.data.data?.id,
+      ...response.data.data
     };
   } catch (error) {
+    console.error('Booking error:', error);
     if (axios.isAxiosError(error)) {
-      console.error("خطأ أثناء حفظ الحجز:", error.response?.data);
-      if (error.response?.status === 401) {
-        handleUnauthorized();
-        throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
-      }
       if (error.response?.status === 422) {
-        const serverErrors = error.response.data?.errors || {};
-        throw new Error(
-          Object.entries(serverErrors)
-            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
-            .join('\n')
-        );
+        const errors = error.response.data?.errors || {};
+        throw new Error(Object.values(errors).flat().join(', '));
       }
-      if (error.response?.status === 404) {
-        throw new Error('الوجهة المطلوبة للحجز غير موجودة');
-      }
-      throw new Error(error.response?.data?.message || 'فشل الحجز');
+      throw new Error(error.response?.data?.message || 'Booking failed');
     }
-    console.error("خطأ غير متوقع أثناء حفظ الحجز:", error);
-    throw new Error('خطأ في الشبكة، يرجى المحاولة مرة أخرى');
+    throw new Error('An unexpected error occurred');
   }
 };
 
@@ -569,69 +567,117 @@ export const getBookingList = async (): Promise<BookingItem[]> => {
 export const locationService = {
   async getActiveLocations(): Promise<Location[]> {
     try {
-      console.log("جارٍ جلب المواقع النشطة");
       const response = await apiClient.get('/api/user/user-locations');
       if (!response.data?.data) {
-        throw new Error('لا توجد بيانات للمواقع');
+        throw new Error('No locations data received');
       }
-
-      return response.data.data
-        .filter((loc: any) => loc.is_active === 1)
-        .map((loc: any) => ({
-          id: loc.id || 0,
-          user_id: loc.user_id || 0,
-          location: loc.location || '',
-          latitude: loc.latitude || '',
-          longitude: loc.longitude || '',
-          is_active: loc.is_active || 0,
-        }));
+      return response.data.data.map((loc: any) => ({
+        id: loc.id,
+        user_id: loc.user_id,
+        location: loc.location,
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        is_active: loc.is_active,
+      }));
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        handleUnauthorized();
-        return [];
-      }
-      console.error("خطأ في جلب المواقع:", error);
-      throw new Error(
-        axios.isAxiosError(error)
-          ? error.response?.data?.message || 'فشل جلب المواقع'
-          : 'حدث خطأ غير متوقع'
-      );
+      console.error('Error fetching locations:', error);
+      throw new Error('Failed to load locations');
     }
   },
 
   async addLocation(newLocation: Omit<Location, 'id' | 'user_id' | 'is_active'>): Promise<Location> {
     try {
-      console.log("جارٍ إضافة موقع جديد:", newLocation);
-      if (!newLocation.location || !newLocation.latitude || !newLocation.longitude) {
-        throw new Error('جميع حقول الموقع مطلوبة');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user?.id) {
+        throw new Error('يجب تسجيل الدخول لإضافة موقع جديد');
       }
 
-      const response = await apiClient.post('/api/user/user-locations', newLocation);
+      const response = await apiClient.post('/api/user/user-locations', {
+        location: newLocation.location,
+        latitude: newLocation.latitude,
+        longitude: newLocation.longitude,
+        is_active: 1
+      });
 
-      if (!response.data?.data) {
-        throw new Error('استجابة غير صالحة من الخادم');
+      console.log('استجابة إضافة الموقع:', response.data);
+
+      // إذا كانت الاستجابة تحتوي على رسالة نجاح فقط، نقوم بجلب المواقع وإيجاد الموقع المضاف
+      if (response.data?.message === 'Location added successfully') {
+        // جلب قائمة المواقع المحدثة
+        const locationsResponse = await apiClient.get('/api/user/user-locations');
+        console.log('استجابة جلب المواقع:', locationsResponse.data);
+        
+        if (!locationsResponse.data?.data || !Array.isArray(locationsResponse.data.data)) {
+          throw new Error('لا توجد بيانات مواقع في استجابة الخادم');
+        }
+        
+        // البحث عن الموقع المضاف حديثًا بناءً على الاسم والإحداثيات
+        const addedLocation = locationsResponse.data.data.find((loc: any) => 
+          loc.location === newLocation.location && 
+          loc.latitude === newLocation.latitude && 
+          loc.longitude === newLocation.longitude
+        );
+        
+        // إذا وجدنا الموقع المضاف
+        if (addedLocation && addedLocation.id) {
+          return {
+            id: addedLocation.id,
+            user_id: user.id,
+            location: addedLocation.location || newLocation.location,
+            latitude: addedLocation.latitude || newLocation.latitude,
+            longitude: addedLocation.longitude || newLocation.longitude,
+            is_active: addedLocation.is_active || 1
+          };
+        }
+        
+        // إذا لم نجد الموقع المضاف بالضبط، نأخذ آخر موقع مضاف
+        if (locationsResponse.data.data.length > 0) {
+          const latestLocation = locationsResponse.data.data[locationsResponse.data.data.length - 1];
+          return {
+            id: latestLocation.id,
+            user_id: user.id,
+            location: latestLocation.location,
+            latitude: latestLocation.latitude,
+            longitude: latestLocation.longitude,
+            is_active: latestLocation.is_active || 1
+          };
+        }
       }
 
-      console.log("تم إضافة الموقع بنجاح:", response.data.data);
-      return {
-        id: response.data.data.id || 0,
-        user_id: response.data.data.user_id || 0,
-        location: response.data.data.location || '',
-        latitude: response.data.data.latitude || '',
-        longitude: response.data.data.longitude || '',
-        is_active: response.data.data.is_active || 0,
-      };
+      // تحقق من وجود البيانات في الاستجابة
+      if (!response.data) {
+        throw new Error('لا توجد بيانات في استجابة الخادم');
+      }
+
+      // إذا كانت الاستجابة تحتوي على بيانات الموقع مباشرة
+      if (response.data.id) {
+        return {
+          id: response.data.id,
+          user_id: user.id,
+          location: response.data.location || newLocation.location,
+          latitude: response.data.latitude || newLocation.latitude,
+          longitude: response.data.longitude || newLocation.longitude,
+          is_active: response.data.is_active || 1
+        };
+      }
+
+      // إذا كانت الاستجابة تحتوي على data بداخلها
+      if (response.data.data?.id) {
+        return {
+          id: response.data.data.id,
+          user_id: user.id,
+          location: response.data.data.location || newLocation.location,
+          latitude: response.data.data.latitude || newLocation.latitude,
+          longitude: response.data.data.longitude || newLocation.longitude,
+          is_active: response.data.data.is_active || 1
+        };
+      }
+
+      // إذا لم يتم العثور على ID في الاستجابة
+      throw new Error('تعذر الحصول على معرف الموقع من الخادم');
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        handleUnauthorized();
-        throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
-      }
-      console.error("خطأ في إضافة الموقع:", error);
-      throw new Error(
-        axios.isAxiosError(error)
-          ? error.response?.data?.message || 'فشل إضافة الموقع'
-          : 'حدث خطأ غير متوقع'
-      );
+      console.error('Error adding location:', error);
+      throw new Error('تعذر حفظ الموقع. الرجاء المحاولة لاحقاً');
     }
-  },
+  }
 };

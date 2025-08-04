@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+
 import {
   getBrands,
   getTypes,
@@ -48,7 +50,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
   const [allBrandsSelected, setAllBrandsSelected] = useState(false);
   const [allTypesSelected, setAllTypesSelected] = useState(false);
   const [cars, setCars] = useState<CarItem[]>([]);
-
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<FilterState>({
     selectedBrands: [],
     selectedTypes: [],
@@ -176,21 +178,12 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
 
   const totalCarsCount = cars.length;
 
-  // if (loading) {
-  //   return (
-  //     <div className="p-6 text-center">
-  //       <CircularProgress color="primary" />
-  //       <p className="mt-3">Loading filter options...</p>
-  //     </div>
-  //   );
-  // }
-
   if (error) {
     return (
       <div className="w-full p-6 text-center text-red-500">
         {error}
         <Button variant="outlined" onClick={fetchFilterOptions} sx={{ mt: 2 }}>
-          Retry
+          {t("Retry")}
         </Button>
       </div>
     );
@@ -210,7 +203,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
             }
             size="small"
           >
-            Clear All
+            {t("Clear All")}
           </Button>
         </div>
 
@@ -233,7 +226,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
                     }
                     label={
                       <div className="flex items-center gap-2">
-                        <span>All Brands</span>
+                        <span>{t("All Brands")}</span>
                         <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">
                           {brands.length}
                         </span>
@@ -314,7 +307,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
                     }
                     label={
                       <div className="flex items-center gap-2">
-                        <span>All Types</span>
+                        <span>{t("All Types")}</span>
                         <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">
                           {types.length}
                         </span>

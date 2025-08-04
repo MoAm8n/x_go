@@ -1,56 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { saveBooking, locationService } from '../../context/Data/DataUser';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import  LocationMap  from './LocationMap';
+import LocationMap from './LocationMap';
+import { locationService, saveBooking } from '../../context/Data/DataUser';
+import { VITE_OPENCAGE_API_KEY } from '../../context/api/Api';
 
-const currentLocationIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34]
-});
-
-const pickupIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34]
-});
-
-const dropoffIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34]
-});
-
-const selectedLocationIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34]
-});
-
-const defaultIcon = new L.Icon({
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-interface Location {
-  id?: number;
+export interface Location {
+  id: number;
   user_id?: number;
   location: string;
   latitude: string;
   longitude: string;
-  is_active?: number;
+  is_active: number;
+}
+
+interface DropoffLocation {
+  lat: number;
+  lng: number;
+  location: string;
+  id: number;
 }
 
 interface CarItem {
@@ -59,15 +26,15 @@ interface CarItem {
   price: number | string;
 }
 
-interface BookingData {
+export interface BookingData {
   start_date: string;
   end_date: string;
   carmodel_id: string;
   user_id?: string;
-  additional_driver: string;
+  additional_driver: number; // Changed from string to number
   pickup_location: string;
-  dropoff_location: string;
-  location_id: string;
+  dropoff_location: string | Location;
+  location_id?: number; // Changed from string | number to number only
 }
 
 interface RentSidebarProps {
@@ -75,89 +42,158 @@ interface RentSidebarProps {
   carId: string;
 }
 
-const EXTRAS_LIST = [
-  { label: "Additional Driver", price: 55, id: "driver" }
-];
-
-const FitBounds = ({ pickupLocation, dropoffLocation }: {
-  pickupLocation: Location | null;
-  dropoffLocation: Location | null;
-}) => {
-  const map = useMap();
-
-  useEffect(() => {
-    if (pickupLocation && dropoffLocation) {
-      const bounds = L.latLngBounds(
-        [parseFloat(pickupLocation.latitude), parseFloat(pickupLocation.longitude)],
-        [parseFloat(dropoffLocation.latitude), parseFloat(dropoffLocation.longitude)]
-      );
-      map.fitBounds(bounds, { padding: [50, 50] });
-    }
-  }, [pickupLocation, dropoffLocation, map]);
-
-  return null;
+const FIXED_PICKUP_LOCATION = {
+  lat: 24.7136,
+  lng: 46.6753,
+  location: 'Riyadh',
+  id: 0,
 };
 
-export const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
+const EXTRAS_LIST = [
+  { label: 'Additional Driver', price: 55, id: 'driver' },
+];
+
+const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
   const [formData, setFormData] = useState({
-    pickupDate: "",
-    dropoffDate: "",
-    pickupTime: "10:00",
-    dropoffTime: "10:00",
+    pickupDate: '',
+    dropoffDate: '',
+    pickupTime: '10:00',
+    dropoffTime: '10:00',
   });
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
-  const [pickupLocation, setPickupLocation] = useState<Location | null>(null);
-  const [dropoffLocation, setDropoffLocation] = useState<Location | null>(null);
-  const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number } | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [selectingType, setSelectingType] = useState<"pickup" | "dropoff" | null>(null);
+  const [dropoffLocation, setDropoffLocation] = useState<DropoffLocation | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
+  const [loadingLocation, setLoadingLocation] = useState(false);
   const navigate = useNavigate();
 
-  const detectCurrentLocation = useCallback(async () => {
-    if (!navigator.geolocation) {
-      setError("Browser doesn't support geolocation");
-      return;
+  const getCityName = useCallback(async (lat: number, lng: number): Promise<string> => {
+    if (
+      typeof lat !== 'number' || typeof lng !== 'number' ||
+      isNaN(lat) || isNaN(lng) ||
+      lat < -90 || lat > 90 || lng < -180 || lng > 180
+    ) {
+      console.error('Invalid coordinates:', { lat, lng });
+      return 'Unknown location';
     }
+    
+    const roundedLat = Number(lat.toFixed(6));
+    const roundedLng = Number(lng.toFixed(6));
+    const apiKey = VITE_OPENCAGE_API_KEY;
+    const cacheKey = `location_${roundedLat}_${roundedLng}`;
+
+    const cachedLocation = localStorage.getItem(cacheKey);
+    if (cachedLocation) return cachedLocation;
 
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000
-        });
-      });
+      const response = await fetch(
+        `https://api.opencagedata.com/geocode/v1/json?q=${roundedLat}+${roundedLng}&key=${apiKey}&language=en&no_annotations=1`
+      );
+      if (!response.ok) throw new Error('Failed to fetch location data');
+      
+      const data = await response.json();
+      if (data.results?.length > 0) {
+        const components = data.results[0].components;
+        const placeTypes = [
+          { key: 'village', label: 'Village' },
+          { key: 'hamlet', label: 'Hamlet' },
+          { key: 'suburb', label: 'Suburb' },
+          { key: 'town', label: 'Town' },
+          { key: 'city', label: 'City' },
+          { key: 'neighbourhood', label: 'Neighbourhood' },
+          { key: 'road', label: 'Road' },
+          { key: 'street', label: 'Street' },
+          { key: 'footway', label: 'Footway' },
+          { key: 'county', label: 'County' },
+        ];
 
-      setCurrentPosition({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      });
-    } catch (err) {
-      setError("Failed to get current location");
+        let locationLabel = '';
+        for (let type of placeTypes) {
+          if (components[type.key]) {
+            locationLabel = `${type.label} ${components[type.key]}`;
+            break;
+          }
+        }
+        
+        if (!locationLabel) {
+          locationLabel = data.results[0]?.formatted?.split(',')[0]?.trim() || 'Unknown location';
+        }
+
+        localStorage.setItem(cacheKey, locationLabel);
+        return locationLabel;
+      }
+      return 'Unknown location';
+    } catch (error) {
+      console.error('Error fetching location name:', error);
+      return 'Unknown location';
     }
   }, []);
 
   const fetchLocations = useCallback(async () => {
     try {
-      const data = await locationService.getActiveLocations();
-      setLocations(data);
-      if (data.length > 0) {
-        setPickupLocation(data[0]);
-        setDropoffLocation(data[0]);
+      const apiLocations = await locationService.getActiveLocations();
+      setLocations(apiLocations);
+
+      // Set default location if none is selected
+      if (!dropoffLocation && apiLocations.length > 0) {
+        const defaultLocation = {
+          lat: parseFloat(apiLocations[0].latitude),
+          lng: parseFloat(apiLocations[0].longitude),
+          location: apiLocations[0].location,
+          id: apiLocations[0].id,
+        };
+        setDropoffLocation(defaultLocation);
       }
-    } catch (err) {
-      setError("Failed to load locations");
+    } catch (error) {
+      console.error('Failed to load locations:', error);
+      setError('Failed to load locations. Please try again.');
     }
-  }, []);
+  }, [dropoffLocation]);
+
+  const handleLocationSelect = useCallback(async (lat: number, lng: number) => {
+    try {
+      setLoadingLocation(true);
+      setError(null);
+      setSuccess(null); // أضف هذا السطر
+      
+      const locationName = await getCityName(lat, lng);
+      
+      try {
+        const savedLocation = await locationService.addLocation({
+          location: locationName,
+          latitude: lat.toString(),
+          longitude: lng.toString(),
+        });
+
+        const formattedLocation = {
+          lat,
+          lng,
+          location: savedLocation.location,
+          id: savedLocation.id || 0 // تأكد من وجود قيمة افتراضية لـ id
+        };
+
+        setDropoffLocation(formattedLocation);
+        setLocations(prev => [...prev, savedLocation]);
+        setSuccess('تم حفظ الموقع بنجاح');
+      } catch (saveError) {
+        console.error('Error saving location:', saveError);
+        setError('تعذر حفظ الموقع. الرجاء التأكد من اتصال الإنترنت والمحاولة مرة أخرى');
+      }
+    } catch (error) {
+      console.error('Error getting location name:', error);
+      setError('تعذر تحديد اسم الموقع. الرجاء المحاولة مرة أخرى');
+    } finally {
+      setLoadingLocation(false);
+      setShowMap(false);
+    }
+  }, [getCityName]);
 
   const calculateTotal = useCallback((): number => {
-    const basePrice = typeof car.price === "number" ? car.price : parseFloat(car.price);
-    const extrasTotal = selectedExtras.includes("driver") ? 55 : 0;
+    const basePrice = typeof car.price === 'number' ? car.price : parseFloat(car.price);
+    const extrasTotal = selectedExtras.includes('driver') ? 55 : 0;
     const tax = 50;
     return basePrice + extrasTotal + tax;
   }, [car.price, selectedExtras]);
@@ -166,132 +202,132 @@ export const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
     const errors: string[] = [];
 
     if (!formData.pickupDate || !formData.dropoffDate) {
-      errors.push("Please select both pickup and drop-off dates");
+      errors.push('Please select pickup and dropoff dates');
     }
 
     if (!formData.pickupTime || !formData.dropoffTime) {
-      errors.push("Please select both pickup and drop-off times");
+      errors.push('Please select pickup and dropoff times');
     }
 
-    if (!pickupLocation || !dropoffLocation) {
-      errors.push("Please select both pickup and drop-off locations");
+    if (selectedExtras.includes('driver') && !dropoffLocation) {
+      errors.push('Please select a dropoff location for additional driver');
     }
 
     const start = new Date(`${formData.pickupDate}T${formData.pickupTime}`);
     const end = new Date(`${formData.dropoffDate}T${formData.dropoffTime}`);
-    const durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-    
+
     if (start >= end) {
-      errors.push("Drop-off must be after pick-up");
-    } else if (durationHours < 4) {
-      errors.push("Minimum booking duration is 4 hours");
+      errors.push('Dropoff time must be after pickup time');
+    } else if ((end.getTime() - start.getTime()) / (1000 * 60 * 60) < 4) {
+      errors.push('Minimum booking duration is 4 hours');
+    }
+
+      if (!dropoffLocation) {
+      errors.push('يجب تحديد موقع الإنزال للسائق الإضافي');
+    } else {
+      const isValidLocation = locations.some(loc => loc.id === dropoffLocation.id);
+      if (!isValidLocation) {
+        errors.push('الموقع المحدد غير صالح. الرجاء اختيار موقع آخر');
+      }
     }
 
     if (errors.length > 0) {
-      setError(errors.join(". "));
+      setError(errors.join('. '));
       return false;
     }
 
     return true;
-  }, [formData, pickupLocation, dropoffLocation]);
+  }, [formData, selectedExtras, dropoffLocation]);
 
   const handleBooking = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-    
+
     setIsBooking(true);
     setError(null);
-    setSuccess(null);
 
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const locationId = pickupLocation?.id || dropoffLocation?.id;
-
-      if (!locationId) {
-        throw new Error("Please select a valid location");
+      if (!user?.id) {
+        throw new Error('You must be logged in to complete booking');
       }
 
-      const bookingData: BookingData = {
+      const bookingPayload: BookingData = {
         start_date: `${formData.pickupDate}T${formData.pickupTime}:00`,
         end_date: `${formData.dropoffDate}T${formData.dropoffTime}:00`,
         carmodel_id: carId,
-        additional_driver: selectedExtras.includes("driver") ? "1" : "0",
-        pickup_location: pickupLocation?.id?.toString() || "",
-        dropoff_location: dropoffLocation?.id?.toString() || "",
-        location_id: locationId.toString(),
-        user_id: user.id?.toString()
+        user_id: user.id.toString(),
+        additional_driver: selectedExtras.includes('driver') ? 1 : 0,
+        pickup_location: FIXED_PICKUP_LOCATION.location,
+        dropoff_location: dropoffLocation?.location || FIXED_PICKUP_LOCATION.location,
+        location_id: selectedExtras.includes('driver') ? dropoffLocation?.id : undefined
       };
 
-      const res = await saveBooking(carId, bookingData);
-      setSuccess("Booking confirmed!");
-      navigate(`/bookings/${res.bookingId}`, {
-        state: {
-          carDetails: car,
-          bookingDetails: {
-            ...bookingData,
-            extras: selectedExtras,
-            totalPrice: calculateTotal()
-          }
-        }
-      });
-    } catch (err: any) {
-      setError(err.message || "Booking failed. Please check your details and try again.");
+      const res = await saveBooking(carId, bookingPayload);
+      
+      setSuccess('Booking created successfully! Redirecting...');
+      setTimeout(() => {
+        navigate(`/bookings/${res.bookingId}`);
+      }, 1500);
+    } catch (error) {
+      console.error('Booking error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to complete booking');
     } finally {
       setIsBooking(false);
     }
-  }, [validateForm, formData, pickupLocation, dropoffLocation, carId, selectedExtras, navigate, car, calculateTotal]);
+  }, [validateForm, formData, selectedExtras, dropoffLocation, carId, navigate]);
 
-  const handleLocationSelect = useCallback((lat: number, lng: number) => {
-    const newLocation = {
-      location: "Custom Location",
-      latitude: lat.toString(),
-      longitude: lng.toString(),
-      is_active: 1
-    };
-
-    if (selectingType === "pickup") {
-      setPickupLocation(newLocation);
-    } else if (selectingType === "dropoff") {
-      setDropoffLocation(newLocation);
-    }
-    setSelectedLocation({ lat, lng });
-    setShowMap(false);
-  }, [selectingType]);
-
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   }, []);
 
+  const resetDropoffLocation = useCallback(() => {
+    if (locations.length > 0) {
+      const defaultLocation = locations[0];
+      const newLocation = {
+        lat: parseFloat(defaultLocation.latitude),
+        lng: parseFloat(defaultLocation.longitude),
+        location: defaultLocation.location,
+        id: defaultLocation.id,
+      };
+      setDropoffLocation(newLocation);
+      localStorage.setItem('dropoffLocation', JSON.stringify(newLocation));
+    } else {
+      setDropoffLocation(null);
+      localStorage.removeItem('dropoffLocation');
+    }
+  }, [locations]);
+
   useEffect(() => {
-    detectCurrentLocation();
     fetchLocations();
-  }, [detectCurrentLocation, fetchLocations]);
+  }, [fetchLocations]);
 
   return (
     <div className="flex flex-col md:flex-row gap-6 relative">
-      {/* Booking Form */}
       <form onSubmit={handleBooking} className="rental-form rounded-xl bg-[#F7F8FA] hover:shadow-lg p-6 cursor-pointer flex-1">
-        {/* Date and Time Selection */}
+        {/* Form inputs remain the same as before */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {['pickup', 'dropoff'].map((type) => (
             <React.Fragment key={type}>
               <div className="form-group">
-                <label className="block mb-2 text-sm font-medium">{type === 'pickup' ? 'Pick-Up' : 'Drop-Off'} Date</label>
+                <label className="block mb-2 text-sm font-medium">
+                  {type === 'pickup' ? 'Pickup Date' : 'Dropoff Date'}
+                </label>
                 <input
                   type="date"
                   name={`${type}Date`}
                   value={formData[`${type}Date` as keyof typeof formData]}
                   onChange={handleInputChange}
-                  min={type === 'dropoff' ? formData.pickupDate || new Date().toISOString().split("T")[0] : new Date().toISOString().split("T")[0]}
+                  min={type === 'dropoff' ? formData.pickupDate || new Date().toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#E6911E] focus:border-[#E6911E]"
                   required
                 />
               </div>
-
               <div className="form-group">
-                <label className="block mb-2 text-sm font-medium">{type === 'pickup' ? 'Pick-Up' : 'Drop-Off'} Time</label>
+                <label className="block mb-2 text-sm font-medium">
+                  {type === 'pickup' ? 'Pickup Time' : 'Dropoff Time'}
+                </label>
                 <input
                   type="time"
                   name={`${type}Time`}
@@ -305,92 +341,93 @@ export const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
           ))}
         </div>
 
-        {/* Location Selection */}
-        {['pickup', 'dropoff'].map((type) => (
-          <div className="my-4" key={type}>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium">{type === 'pickup' ? 'Pick-Up' : 'Drop-Off'} Location</label>
-              <button 
-                type="button"
-                onClick={() => {
-                  setSelectingType(type as "pickup" | "dropoff");
-                  setShowMap(true);
-                }}
-                className="text-sm text-[#E6911E] hover:underline"
-              >
-                Select on Map
-              </button>
-            </div>
-            <select
-              name={`${type}Location`}
-              value={type === 'pickup' ? pickupLocation?.id || '' : dropoffLocation?.id || ''}
-              onChange={(e) => {
-                const selected = locations.find(loc => loc.id === Number(e.target.value));
-                type === 'pickup' ? setPickupLocation(selected || null) : setDropoffLocation(selected || null);
-              }}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#E6911E] focus:border-[#E6911E]"
-              required
-            >
-              <option value="">Select a location</option>
-              {locations.map((loc) => (
-                <option key={`${type}-${loc.id}`} value={loc.id}>
-                  {loc.location} (Lat: {loc.latitude}, Lng: {loc.longitude})
-                </option>
-              ))}
-            </select>
-          </div>
-        ))}
-
-        {/* Extras */}
+        {/* Extras section */}
         <div className="extras-section my-4">
-          <h3 className="font-medium mb-2 text-sm">Add Extra:</h3>
+          <h3 className="font-medium mb-2 text-sm">Extras:</h3>
           {EXTRAS_LIST.map((extra) => (
             <label key={extra.id} className="flex items-center mb-2 text-sm">
               <input
                 type="checkbox"
                 checked={selectedExtras.includes(extra.id)}
-                onChange={() => 
-                  setSelectedExtras(prev =>
-                    prev.includes(extra.id)
-                      ? prev.filter(id => id !== extra.id)
-                      : [...prev, extra.id]
-                  )
-                }
+                onChange={() => setSelectedExtras(prev =>
+                  prev.includes(extra.id) ? prev.filter(id => id !== extra.id) : [...prev, extra.id]
+                )}
                 className="mr-2 w-4 h-4 text-[#E6911E] focus:ring-[#E6911E] border-gray-300 rounded"
               />
-              {extra.label} (+${extra.price})
+              {extra.label} (+{extra.price} SAR)
             </label>
           ))}
         </div>
 
-        {/* Price Summary */}
+        {/* Location selection (only shown when additional driver is selected) */}
+        {selectedExtras.includes('driver') && (
+          <div className="my-4">
+            <div className='my-4'>
+              <label className="block mb-2 text-sm font-medium">Pickup Location</label>
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <p className="font-medium">{FIXED_PICKUP_LOCATION.location}</p>
+              </div>
+            </div>
+            <label className="block mb-2 text-sm font-medium">Dropoff Location</label>
+            <div className="flex lg:flex-col gap-2">
+              <div className="flex-1 p-2 bg-gray-100 rounded-lg">
+                {dropoffLocation ? (
+                  <p className="font-medium text-right">
+                    {dropoffLocation.location || 'Dropoff location not selected'}
+                  </p>
+                ) : (
+                  <p className="text-gray-500">Dropoff location not selected</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMap(true)}
+                className="px-4 py-2 bg-[#E6911E] text-white rounded-lg"
+              >
+                Select on Map
+              </button>
+              <button
+                type="button"
+                onClick={resetDropoffLocation}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Price summary */}
         <div className="price-summary bg-gray-50 p-4 rounded-lg my-4">
           <h3 className="font-bold mb-3 text-lg">Price Summary:</h3>
           <div className="price-row flex justify-between mb-2 text-sm">
-            <span>Sub Total:</span>
-            <span>${typeof car.price === "number" ? car.price.toFixed(2) : parseFloat(car.price).toFixed(2)}</span>
+            <span>Base Price:</span>
+            <span>{typeof car.price === 'number' ? car.price.toFixed(2) : parseFloat(car.price).toFixed(2)} SAR</span>
           </div>
           {selectedExtras.length > 0 && (
             <div className="price-row flex justify-between mb-2 text-sm">
               <span>Extras:</span>
-              <span>${selectedExtras.includes("driver") ? "55.00" : "0.00"}</span>
+              <span>{selectedExtras.includes('driver') ? '55.00' : '0.00'} SAR</span>
             </div>
           )}
           <div className="price-row flex justify-between mb-2 text-sm">
             <span>Tax:</span>
-            <span>$50.00</span>
+            <span>50.00 SAR</span>
           </div>
           <div className="price-row flex justify-between font-bold text-lg pt-2 border-t border-gray-200">
             <span>Total:</span>
-            <span className="text-[#E6911E]">${calculateTotal().toFixed(2)}</span>
+            <span className="text-[#E6911E]">{calculateTotal().toFixed(2)} SAR</span>
           </div>
         </div>
 
-        {/* Messages */}
+        {/* Error and success messages */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
             <strong className="font-bold">Error!</strong>
             <span className="block sm:inline"> {error}</span>
+            <button onClick={() => setError(null)} className="absolute top-1 right-1 text-red-700">
+              ×
+            </button>
           </div>
         )}
         {success && (
@@ -400,99 +437,90 @@ export const RentSidebar: React.FC<RentSidebarProps> = ({ car, carId }) => {
           </div>
         )}
 
-        {/* Submit Button */}
+        {/* Submit button */}
         <button
           type="submit"
           disabled={isBooking}
-          className={`w-full bg-[#E6911E] hover:bg-[#D6820E] text-white py-3 rounded-lg transition-colors font-medium ${isBooking ? 'opacity-70 cursor-not-allowed' : ''}`}
+          className={`w-full bg-[#E6911E] hover:bg-[#D6820E] text-white py-3 rounded-lg transition-colors font-medium ${
+            isBooking ? 'opacity-70 cursor-not-allowed' : ''
+          }`}
         >
           {isBooking ? (
             <>
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
               Processing...
             </>
           ) : (
-            "Book Now"
+            'Book Now'
           )}
         </button>
       </form>
 
-      {/* Map Modal */}
-      {showMap && currentPosition && (
+      {/* Location map modal */}
+      {showMap && (
         <div className="fixed inset-0 z-50 bg-white flex flex-col">
-          <LocationMap 
-            currentPos={currentPosition} 
-            onLocationSelect={handleLocationSelect} 
-            selectedLocation={selectedLocation}
-            className="h-full w-full"
-          />
-          <button
-            onClick={() => setShowMap(false)}
-            className="absolute top-4 right-4 bg-white p-2 rounded shadow-md hover:bg-gray-100 z-[1000]"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      )}
+          <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Select Dropoff Location</h2>
+            <button
+              onClick={() => setShowMap(false)}
+              className="p-2 rounded hover:bg-gray-200"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-      {/* Map Preview */}
-      {/* <div className="h-96 w-full md:w-1/2">
-        {currentPosition && (
-          <MapContainer
-            center={[currentPosition.lat, currentPosition.lng]}
-            zoom={13}
-            scrollWheelZoom
-            className="h-full w-full rounded-xl"
-          >
-            <TileLayer 
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          <div className="relative flex-1">
+            <LocationMap
+              pickupLocation={FIXED_PICKUP_LOCATION}
+              dropoffLocation={dropoffLocation}
+              onLocationSelect={handleLocationSelect}
             />
 
-            {pickupLocation && (
-              <Marker
-                position={[parseFloat(pickupLocation.latitude), parseFloat(pickupLocation.longitude)]}
-                icon={pickupIcon}
-              >
-                <Popup>Pickup Location</Popup>
-              </Marker>
+            {loadingLocation && (
+              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                <div className="bg-white p-4 rounded-lg shadow-lg flex items-center">
+                  <svg
+                    className="animate-spin h-5 w-5 mr-2 text-[#E6911E]"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <span>Loading location...</span>
+                </div>
+              </div>
             )}
-
-            {dropoffLocation && (
-              <Marker
-                position={[parseFloat(dropoffLocation.latitude), parseFloat(dropoffLocation.longitude)]}
-                icon={dropoffIcon}
-              >
-                <Popup>Dropoff Location</Popup>
-              </Marker>
-            )}
-
-            {pickupLocation && dropoffLocation && (
-              <>
-                <Polyline
-                  positions={[
-                    [parseFloat(pickupLocation.latitude), parseFloat(pickupLocation.longitude)],
-                    [parseFloat(dropoffLocation.latitude), parseFloat(dropoffLocation.longitude)]
-                  ]}
-                  color="purple"
-                  weight={4}
-                  opacity={0.8}
-                />
-                <FitBounds
-                  pickupLocation={pickupLocation}
-                  dropoffLocation={dropoffLocation}
-                />
-              </>
-            )}
-          </MapContainer>
-        )}
-      </div> */}
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+});
+
 export default RentSidebar;

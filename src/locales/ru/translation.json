@@ -1,0 +1,79 @@
+{
+  "header": {
+    "home": "Главная",
+    "vehicles": "Транспорт",
+    "about": "О нас",
+    "how_it_works": "Как это работает",
+    "login": "Вход",
+    "logout": "Выход"
+  },
+  "button": {
+    "submit": "Отправить",
+    "cancel": "Отмена"
+  },
+  "form": {
+    "name": "Имя",
+    "email": "Эл. почта",
+    "password": "Пароль",
+    "confirm_password": "Подтвердите пароль"
+  },
+  "message": {
+    "success": "Успешно",
+    "error": "Ошибка"
+  },
+  "vehicle": {
+    "name": "Название",
+    "price": "Цена",
+    "description": "Описание"
+  },
+  "about": {
+    "title": "О нас",
+    "description": "Мы - компания, которая занимается разработкой и продажей транспортных средств."
+  },
+  "how_it_works": {
+    "title": "Как это работает",
+    "description": "Мы предлагаем вам простой и быстрый способ получить доступ к транспортным средствам."
+  },
+  "contact": {
+    "title": "Контакты",
+    "description": "Вы можете связаться с нами по следующим адресам:"
+  },
+  "footer": {
+    "title": "Footer",
+    "description": "Footer description"
+  },
+  "vehicle": {
+    "title": "Транспорт",
+    "description": "Транспортные средства",
+    "price": "Цена",
+    "button": " more",
+    "price_per_day": "Цена за день",
+    "price_per_km": "Цена за км",
+    "price_per_kg": "Цена за кг",
+    "price_per_hour": "Цена за час",
+    "price_per_minute": "Цена за минута",
+    "price_per_second": "Цена за секунду",
+    "price_per_month": "Цена за месяц",
+    "price_per_year": "Цена за год",
+    "price_per_week": "Цена за неделю",
+    "price_per_weekend": "Цена за выходные дни",
+    "price_per_holiday": "Цена за праздничные дни",
+    "price_per_weekday": "Цена за будни"
+  },
+  "login": {
+    "title": "Вход",
+    "description": "Войдите в свой аккаунт"
+  },
+  "logout": {
+    "title": "Выход",
+    "description": "Выйдите из своего аккаунта"
+  },
+  "register": {
+    "title": "Регистрация",
+    "description": "Создайте свой аккаунт"
+  },
+  "price": {
+    "title": "Цена",
+    "description": "Цена за транспортное средство"
+  }
+}
