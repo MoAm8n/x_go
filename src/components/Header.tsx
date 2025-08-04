@@ -7,7 +7,6 @@ import { HiMiniBars3CenterLeft } from "react-icons/hi2";
 import Sidebar from "./Sidebar";
 import { logoutUser } from "../context/Data/DataUser";
 
-// زر اللغة
 const LanguageDropdown = () => {
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -22,7 +21,7 @@ const LanguageDropdown = () => {
   const defaultLang = languages.find((l) => l.code === currentLang)?.label || "English";
   const [selected, setSelected] = useState(defaultLang);
 
-  const handleSelect = (lang) => {
+  const handleSelect = (lang: { code: string; label: string }) => {
     setSelected(lang.label);
     i18n.changeLanguage(lang.code);
     setOpen(false);

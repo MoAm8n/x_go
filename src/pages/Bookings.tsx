@@ -103,7 +103,7 @@ const BookingsPage: React.FC = () => {
               }
             } catch (err) {
               console.error('Error:', err);
-              setError('حدث خطأ أثناء جلب بيانات الحجوزات');
+              setError('You have no bookings');
             } finally {
               setLoading(false);
             }
@@ -172,19 +172,19 @@ const BookingsPage: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="p-4 text-center text-red-500">
-          خطأ: {error}
+          {error}
           <div className="mt-4 flex gap-4 justify-center">
             <button 
               onClick={() => window.location.reload()}
               className="bg-[#E6911E] text-white px-4 py-2 rounded-lg"
             >
-              إعادة المحاولة
+              Reload
             </button>
             <button 
               onClick={handleBackToList}
               className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg"
             >
-              العودة إلى القائمة
+              Browse cars
             </button>
           </div>
         </div>
@@ -199,13 +199,13 @@ return (
           <>
             {bookings.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500 mb-4">لا توجد حجوزات متاحة</p>
+                <p className="text-gray-500 mb-4">No bookings found</p>
                 <button
                   onClick={() => navigate('/carCollection')}
                   className="bg-[#E6911E] text-white px-6 py-2 rounded-lg"
                   aria-label="تصفح السيارات"
                 >
-                  تصفح السيارات
+                  Browse cars
                 </button>
               </div>
             ) : (
@@ -230,8 +230,8 @@ return (
                         <h1 className='text-2xl text-gray-800 mb-5 text-center'>Welcome {user.name}</h1>
                         <div className='my-4'>
                             <button 
-                              onPayment={handlePayment}
-                              className='bg-[#E6911E] hover:bg-[#D58217] text-white w-full h-10 rounded transition-colors flex items-center justify-center gap-2 disabled:opacity-70'
+                                onClick={() => handlePayment(bookings[0].id)}  
+                                className='bg-[#E6911E] hover:bg-[#D58217] text-white w-full h-10 rounded transition-colors flex items-center justify-center gap-2 disabled:opacity-70'
                             >
                               <FaMoneyBillAlt /> 
                               Pay for booking
@@ -242,12 +242,12 @@ return (
                       <>
                         <h1>Booking requires an account — log in or create one to continue</h1>
                         <div className='flex flex-col gap-4 my-4'>
-                          <Link to={'/'}>
+                          <Link to={'/signUp'}>
                             <button className='bg-[#E6911E] text-white w-full h-10'>
                               Sign Up
                             </button>
                           </Link>
-                          <Link to={'/'}>
+                          <Link to={'/signIn'}>
                             <button className='bg-[#E6911E] text-white w-full h-10'>
                               Sign In
                             </button>

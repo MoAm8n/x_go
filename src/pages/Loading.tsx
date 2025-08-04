@@ -158,11 +158,11 @@ const Home = () => {
                     <img
                       src={car.image || "/placeholder-car.jpg"}
                       alt={car.name}
-                      className="w-full h-44 md:h-48 md:object-cover mb-4 rounded-t-lg"
+                      className="w-full h-44 md:h-48 object-cover mb-4 rounded-t-lg"
                       loading="lazy"
                     />
                     <div className="p-4">
-                      <div className="flex justify-between items-center mb-2 max-md:flex-col">
+                      <div className="flex justify-between items-center mb-2">
                         <h3 className="font-bold text-lg">
                               {t(`brand.${car.brand}`)}
                             </h3>
@@ -170,7 +170,7 @@ const Home = () => {
                           {t(`name.${car.name}`)}
                         </h3>
                       </div>
-                      <div className="flex justify-between items-center mb-2 max-md:flex-col">
+                      <div className="flex justify-between items-center mb-2">
                         <h3 className="font-bold text-lg">
                           {t(car.year)}
                         </h3>

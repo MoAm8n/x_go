@@ -15,13 +15,11 @@ const App = () => {
   const location = useLocation();
   const { i18n } = useTranslation();
 
-  // تحديث الاتجاه حسب اللغة
   useEffect(() => {
     const currentLang = i18n.language;
     document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
   }, [i18n.language]);
 
-  // تنظيف بيانات الحجز المؤقتة عند الخروج من صفحة الحجز
   useEffect(() => {
     if (
       !location.pathname.includes("/booking") &&
@@ -32,7 +30,6 @@ const App = () => {
     }
   }, [location]);
 
-  // التحقق من الصفحات التي لا تحتاج هيدر وفوتر
   const isAuthPage =
     location.pathname === "/signin" ||
     location.pathname === "/signup" ||

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LocationMap from './LocationMap';
 import { locationService, saveBooking } from '../../context/Data/DataUser';
@@ -31,10 +31,10 @@ export interface BookingData {
   end_date: string;
   carmodel_id: string;
   user_id?: string;
-  additional_driver: number; // Changed from string to number
+  additional_driver: number; 
   pickup_location: string;
   dropoff_location: string | Location;
-  location_id?: number; // Changed from string | number to number only
+  location_id?: number; 
 }
 
 interface RentSidebarProps {
@@ -136,8 +136,6 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
     try {
       const apiLocations = await locationService.getActiveLocations();
       setLocations(apiLocations);
-
-      // Set default location if none is selected
       if (!dropoffLocation && apiLocations.length > 0) {
         const defaultLocation = {
           lat: parseFloat(apiLocations[0].latitude),
@@ -149,7 +147,6 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
       }
     } catch (error) {
       console.error('Failed to load locations:', error);
-      setError('Failed to load locations. Please try again.');
     }
   }, [dropoffLocation]);
 
@@ -157,7 +154,7 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
     try {
       setLoadingLocation(true);
       setError(null);
-      setSuccess(null); // أضف هذا السطر
+      setSuccess(null);
       
       const locationName = await getCityName(lat, lng);
       
@@ -172,15 +169,15 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
           lat,
           lng,
           location: savedLocation.location,
-          id: savedLocation.id || 0 // تأكد من وجود قيمة افتراضية لـ id
+          id: savedLocation.id || 0
         };
 
         setDropoffLocation(formattedLocation);
         setLocations(prev => [...prev, savedLocation]);
-        setSuccess('تم حفظ الموقع بنجاح');
+        setSuccess('Location saved successfully');
       } catch (saveError) {
         console.error('Error saving location:', saveError);
-        setError('تعذر حفظ الموقع. الرجاء التأكد من اتصال الإنترنت والمحاولة مرة أخرى');
+        setError('Failed to save location. Please login again.');
       }
     } catch (error) {
       console.error('Error getting location name:', error);
@@ -260,7 +257,7 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
         additional_driver: selectedExtras.includes('driver') ? 1 : 0,
         pickup_location: FIXED_PICKUP_LOCATION.location,
         dropoff_location: dropoffLocation?.location || FIXED_PICKUP_LOCATION.location,
-        location_id: selectedExtras.includes('driver') ? dropoffLocation?.id : undefined
+        location_id: selectedExtras.includes('driver') ? dropoffLocation?.id : undefined,
       };
 
       const res = await saveBooking(carId, bookingPayload);
@@ -306,7 +303,6 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
   return (
     <div className="flex flex-col md:flex-row gap-6 relative">
       <form onSubmit={handleBooking} className="rental-form rounded-xl bg-[#F7F8FA] hover:shadow-lg p-6 cursor-pointer flex-1">
-        {/* Form inputs remain the same as before */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {['pickup', 'dropoff'].map((type) => (
             <React.Fragment key={type}>
@@ -340,8 +336,6 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
             </React.Fragment>
           ))}
         </div>
-
-        {/* Extras section */}
         <div className="extras-section my-4">
           <h3 className="font-medium mb-2 text-sm">Extras:</h3>
           {EXTRAS_LIST.map((extra) => (
@@ -354,12 +348,10 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
                 )}
                 className="mr-2 w-4 h-4 text-[#E6911E] focus:ring-[#E6911E] border-gray-300 rounded"
               />
-              {extra.label} (+{extra.price} SAR)
+              {extra.label} (+{extra.price} $)
             </label>
           ))}
         </div>
-
-        {/* Location selection (only shown when additional driver is selected) */}
         {selectedExtras.includes('driver') && (
           <div className="my-4">
             <div className='my-4'>
@@ -396,31 +388,28 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
             </div>
           </div>
         )}
-
-        {/* Price summary */}
         <div className="price-summary bg-gray-50 p-4 rounded-lg my-4">
           <h3 className="font-bold mb-3 text-lg">Price Summary:</h3>
           <div className="price-row flex justify-between mb-2 text-sm">
             <span>Base Price:</span>
-            <span>{typeof car.price === 'number' ? car.price.toFixed(2) : parseFloat(car.price).toFixed(2)} SAR</span>
+            <span>{typeof car.price === 'number' ? car.price.toFixed(2) : parseFloat(car.price).toFixed(2)} $</span>
           </div>
           {selectedExtras.length > 0 && (
             <div className="price-row flex justify-between mb-2 text-sm">
               <span>Extras:</span>
-              <span>{selectedExtras.includes('driver') ? '55.00' : '0.00'} SAR</span>
+              <span>{selectedExtras.includes('driver') ? '55.00' : '0.00'} $</span>
             </div>
           )}
           <div className="price-row flex justify-between mb-2 text-sm">
             <span>Tax:</span>
-            <span>50.00 SAR</span>
+            <span>50.00 $</span>
           </div>
           <div className="price-row flex justify-between font-bold text-lg pt-2 border-t border-gray-200">
             <span>Total:</span>
-            <span className="text-[#E6911E]">{calculateTotal().toFixed(2)} SAR</span>
+            <span className="text-[#E6911E]">{calculateTotal().toFixed(2)} $</span>
           </div>
         </div>
 
-        {/* Error and success messages */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
             <strong className="font-bold">Error!</strong>
@@ -437,7 +426,6 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
           </div>
         )}
 
-        {/* Submit button */}
         <button
           type="submit"
           disabled={isBooking}
@@ -467,8 +455,6 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
           )}
         </button>
       </form>
-
-      {/* Location map modal */}
       {showMap && (
         <div className="fixed inset-0 z-50 bg-white flex flex-col">
           <div className="p-4 bg-gray-100 border-b flex justify-between items-center">

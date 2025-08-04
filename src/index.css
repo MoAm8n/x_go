@@ -20,7 +20,7 @@ body{
   display: none; /* Chrome/Safari/Webkit */
 }
 
-.main-content{
+/* .main-content{
   padding-top: 80px;
 }
 
@@ -28,7 +28,7 @@ body{
     .main-content{
     padding-top: 35px;
 }
-}
+} */
 html {
   scroll-behavior: smooth;
 }

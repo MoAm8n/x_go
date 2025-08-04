@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { IoMdClose } from 'react-icons/io';
+import { useTranslation } from 'react-i18next';
 import logo from "../../public/images/logo.png";
 
 interface SidebarProps {
@@ -8,14 +10,88 @@ interface SidebarProps {
   closeSidebar: () => void;
 }
 
+interface Language {
+  code: string;
+  label: string;
+  dir?: 'ltr' | 'rtl';
+}
+
+const LanguageDropdown = () => {
+  const { i18n } = useTranslation();
+  const [open, setOpen] = useState(false);
+
+  const languages: Language[] = [
+    { code: "ar", label: "العربية", dir: 'rtl' },
+    { code: "ru", label: "Русский" },
+    { code: "en", label: "English" },
+  ];
+
+  const currentLang = i18n.language || "en";
+  const [selected, setSelected] = useState(
+    languages.find((l) => l.code === currentLang) || languages[2]
+  );
+
+  const handleSelect = (lang: Language) => {
+    setSelected(lang);
+    i18n.changeLanguage(lang.code);
+    if (lang.dir) {
+      document.documentElement.dir = lang.dir;
+    }
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative mt-4 mx-4">
+      <button 
+        onClick={() => setOpen(!open)}
+        className="w-full text-left py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 transition flex justify-between items-center"
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span>{selected.label}</span>
+        <span className="transform transition-transform duration-200">
+          {open ? '↑' : '↓'}
+        </span>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute top-full left-0 w-full bg-white shadow-lg rounded-md mt-1 z-10 border border-gray-200"
+            role="listbox"
+          >
+            {languages.map((lang) => (
+              <div
+                key={lang.code}
+                onClick={() => handleSelect(lang)}
+                className={`px-4 py-2 hover:bg-gray-50 cursor-pointer ${
+                  selected.code === lang.code ? 'bg-gray-100 font-medium' : ''
+                }`}
+                role="option"
+                aria-selected={selected.code === lang.code}
+              >
+                {lang.label}
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
-  const links = [
-    { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
-    { name: 'How it works ', path: '/how-it-work' },
-    { name: 'Charging', path: '/charging' },
-    { name: 'Vehicles', path: '/vehicles' },
-    { name: 'Language', path: '/language' },
+  const { t } = useTranslation();
+
+  const linkKeys = [
+    { key: 'home', path: '/' },
+    { key: 'about', path: '/about' },
+    { key: 'how_it_works', path: '/how-it-work' },
+    { key: 'charging', path: '/charging' },
+    { key: 'vehicles', path: '/vehicles' },
   ];
 
   return (  
@@ -34,34 +110,50 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.3, ease: 'easeInOut' }}
-            className="fixed left-0 top-0 w-3/4 h-full bg-white p-3 pt-6 lg:hidden overflow-y-auto z-50 shadow-lg"
+            className="fixed left-0 top-0 w-3/4 h-full bg-white p-4 lg:hidden overflow-y-auto z-50 shadow-lg flex flex-col"
           >
-            <button 
-              className="text-2xl text-gray-800 hover:text-[#E6911E] transition duration-300"
-              aria-label="Close Sidebar"
-              type="button"
-              onClick={closeSidebar}
-            >
-              <IoMdClose size={24} />
-            </button>
-            <div className='flex justify-center'>
-              <img src={logo} alt="logo" loading="lazy"/>
+            <div className="flex justify-between items-center mb-6">
+              <div className='flex justify-center w-full'>
+                <img 
+                  src={logo} 
+                  alt={t('logo_alt') || "Company Logo"} 
+                  loading="lazy" 
+                  className="h-10 object-contain" 
+                />
+              </div>
+              <button 
+                className="text-gray-800 hover:text-[#E6911E] transition duration-300 p-1"
+                aria-label={t('close_sidebar') || "Close sidebar"}
+                onClick={closeSidebar}
+              >
+                <IoMdClose size={24} />
+              </button>
             </div>
-            <div className="flex flex-col gap-1 mt-5">
-              {links.map((item) => (
-                <NavLink
-                  key={item.name}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    isActive
-                      ? 'bg-orange-gradient text-white font-bold py-2 ps-4 rounded-md'
-                      : 'text-gray transition duration-300  py-2 ps-4'
-                  }
-                  onClick={closeSidebar}
-                >
-                  {item.name}
-                </NavLink>
-              ))}
+
+            <nav className="flex">
+              <ul className="flex flex-col gap-1 w-full">
+                {linkKeys.map((item) => (
+                  <li key={item.key}>
+                    <NavLink
+                      to={item.path}
+                      className={({ isActive }) =>
+                        `block py-3 px-4 rounded-md transition ${
+                          isActive
+                            ? 'bg-orange-gradient text-white font-bold'
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`
+                      }
+                      onClick={closeSidebar}
+                    >
+                      {t(`header.${item.key}`)}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <LanguageDropdown />
             </div>
           </motion.div>
         </>
