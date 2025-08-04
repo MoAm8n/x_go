@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { API_KEY } from "../../context/api/Api";
+import {API_URL } from "../../context/api/Api";
 import cashIcon from "../../assets/PaymentForm/ion_cash (1).png";
 import visaIcon from "../../assets/PaymentForm/Vector (7).png";
 
 const PaymobButton = () => {
-  const apiKey = API_KEY
+  const apiKey = API_URL
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
 
   const savePaymentMethod = async ({
