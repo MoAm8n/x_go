@@ -8,7 +8,7 @@ import 'leaflet/dist/leaflet.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <HashRouter>
+    <HashRouter basename="/x_go">
       <App />
     </HashRouter>
   </React.StrictMode>

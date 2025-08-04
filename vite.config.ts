@@ -25,11 +25,16 @@ export default defineConfig({
           charts: ['recharts'],
           i18n: ['i18next', 'react-i18next'],
           vendor: ['axios', 'lodash']
-        }
+        },
+        entryFileNames: `assets/[name].js`,
+        chunkFileNames: `assets/[name].js`,
+        assetFileNames: `assets/[name].[ext]`
       }
     }
   },
-  preview: {
-    historyApiFallback: true
+  server: {
+    proxy: {
+      // يمكنك إضافة proxy هنا إذا لزم الأمر
+    }
   }
 })
