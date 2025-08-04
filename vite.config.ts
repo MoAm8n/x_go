@@ -7,18 +7,14 @@ export default defineConfig({
   plugins: [
     react(),
     ViteImageOptimizer({
-      jpg: {
-        quality: 70,
-      },
-      png: {
-        quality: 80,
-      },
-      webp: {
-        quality: 70,
-      },
+      jpg: { quality: 70 },
+      png: { quality: 80 },
+      webp: { quality: 70 }
     })
   ],
   build: {
+    outDir: 'dist',
+    emptyOutDir: true,
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
@@ -32,5 +28,8 @@ export default defineConfig({
         }
       }
     }
+  },
+  preview: {
+    historyApiFallback: true
   }
 })
