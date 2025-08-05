@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "postbuild": "cpx \"dist/index.html\" \"dist/404.html\" & cpx \"public/_redirects\" \"dist/\" || echo Redirects file missing",
-    "deploy": "npm run build && gh-pages -d dist",
+    "postbuild": "cpx \"dist/index.html\" \"dist/404.html\" && echo '/* /index.html 200' > dist/_redirects && echo '' > dist/.nojekyll",
+    "deploy": "npm run build && gh-pages -d dist --dotfiles",
     "build:analyze": "npm run build && npx source-map-explorer dist/assets/index-*.js",
     "fix-deps": "npm install --force && npm install sharp vite-plugin-image-optimizer",
     "build:production": "vite build --mode production",
