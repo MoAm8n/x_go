@@ -41,7 +41,7 @@ const AutoCarousel = () => {
                                 className="w-full h-screen max-sm:h-[400px] lg:h-[580px] xl:h-[582px] object-cover" 
                                 loading='lazy' 
                             />
-                            <h3 className="lg:text-3xl md:text-sm text-xs font-bold text-white absolute bottom-2 left-1/2 -translate-x-1/2">
+                            <h3 className="lg:text-[29px] md:text-sm text-xs font-bold text-white absolute bottom-4 left-1/2 -translate-x-1/2">
                                 {slide.name}
                             </h3>
                         </div>
