@@ -303,7 +303,7 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
   return (
     <div className="flex flex-col md:flex-row gap-6 relative">
       <form onSubmit={handleBooking} className="rental-form rounded-xl bg-[#F7F8FA] hover:shadow-lg p-6 cursor-pointer flex-1">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           {['pickup', 'dropoff'].map((type) => (
             <React.Fragment key={type}>
               <div className="form-group">

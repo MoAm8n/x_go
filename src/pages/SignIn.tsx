@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { authUsers, saveBooking } from '../context/Data/DataUser';
-import type{BookingData} from '../context/Data/DataUser'
+import type { BookingData } from '../context/Data/DataUser';
+import { useTranslation } from "react-i18next";
+
 const SignIn: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -9,11 +11,29 @@ const SignIn: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const { t, i18n } = useTranslation();
 
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
+
+  const languages = [
+    { code: "ar", label: "العربية", dir: "rtl" },
+    { code: "en", label: "English", dir: "ltr" },
+    { code: "ru", label: "Русский", dir: "ltr" },
+  ];
+
+  const [currentLanguage, setCurrentLanguage] = useState(
+    languages.find(lang => lang.code === i18n.language) || languages[0]
+  );
+
+  const handleLanguageChange = (lang: typeof languages[0]) => {
+    setCurrentLanguage(lang);
+    i18n.changeLanguage(lang.code);
+    document.documentElement.dir = lang.dir;
+    setOpen(false);
+  };
 
   useEffect(() => {
     if (location.state?.email) {
@@ -71,13 +91,13 @@ const SignIn: React.FC = () => {
       }
       navigate('/bookings');
     } catch (error) {
-      let errorMessage = 'حدث خطأ غير متوقع أثناء تسجيل الدخول';
+      let errorMessage = t('signin.unexpected_error');
       if (error instanceof Error) {
         errorMessage = error.message;
       }
       setError(errorMessage);
 
-      if (error instanceof Error && error.message.includes('غير صحيحة')) {
+      if (error instanceof Error && error.message.includes(t('signin.incorrect_credentials'))) {
         setTimeout(() => {
           navigate('/signup', { state: { email: form.email } });
         }, 3000);
@@ -86,50 +106,53 @@ const SignIn: React.FC = () => {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#FFB347] via-[#FFE0B2] to-[#fdf9f2] sm:px-4 md:px-32">
       <div className="flex flex-col lg:flex-row justify-between item-center w-full bg-transparent overflow-hidden">
-        <div className="w-full flex flex-col justify-evenly max-lg:pt-16">
+        <div className="w-full flex flex-col justify-evenly max-lg:pt-14">
           <div className="w-full max-lg:text-center">
             <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 lg:w-3/4 max-lg:px-10 max-lg:py-2">
-              Welcome, Your next drive is waiting
+              {t("signin.welcome_message")}
             </h2>
             <p className="text-gray-600 lg:w-3/4 text-lg max-lg:px-6">
-            Lorem ipsum dolor sit amet consectetur. A tellus enim orci a eget porttitor et.
+              {t("signin.welcome_subtext")}
             </p>
           </div>
           <div className="relative flex flex-col sm:flex-row w-full max-lg:justify-center items-center gap-4 max-lg:py-8">
             <div className="relative">
               <button
                 onClick={() => setOpen((prev) => !prev)}
-                className="px-4 py-2 rounded-lg font-medium text-[14px] bg-inherit border border-gray-300 lg:mr-10"
+                className="px-4 py-2 rounded-lg font-medium text-[14px] bg-inherit border border-gray-300 lg:mr-10 flex items-center gap-2"
                 type="button"
               >
-                🌐 Language
+                🌐 {currentLanguage.label}
               </button>
               {open && (
-                <ul className="absolute left-0 bottom-full my-2 bg-white border shadow-md w-40 z-50 rounded-lg">
-                  <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
-                    العربية
-                  </li>
-                  <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
-                    English
-                  </li>
-                  <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
-                    Russian{" "}
-                  </li>
+                <ul className="absolute left-0 bg-white border shadow-md w-44 z-[10000] rounded-lg">
+                  {languages.map((lang) => (
+                    <li 
+                      key={lang.code}
+                      className={`hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px] ${
+                        lang.code === currentLanguage.code ? 'bg-gray-100' : ''
+                      }`}
+                      onClick={() => handleLanguageChange(lang)}
+                    >
+                      {lang.label}
+                    </li>
+                  ))}
                 </ul>
               )}
             </div>
             <nav className="flex gap-4">
               <a href="#" className="text-[14px] text-[#E6911E]">
-                Terms
+                {t("common.terms")}
               </a>
               <a href="#" className="text-[14px] text-[#E6911E]">
-                Plans
+                {t("common.plans")}
               </a>
               <a href="#" className="text-[14px] text-[#E6911E]">
-                Contact Us
+                {t("common.contact_us")}
               </a>
             </nav>
           </div>
@@ -139,26 +162,26 @@ const SignIn: React.FC = () => {
             {error && (
               <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-sm">
                 {error}
-                {error.includes('غير صحيحة') && (
+                {error.includes(t('signin.incorrect_credentials')) && (
                   <div className="mt-2">
                     <Link 
                       to="/signup" 
                       state={{ email: form.email }}
                       className="text-blue-600 hover:underline"
                     >
-                      إنشاء حساب جديد
+                      {t("signin.create_account")}
                     </Link>
                   </div>
                 )}
               </div>
             )}
 
-            <h3 className="text-2xl font-extrabold text-gray-900 my-3">Sign In</h3>
-            <p className="mb-6">Enter your email to login to your account</p>
+            <h3 className="text-2xl font-extrabold text-gray-900 my-3">{t("signin.title")}</h3>
+            <p className="mb-6">{t("signin.subtitle")}</p>
 
             <div>
               <label htmlFor="email" className="block my-2 text-sm font-semibold text-gray-700">
-                Email
+                {t("signin.email_label")}
               </label>
               <input
                 type="email"
@@ -174,7 +197,7 @@ const SignIn: React.FC = () => {
 
             <div>
               <label className="block my-2 text-sm font-semibold text-gray-700">
-                Password
+                {t("signin.password_label")}
               </label>
               <div className="relative">
                 <input
@@ -192,7 +215,6 @@ const SignIn: React.FC = () => {
                   onClick={() => setShowPassword((prev) => !prev)}
                   tabIndex={-1}
                 >
-                  {/* أيقونة إظهار/إخفاء كلمة السر */}
                 </button>
               </div>
             </div>
@@ -203,14 +225,14 @@ const SignIn: React.FC = () => {
                 className="w-full text-white bg-[#E6911E] hover:bg-[#cc7f15] font-bold rounded-lg text-base px-5 py-2 text-center transition-colors shadow-lg"
                 disabled={loading}
               >
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loading ? t('signin.signing_in') : t('signin.signin_button')}
               </button>
             </div>
 
             <div className="text-xs text-gray-400 mt-4 text-center">
-              Don't have an account?{' '}
+              {t("signin.no_account")}{' '}
               <Link to="/signup" className="text-[#E6911E] hover:underline">
-                Sign Up
+                {t("signin.signup_link")}
               </Link>
             </div>
           </form>
