@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../../context/api/Api";
 import { toast } from "react-toastify";
@@ -23,7 +23,6 @@ const AddCarBrand = ({ carBrand, setCarBrand, carLogo, setCarLogo }: AddCarBrand
   const [newBrandName, setNewBrandName] = useState("");
   const [newBrandLogo, setNewBrandLogo] = useState<File | null>(null);
 
-  // جلب البرندات من API عند تحميل الكومبوننت مع التوكن
   useEffect(() => {
     const token = localStorage.getItem("tokenAdman");
     axios.get(`${API_URL}/api/admin/Brands`, {
@@ -40,7 +39,6 @@ const AddCarBrand = ({ carBrand, setCarBrand, carLogo, setCarLogo }: AddCarBrand
     });
   }, []);
 
-  // عند إضافة برند جديد (UI فقط)
  const handleAddBrand = () => {
   if (newBrandName) {
     const formData = new FormData();
@@ -59,7 +57,6 @@ const AddCarBrand = ({ carBrand, setCarBrand, carLogo, setCarLogo }: AddCarBrand
         },
       })
       .then((res) => {
-        // تحديث الواجهة بالبرند الجديد بعد نجاح الإضافة
         const newBrand = {
           id: res.data.data.id,
           name: res.data.data.attributes.name,
@@ -144,7 +141,6 @@ const AddCarBrand = ({ carBrand, setCarBrand, carLogo, setCarLogo }: AddCarBrand
           </button>
         </div>
       )}
-      {/* عرض صورة اللوجو إذا تم اختيارها */}
       {carLogo && (
         <div className="mt-2 flex items-center gap-2">
           <span className="text-xs text-gray-500">الشعار المختار:</span>

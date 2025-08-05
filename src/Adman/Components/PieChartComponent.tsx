@@ -81,7 +81,6 @@ const PieChartComponent = () => {
   if (loading) return <p>جاري التحميل...</p>;
   if (!stats) return <p>لا توجد بيانات متاحة</p>;
 
-  // تحويل البيانات لنسب مئوية
   const total = stats.initiated + stats.assigned + stats.canceled + stats.completed;
   const pieData = [
     { name: "مبدأ", value: (stats.initiated / total) * 100, trend: "up" },

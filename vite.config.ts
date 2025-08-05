@@ -34,7 +34,6 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // يمكنك إضافة proxy هنا إذا لزم الأمر
     }
   }
 })
