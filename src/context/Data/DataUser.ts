@@ -232,7 +232,7 @@ export const authUsers = async (credentials: SignInData): Promise<AuthResponse> 
       const errorMessage = error.response?.data?.message || 'حدث خطأ أثناء تسجيل الدخول';
       console.error("خطأ أثناء تسجيل الدخول:", errorMessage);
       if (error.response?.status === 401) {
-        throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+        throw new Error('هل نسيت كلمة السر');
       }
       throw new Error(errorMessage);
     }

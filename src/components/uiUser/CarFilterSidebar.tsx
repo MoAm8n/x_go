@@ -12,7 +12,6 @@ import {
   Checkbox,
   FormControlLabel,
   Button,
-  CircularProgress,
 } from "@mui/material";
 
 export interface Brand {
@@ -36,6 +35,7 @@ export interface FilterState {
   selectedTypes: string[];
   priceRange: [number, number];
 }
+
 
 interface Props {
   onFilterChange: (filters: FilterState) => void;
@@ -128,13 +128,17 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
   }, [filters, onFilterChange]);
 
   const handleBrandToggle = useCallback((brandId: number) => {
-    setFilters((prev) => {
-      const newBrands = prev.selectedBrands.includes(brandId)
-        ? prev.selectedBrands.filter((b) => b !== brandId)
-        : [...prev.selectedBrands, brandId];
-      return { ...prev, selectedBrands: newBrands };
+    setFilters(prev => {
+      const newFilters = {
+        ...prev,
+        selectedBrands: prev.selectedBrands.includes(brandId)
+          ? prev.selectedBrands.filter(b => b !== brandId)
+          : [...prev.selectedBrands, brandId]
+      };
+      onFilterChange(newFilters);
+      return newFilters;
     });
-  }, []);
+  }, [onFilterChange]);
 
   const handleTypeToggle = useCallback((typeName: string) => {
     setFilters((prev) => {

@@ -147,7 +147,8 @@
  "common": {
     "terms": "Условия",
     "plans": "Планы",
-    "contact_us": "Свяжитесь с нами"
+    "contact_us": "Свяжитесь с нами",
+    "language": "Язык"
   },
   "signup": {
     "welcome_message": "Добро пожаловать, ваше следующее путешествие ждет вас",
@@ -186,6 +187,15 @@
     "incorrect_credentials": "Неверные учетные данные",
     "fill_all_fields": "Пожалуйста, заполните все поля",
     "go_to_signup": "Перейти к регистрации",
-    "create_account": "Создать новый аккаунт"
+    "create_account": "Создать новый аккаунт",
+    "forgot_password": "забыли_пароль",
+    "Let’s get you back behind the wheel": "Давайте вернем вас за руль",
+    "Enter your email address below to receive a link to reset your password": "Введите свой адрес электронной почты ниже, чтобы получить ссылку для сброса пароля",
+    "email": "Электронная почта",
+    "password": "Пароль",
+    "submit": "Отправить",
+    "cancel": "Отмена",
+    "email_placeholder": "Введите свой адрес электронной почты",
+    "Enter your email to reset your password": "Введите свой адрес электронной почты для сброса пароля"
   }
 }

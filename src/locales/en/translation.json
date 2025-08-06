@@ -148,7 +148,8 @@
     "terms": "Terms",
     "plans": "Plans",
     "contact_us": "Contact Us",
-    "about_us": "About Us"
+    "about_us": "About Us",
+    "language": "Language"
   },
   "signup": {
     "welcome_message": "Welcome, your next journey awaits",
@@ -189,6 +190,14 @@
     "unexpected_error": "An unexpected error occurred during sign in",
     "incorrect_credentials": "Incorrect email or password",
     "go_to_signup": "Go to Sign Up",
-    "create_account": "Create a New Account"
+    "create_account": "Create a New Account",
+    "Let’s get you back behind the wheel": "Let’s get you back behind the wheel",
+    "Enter your email address below to receive a link to reset your password": "Enter your email address below to receive a link to reset your password",
+    "email_placeholder": "Enter your email address",
+    "Enter your email to reset your password": "Enter your email to reset your password",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Submit",
+    "cancel": "Cancel"
   }
 }

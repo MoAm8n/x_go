@@ -3,7 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { signupUser, saveBooking } from '../context/Data/DataUser';
 import type { BookingData } from '../context/Data/DataUser';
 import { useTranslation } from "react-i18next";
-
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 const SignUp: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
@@ -66,6 +67,12 @@ const SignUp: React.FC = () => {
       return;
     }
 
+    if (form.password.length < 8) {
+      setError(t('signup.password_too_short'));
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await signupUser({
         name: form.name,
@@ -82,7 +89,7 @@ const SignUp: React.FC = () => {
       const tempBookingData = location.state?.tempBookingData || 
         JSON.parse(localStorage.getItem('tempBookingData') || '{}');
 
-      if (tempBookingData) {
+      if (tempBookingData?.carmodel_id) {
         try {
           const bookingData: BookingData = {
             start_date: tempBookingData.start_date,
@@ -115,10 +122,9 @@ const SignUp: React.FC = () => {
 
       navigate('/bookings');
     } catch (error) {
-      let errorMessage = t('signup.unexpected_error');
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : t('signup.unexpected_error');
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -127,7 +133,7 @@ const SignUp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#FFB347] via-[#FFE0B2] to-[#fdf9f2] sm:px-4 md:px-32">
-      <div className="flex flex-col lg:flex-row justify-between item-center w-full bg-transparent overflow-hidden">
+      <div className="flex flex-col lg:flex-row justify-between item-center w-full bg-transparent">
         <div className="w-full flex flex-col justify-evenly max-lg:pt-14">
           <div className="w-full max-lg:text-center">
             <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 lg:w-3/4 max-lg:px-10 max-lg:py-2">
@@ -137,7 +143,7 @@ const SignUp: React.FC = () => {
               {t("signup.welcome_subtext")}
             </p>
           </div>
-          <div className="relative flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative flex flex-col sm:flex-row items-center gap-4 max-lg:justify-center max-lg:py-8">
             <div className="relative">
               <button
                 onClick={() => setOpen((prev) => !prev)}
@@ -147,7 +153,7 @@ const SignUp: React.FC = () => {
                 🌐 {currentLanguage.label}
               </button>
               {open && (
-                <ul className="absolute left-0 bg-white border shadow-md w-44 z-[1000] rounded-lg">
+                <ul className="absolute bg-white border shadow-md w-44 z-[1000] rounded-lg">
                   {languages.map((lang) => (
                     <li 
                       key={lang.code}
@@ -175,10 +181,10 @@ const SignUp: React.FC = () => {
             </nav>
           </div>
         </div>
-        <div className="w-full flex flex-col justify-center items-center bg-white shadow-lg rounded-lg">
-          <form className="w-full px-8 py-2 mx-auto" onSubmit={handleSubmit}>
+        <div className="w-full flex py-2 flex-col justify-center items-center bg-white shadow-lg rounded-lg">
+          <form className="w-full px-8 mx-auto" onSubmit={handleSubmit}>
             {error && (
-              <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-sm">
+              <div className="mb-4 bg-red-100 text-red-700 rounded text-sm">
                 {error}
                 {error.includes(t('signup.already_registered')) && (
                   <div className="mt-2">
@@ -194,11 +200,11 @@ const SignUp: React.FC = () => {
               </div>
             )}
 
-            <h3 className="text-2xl font-extrabold text-gray-900 my-3">{t("signup.title")}</h3>
-            <p className="mb-4">{t("signup.subtitle")}</p>
+            <h3 className="text-2xl font-extrabold text-gray-900 ">{t("signup.title")}</h3>
+            <p className="mb-6">{t("signup.subtitle")}</p>
             
-            <div>
-              <label htmlFor="name" className="block my-2 text-sm font-semibold text-gray-700">
+            <div className="mb-4">
+              <label htmlFor="name" className="block my-1 text-sm font-semibold text-gray-700">
                 {t("signup.name_label")}
               </label>
               <input
@@ -207,14 +213,14 @@ const SignUp: React.FC = () => {
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-1 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
                 placeholder={t("signup.name_placeholder")}
                 required
               />
             </div>
 
-            <div>
-              <label htmlFor="email" className="block my-2 text-sm font-semibold text-gray-700">
+            <div className="mb-4">
+              <label htmlFor="email" className="block my-1 text-sm font-semibold text-gray-700">
                 {t("signup.email_label")}
               </label>
               <input
@@ -223,14 +229,14 @@ const SignUp: React.FC = () => {
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
                 placeholder="name@email.com"
                 required
               />
             </div>
 
-            <div>
-              <label htmlFor="phone" className="block my-2 text-sm font-semibold text-gray-700">
+            <div className="mb-4">
+              <label htmlFor="phone" className="block my-1 text-sm font-semibold text-gray-700">
                 {t("signup.phone_label")}
               </label>
               <input
@@ -239,14 +245,14 @@ const SignUp: React.FC = () => {
                 name="phone"
                 value={form.phone}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
                 placeholder="01000000000"
                 required
               />
             </div>
 
-            <div>
-              <label className="block my-2 text-sm font-semibold text-gray-700">
+            <div className="mb-4">
+              <label className="block my-1 text-sm font-semibold text-gray-700">
                 {t("signup.password_label")}
               </label>
               <div className="relative">
@@ -256,16 +262,17 @@ const SignUp: React.FC = () => {
                   value={form.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
                   required
                   minLength={8}
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   onClick={() => setShowPassword((prev) => !prev)}
                   tabIndex={-1}
                 >
+                  {showRepeatPassword ? <VisibilityOffIcon style={{ fontSize: 18 }} /> : <VisibilityIcon style={{ fontSize: 18 }} />}
                 </button>
               </div>
               <p className="text-xs text-gray-400 mt-1">
@@ -273,8 +280,8 @@ const SignUp: React.FC = () => {
               </p>
             </div>
 
-            <div>
-              <label className="block my-2 text-sm font-semibold text-gray-700">
+            <div className="mb-4">
+              <label className="block my-1 text-sm font-semibold text-gray-700">
                 {t("signup.confirm_password_label")}
               </label>
               <div className="relative">
@@ -284,32 +291,41 @@ const SignUp: React.FC = () => {
                   value={form.password_confirmation}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
                   required
                   minLength={8}
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   onClick={() => setShowRepeatPassword((prev) => !prev)}
                   tabIndex={-1}
                 >
+                  {showRepeatPassword ? <VisibilityOffIcon style={{ fontSize: 18 }} /> : <VisibilityIcon style={{ fontSize: 18 }} />}
                 </button>
               </div>
             </div>
 
-            <div className="flex justify-between pt-4">
+            <div className="flex justify-between pt-2">
               <button
                 type="submit"
-                className="w-full text-white bg-[#E6911E] hover:bg-[#cc7f15] font-bold rounded-lg text-base px-5 py-2 text-center transition-colors shadow-lg"
+                className="w-full text-white bg-[#E6911E] hover:bg-[#cc7f15] font-bold rounded-lg text-base px-5 py-3 text-center transition-colors shadow-lg flex justify-center items-center"
                 disabled={loading}
               >
-                {loading ? t('signup.signing_up') : t('signup.signup_button')}
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {t('signup.signing_up')}
+                  </>
+                ) : t('signup.signup_button')}
               </button>
             </div>
           </form>
 
-          <div className="text-sm text-center mt-4 mb-6">
+          <div className="text-sm text-center mt-2">
             {t("signup.have_account")}{' '}
             <Link to="/signin" className="text-[#E6911E] hover:underline">
               {t("signup.signin_link")}

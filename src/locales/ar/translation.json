@@ -146,7 +146,8 @@
   "common": {
     "terms": "الشروط",
     "plans": "الخطط",
-    "contact_us": "اتصل بنا"
+    "contact_us": "اتصل بنا",
+    "language": "اللغة"
   },
   "signup": {
     "welcome_message": "مرحبًا، رحلتك القادمة تنتظرك",
@@ -183,6 +184,15 @@
     "signup_link": "إنشاء حساب",
     "unexpected_error": "حدث خطأ غير متوقع أثناء تسجيل الدخول",
     "incorrect_credentials": "غير صحيحة",
-    "create_account": "إنشاء حساب جديد"
+    "create_account": "إنشاء حساب جديد",
+    "forgot_password": "هل نسيت كلمة السر",
+    "Let’s get you back behind the wheel": "دعنا نعيدك إلى عجلة القيادة",
+    "Enter your email address below to receive a link to reset your password": "أدخل عنوان بريدك الإلكتروني أدناه لتلقي رابط لإعادة تعيين كلمة المرور",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "submit": "إرسال",
+    "cancel": "إلغاء",
+    "email_placeholder": "أدخل بريدك الإلكتروني",
+    "Enter your email to reset your password": "أدخل بريدك الإلكتروني لإعادة تعيين كلمة المرور"
   }
 }
