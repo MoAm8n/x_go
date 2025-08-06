@@ -7,6 +7,7 @@ export default function Model() {
   const [brands, setBrands] = useState([]);
   const [types, setTypes] = useState([]);
   const [models, setModels] = useState([]);
+  const [modelsId, setModelsId] = useState(null);
 
   const [brandId, setBrandId] = useState("");
   const [typeId, setTypeId] = useState("");
@@ -31,7 +32,7 @@ export default function Model() {
   const [images2Preview, setImages2Preview] = useState([]);
 
   // State for car details form
-  const [showCarForm, setShowCarForm] = useState(true);
+  const [showCarForm, setShowCarForm] = useState(false);
   const [plateNumber, setPlateNumber] = useState("");
   const [status, setStatus] = useState("");
   const [carImage, setCarImage] = useState(null);
@@ -212,8 +213,8 @@ export default function Model() {
     formData.append("seats_count", seatsCount);
     formData.append("acceleration", acceleration);
     if (image) formData.append("image", image);
-    images.forEach((img, index) => formData.append(`images[]`, img));
-    images2.forEach((img, index) => formData.append(`images2[]`, img));
+    images.forEach((img, index) => formData.append(`images`, img));
+    images2.forEach((img, index) => formData.append(`images[]`, img));
 
     for (let pair of formData.entries()) {
       console.log(`${pair[0]}: ${pair[1]}`);
@@ -222,6 +223,7 @@ export default function Model() {
     try {
       const response = await axios.post(
         `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names/${modelId}/Models`,
+
         formData,
         {
           headers: {
@@ -230,7 +232,11 @@ export default function Model() {
           },
         }
       );
-      console.log("API Response:", response.data);
+      console.log("brandId", brandId);
+      console.log("typeId", typeId);
+      console.log("modelId", modelId);
+      console.log("API Response:", response.data.data.id);
+      setModelsId(response.data.data.id)
       setYear("");
       setPrice("");
       setEngineType("");
@@ -247,6 +253,9 @@ export default function Model() {
       toast.success("Model details updated successfully");
       setShowCarForm(true);
     } catch (err) {
+      console.log("brandId", brandId);
+      console.log("typeId", typeId);
+      console.log("modelId", modelId);
       const errorMsg =
         err.response?.data?.message || err.message || "An error occurred";
       console.error("API Error:", err.response?.data);
@@ -283,7 +292,9 @@ export default function Model() {
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/admin/Brands/1/Types/1/Model-Names/1/Models/1/Cars`,
+        // `${API_URL}/api/admin/Brands//Types//Model-Names//Models`,
+
+        `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names/${modelId}/Models/${modelsId}/Cars`,
         formData,
         {
           headers: {
@@ -292,6 +303,10 @@ export default function Model() {
           },
         }
       );
+      console.log(brandId);
+      console.log(typeId);
+      console.log(modelId);
+      console.log(models);
       console.log("Car API Response:", response.data);
       setPlateNumber("");
       setStatus("");
@@ -300,8 +315,12 @@ export default function Model() {
       setDescription("");
       setCapacity("");
       toast.success("Car details saved successfully");
-      setShowCarForm(false);
+      setShowCarForm(true);
     } catch (err) {
+      console.log(brandId);
+      console.log(typeId);
+      console.log(modelId);
+      console.log(models[0].id);
       const errorMsg =
         err.response?.data?.message ||
         err.message ||
@@ -690,20 +709,20 @@ export default function Model() {
                 ))}
               </option>
             </select> */}
-          <select
-        className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-        value={status}
-        onChange={(e) => setStatus(e.target.value)}
-      >
-        <option value="" disabled>
-          -- اختر الحالة --
-        </option>
-        {statusCars.map((statusCar) => (
-          <option key={statusCar} value={statusCar}>
-            {statusCar}
-          </option>
-        ))}
-      </select>
+            <select
+              className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="" disabled>
+                -- اختر الحالة --
+              </option>
+              {statusCars.map((statusCar) => (
+                <option key={statusCar} value={statusCar}>
+                  {statusCar}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block mb-1">الصورة (Image)</label>

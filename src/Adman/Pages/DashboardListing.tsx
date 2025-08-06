@@ -3,13 +3,17 @@ import SidebarDashboard from "../Components/SidebarDashboard";
 import HeaderDashboard from "../Components/HeaderDashboard";
 import axios from "axios";
 import { API_URL } from "../../context/api/Api";
-import { useNavigate } from "react-router-dom";
 import { Pencil, Trash } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 export default function Dashboardlisting() {
   const [cars, setCars] = useState([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
-  const navigate = useNavigate();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [carToDelete, setCarToDelete] = useState(null);
 
   // جلب قائمة السيارات
   const fetchCars = async (pageNum) => {
@@ -20,74 +24,99 @@ export default function Dashboardlisting() {
       setLastPage(res.data.meta.last_page);
     } catch (error) {
       console.error("Error fetching cars:", error);
+      toast.error("فشل جلب قائمة السيارات، حاول مرة أخرى.");
     }
   };
 
+  // فتح نافذة تأكيد الحذف
+  const openDeleteModal = (car) => {
+    setCarToDelete(car);
+    setShowDeleteModal(true);
+  };
+
+  // إغلاق نافذة تأكيد الحذف
+  const closeDeleteModal = () => {
+    setCarToDelete(null);
+    setShowDeleteModal(false);
+  };
+
   // دالة الحذف
-  const handleDelete = async (car) => {
-    if (window.confirm("هل أنت متأكد من حذف هذه السيارة؟")) {
-      try {
-        // استخراج المعرفات من بيانات السيارة
-        const brandId = car.relationship.Brand.id; // تصحيح: استخدام معرف العلامة التجارية
-        const typeId = car.relationship.Types.type_id; // حسب تعديلك
-        const modelNameId = car.relationship["Model Names"].model_name_id; // حسب تعديلك
-        const modelId = car.relationship.Models?.id || 1; // قيمة افتراضية
-        const carId = car.id;
+  const handleDelete = async () => {
+    if (!carToDelete) return;
 
-        // تسجيل المعرفات للتحقق
-        console.log("brandId:", brandId);
-        console.log("typeId:", typeId);
-        console.log("modelNameId:", modelNameId);
-        console.log("modelId:", modelId);
-        console.log("carId:", carId);
+    setIsDeleting(true);
+    try {
+      // استخراج المعرفات
+      const brandId = carToDelete.id; // حسب طلبك
+      const typeId = carToDelete.relationship.Types?.type_id;
+      const modelNameId = carToDelete.relationship["Model Names"]?.model_name_id;
+      const modelId = carToDelete.relationship.Models?.id || 1;
+      const carId = carToDelete.id;
 
-        // جلب التوكن من localStorage
-        const token = localStorage.getItem("tokenUser");
-        console.log("token:", token); // تسجيل التوكن للتحقق
-
-        if (!token) {
-          alert("لم يتم العثور على توكن المصادقة. الرجاء تسجيل الدخول.");
-          return;
-        }
-
-        // إرسال طلب الحذف مع رأس Authorization
-        await axios.delete(
-          `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names/${modelNameId}/Models/${modelId}/Cars/${carId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        // إزالة السيارة من القائمة
-        setCars(cars.filter((c) => c.id !== carId));
-        alert("تم حذف السيارة بنجاح!");
-      } catch (error) {
-        console.error("Error deleting car:", error);
-        if (error.response?.status === 401) {
-          alert("غير مصرح لك بحذف السيارة. الرجاء التحقق من تسجيل الدخول.");
-        } else {
-          alert("فشل حذف السيارة، حاول مرة أخرى.");
-        }
+      // التحقق من المعرفات
+      if (!brandId || !typeId || !modelNameId || !carId) {
+        console.error("Missing required IDs:", { brandId, typeId, modelNameId, carId });
+        toast.error("بيانات السيارة غير مكتملة. يرجى التحقق من البيانات.");
+        closeDeleteModal();
+        return;
       }
+
+      console.log("brandId:", brandId);
+      console.log("typeId:", typeId);
+      console.log("modelNameId:", modelNameId);
+      console.log("modelId:", modelId);
+      console.log("carId:", carId);
+
+      // جلب التوكن
+      const token = localStorage.getItem("tokenAdman");
+      console.log("token:", token);
+
+      if (!token) {
+        toast.error("لم يتم العثور على توكن المصادقة. الرجاء تسجيل الدخول.");
+        closeDeleteModal();
+        return;
+      }
+
+      // طلب الحذف
+      await axios.delete(
+        `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names/${modelNameId}/Models/${modelId}/Cars/${carId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // إزالة السيارة
+      setCars(cars.filter((c) => c.id !== carId));
+      toast.success("تم حذف السيارة بنجاح!");
+      closeDeleteModal();
+    } catch (error) {
+      console.error("Error deleting car:", error);
+      if (error.response?.status === 401) {
+        toast.error("غير مصرح لك بحذف السيارة. الرجاء التحقق من تسجيل الدخول.");
+      } else if (error.response?.status === 404) {
+        toast.error("السيارة أو المسار غير موجود. تحقق من المعرفات.");
+      } else {
+        toast.error("فشل حذف السيارة، حاول مرة أخرى.");
+      }
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   // دالة التعديل
   const handleEdit = (car) => {
     const brandId = car.relationship.Brand.id;
-    const typeId = car.relationship.Types.type_id; // تعديل ليتناسب مع هيكل البيانات
+    const typeId = car.relationship.Types.type_id;
     const modelNameId = car.relationship["Model Names"].model_name_id;
     const modelId = car.relationship.Models?.id || 1;
     const carId = car.id;
-    navigate(
-      `/edit-car/${brandId}/${typeId}/${modelNameId}/${modelId}/${carId}`
-    );
+    navigate(`/edit-car/${brandId}/${typeId}/${modelNameId}/${modelId}/${carId}`);
   };
 
   useEffect(() => {
-    console.log("Cars data:", cars); // للتحقق من هيكل البيانات
+    console.log("Cars data:", cars);
     fetchCars(page);
   }, [page]);
 
@@ -101,7 +130,7 @@ export default function Dashboardlisting() {
             cars.map((car) => (
               <div
                 key={car.id}
-                className="rounded-xl shadow-sm transition-shadow cursor-pointer  transition-transform duration-300 hover:scale-105"
+                className="rounded-xl shadow-sm transition-shadow cursor-pointer transition-transform duration-300 hover:scale-105"
               >
                 <img
                   src={car.attributes.image || "/placeholder-car.jpg"}
@@ -123,23 +152,24 @@ export default function Dashboardlisting() {
                     <span className="flex items-center">
                       {car.relationship.Types.type_name}
                     </span>
-                    <span className="flex items-center">
-                      {car.attributes.year}
-                    </span>
+                    <span className="flex items-center">{car.attributes.year}</span>
                   </div>
                   {/* أزرار الحذف والتعديل */}
                   <div className="flex justify-between mt-4">
                     <button
                       onClick={() => handleEdit(car)}
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
+                      disabled={isDeleting}
                     >
-                      <Pencil  size={18}/>
+                      <Pencil size={18} />
                     </button>
                     <button
-                      onClick={() => handleDelete(car)}
-                      className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                      onClick={() => openDeleteModal(car)}
+                      className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 flex items-center"
+                      disabled={isDeleting}
                     >
-                      <Trash size={18} />{" "}
+                      <Trash size={18} />
+                      {isDeleting ? " جارٍ الحذف..." : ""}
                     </button>
                   </div>
                 </div>
@@ -169,6 +199,44 @@ export default function Dashboardlisting() {
             التالي
           </button>
         </div>
+
+        {/* Modal لتأكيد الحذف */}
+        {showDeleteModal && carToDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+              <h2 className="text-xl font-bold mb-4">تأكيد الحذف</h2>
+              <p className="mb-4">
+                هل أنت متأكد من حذف السيارة{" "}
+                <strong>
+                  {carToDelete.relationship.Brand.brand_name}{" "}
+                  {carToDelete.relationship["Model Names"].model_name}
+                </strong>
+                ؟
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  type="button"
+                  onClick={closeDeleteModal}
+                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                  disabled={isDeleting}
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "جارٍ الحذف..." : "تأكيد الحذف"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Toast Container */}
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
       </div>
     </div>
   );

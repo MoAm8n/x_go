@@ -44,7 +44,7 @@ export default function HeaderDashboard() {
       </div>
 
       {/* Icons */}
-       <div className="flex flex-row justify-evenly items-center gap-4 w-full md:w-auto ">
+      {/* <div className="flex flex-row justify-evenly items-center gap-4 w-full md:w-auto ">
         <div className="w-[40px] h-[40px] bg-[#f7f3ec] rounded-full flex justify-center items-center">
           <Bell />
         </div>
@@ -58,7 +58,7 @@ export default function HeaderDashboard() {
         <div className="w-[40px] h-[40px] bg-[#f7f3ec] rounded-full flex justify-center items-center">
           <Menu />
         </div>
-      </div> 
+      </div> */}
     </div>
   );
 }

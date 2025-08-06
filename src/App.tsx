@@ -10,18 +10,16 @@ import Dashboardlisting from "./Adman/Pages/DashboardListing";
 import DashboardStatisics from "./Adman/Pages/DashboardStatisics";
 import BrandDashboard from "./Adman/Pages/BrandDashboard";
 import SignInAdmin from "./Adman/Pages/SignInDashboard";
-
+import NotFound from './pages/NotFound'
 const App = () => {
   const location = useLocation();
   const { i18n } = useTranslation();
 
-  // تحديث الاتجاه حسب اللغة
   useEffect(() => {
     const currentLang = i18n.language;
     document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
   }, [i18n.language]);
 
-  // تنظيف بيانات الحجز المؤقتة عند الخروج من صفحة الحجز
   useEffect(() => {
     if (
       !location.pathname.includes("/booking") &&
@@ -32,7 +30,6 @@ const App = () => {
     }
   }, [location]);
 
-  // التحقق من الصفحات التي لا تحتاج هيدر وفوتر
   const isAuthPage =
     location.pathname === "/signin" ||
     location.pathname === "/signup" ||
@@ -68,6 +65,7 @@ const App = () => {
           <Route path="/DashboardStatisics" element={<DashboardStatisics />} />
           <Route path="/DashboardBrand" element={<BrandDashboard />} />
           <Route path="/SignInDashboard" element={<SignInAdmin />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       {!isAuthPage && <Footer />}

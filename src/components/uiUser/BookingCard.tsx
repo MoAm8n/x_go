@@ -49,6 +49,9 @@ export interface CarRelationships {
   Types: Type;
   Brand: Brand;
   Ratings: Rating;
+  Location?: {
+    location: string;
+  };
 }
 
 export interface CarModel {
@@ -65,10 +68,13 @@ export interface BookingItem {
   status: string;
   additional_driver: number;
   car_model: CarModel;
+  dropoff_location?: string;
   location?: {
     location: string;
-  }
-  location_id: number;
+    id?: number;
+  };
+  location_id?: number;
+  pickup_location?: string;
   user?: {
     id: number;
     name: string;
@@ -125,10 +131,15 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
   };
 
   const statusText = {
-    confirmed: 'مؤكد',
-    initiated: 'مبدئي',
-    pending: 'قيد الانتظار',
-    cancelled: 'ملغى',
+    confirmed: 'Confirmed',
+    initiated: 'Initiated',
+    pending: 'Pending',
+    cancelled: 'Cancelled',
+  };
+
+  // Define the fixed pickup location here
+  const FIXED_PICKUP_LOCATION = {
+    location: 'Riyadh'
   };
 
   return (
@@ -138,8 +149,8 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
           <div>
             <img
               src={booking.car_model?.attributes?.image || '/default-car.jpg'}
-              alt={`${booking.car_model?.relationship?.Brand?.brand_name || 'غير معروف'} ${
-                booking.car_model?.relationship?.Types?.type_name || 'غير معروف'
+              alt={`${booking.car_model?.relationship?.Brand?.brand_name || 'Unknown'} ${
+                booking.car_model?.relationship?.Types?.type_name || 'Unknown'
               }`}
               className="w-full h-56 lg:h-80 object-cover rounded-lg"
               onError={(e) => {
@@ -169,26 +180,26 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
           <div className="flex justify-center gap-4 flex-wrap">
             <div className="flex items-center gap-1 px-3 py-1 border rounded-full">
               <SettingsInputSvideoIcon fontSize="small" />
-              <span>{booking.car_model.attributes?.transmission_type || 'تلقائي'}</span>
+              <span>{booking.car_model.attributes?.transmission_type || 'automatic'}</span>
             </div>
             <div className="flex items-center gap-1 px-3 py-1 border rounded-full">
               <AirlineSeatReclineExtraIcon fontSize="small" />
-              <span>{booking.car_model.attributes?.seats_count || '4'} مقاعد</span>
+              <span>{booking.car_model.attributes?.seats_count || '4'} seats</span>
             </div>
             <div className="flex items-center gap-1 px-3 py-1 border rounded-full">
               <LocalGasStationIcon fontSize="small" />
-              <span>{booking.car_model.attributes?.engine_type || 'بنزين'}</span>
+              <span>{booking.car_model.attributes?.engine_type || 'petrol'}</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-gray-500 text-sm">تاريخ الاستلام</p>
+              <p className="text-gray-500 text-sm">Date of Pickup</p>
               <p className="font-medium">{formatDisplayDate(booking.start_date)}</p>
               <p className="text-xs text-gray-500">{formatTime(booking.start_date)}</p>
             </div>
             <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-gray-500 text-sm">تاريخ التسليم</p>
+              <p className="text-gray-500 text-sm">Date of Dropoff</p>
               <p className="font-medium">{formatDisplayDate(booking.end_date)}</p>
               <p className="text-xs text-gray-500">{formatTime(booking.end_date)}</p>
             </div>
@@ -196,16 +207,22 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-gray-500 text-sm">مكان التسليم</p>
-                  <p className="font-medium">
-                    {booking.car_model.relationship?.Location?.location}
-                  </p>
+              <p className="text-gray-500 text-sm">Pickup Location</p>
+              <p className="font-medium">{FIXED_PICKUP_LOCATION.location}</p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <p className="text-gray-500 text-sm">Dropoff Location</p>
+              <p className="font-medium">
+                  {booking.dropoff_location || 
+                  booking.location?.location || 
+                  'Not specified'}
+              </p>
             </div>
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-4">
             <p className="text-lg font-bold text-[#E6911E]">
-              {parseFloat(booking.final_price).toFixed(2)} ر.س
+              {parseFloat(booking.final_price).toFixed(2)} $
             </p>
             
             <div className="flex flex-wrap gap-2 justify-end">
@@ -213,7 +230,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
                 onClick={() => onViewDetails(booking)}
                 className="bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 px-4 py-2 rounded-lg transition-colors"
               >
-                عرض التفاصيل
+                View Details
               </button>
               
               {booking.status === 'initiated' && (
@@ -221,7 +238,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
                   onClick={() => onPayment(booking.id)}
                   className="bg-[#E6911E] hover:bg-[#D6820E] text-white px-4 py-2 rounded-lg transition-colors"
                 >
-                  اتمام الدفع
+                  Pay Now
                 </button>
               )}
               
@@ -236,7 +253,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
                   ) : (
                     <>
                       <MdCancel fontSize="small" />
-                      إلغاء
+                      Cancel
                     </>
                   )}
                 </button>

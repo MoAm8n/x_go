@@ -558,8 +558,8 @@ export const getBookingList = async (): Promise<BookingItem[]> => {
       handleUnauthorized();
       throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
     }
-    console.error('خطأ في جلب قائمة الحجوزات:', error);
-    throw new Error('فشل جلب الحجوزات، يرجى المحاولة لاحقًا');
+    console.error('You have no bookings', error);
+    throw new Error('You have no bookings');
   }
 };
 
