@@ -303,7 +303,7 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
   return (
     <div className="flex flex-col md:flex-row gap-6 relative">
       <form onSubmit={handleBooking} className="rental-form rounded-xl bg-[#F7F8FA] hover:shadow-lg p-6 cursor-pointer flex-1">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           {['pickup', 'dropoff'].map((type) => (
             <React.Fragment key={type}>
               <div className="form-group">
@@ -409,13 +409,22 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
             <span className="text-[#E6911E]">{calculateTotal().toFixed(2)} $</span>
           </div>
         </div>
-
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-            <strong className="font-bold">Error!</strong>
-            <span className="block sm:inline"> {error}</span>
-            <button onClick={() => setError(null)} className="absolute top-1 right-1 text-red-700">
-              ×
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4 flex justify-between items-center">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <span>خطأ: {error}</span>
+            </div>
+            <button 
+              onClick={() => setError(null)} 
+              className="text-red-500 hover:text-red-700"
+              aria-label="إغلاق"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
             </button>
           </div>
         )}

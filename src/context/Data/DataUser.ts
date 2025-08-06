@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { API_URL } from '../api/Api';
 
-// إعداد عميل Axios
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
@@ -10,7 +9,6 @@ const apiClient = axios.create({
   },
 });
 
-// إضافة Interceptor لطلبات API لإرفاق التوكن
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('tokenUser');
@@ -22,7 +20,6 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// دالة لمعالجة انتهاء صلاحية التوكن
 const handleUnauthorized = () => {
   if (localStorage.getItem('tokenUser')) {
     localStorage.removeItem('tokenUser');
@@ -32,7 +29,6 @@ const handleUnauthorized = () => {
   }
 };
 
-// واجهات البيانات
 export interface User {
   id: string;
   email: string;
@@ -153,7 +149,6 @@ export interface Location {
   is_active: number;
 }
 
-// التحقق من وجود بريد إلكتروني
 export const checkEmailExists = async (email: string): Promise<boolean> => {
   try {
     console.log("جارٍ التحقق من البريد الإلكتروني:", email);
@@ -165,7 +160,6 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
   }
 };
 
-// تسجيل مستخدم جديد
 export const signupUser = async (userData: SignUpData): Promise<AuthResponse> => {
   try {
     if (userData.password !== userData.password_confirmation) {
@@ -218,7 +212,6 @@ export const signupUser = async (userData: SignUpData): Promise<AuthResponse> =>
   }
 };
 
-// تسجيل دخول المستخدم
 export const authUsers = async (credentials: SignInData): Promise<AuthResponse> => {
   try {
     console.log("جارٍ تسجيل الدخول:", credentials.email);
@@ -247,7 +240,6 @@ export const authUsers = async (credentials: SignInData): Promise<AuthResponse> 
   }
 };
 
-// إعادة تعيين كلمة المرور
 export const forgotPassword = async (email: string): Promise<{ message: string }> => {
   try {
     console.log("جارٍ إرسال طلب إعادة تعيين كلمة المرور:", email);
@@ -269,7 +261,6 @@ export const forgotPassword = async (email: string): Promise<{ message: string }
   }
 };
 
-// تسجيل الخروج
 export const logoutUser = async (): Promise<{ message: string }> => {
   try {
     console.log("جارٍ تسجيل الخروج");
@@ -286,7 +277,6 @@ export const logoutUser = async (): Promise<{ message: string }> => {
   }
 };
 
-// جلب العلامات التجارية
 export const getBrands = async (): Promise<Brand[]> => {
   try {
     console.log("جارٍ جلب العلامات التجارية");
@@ -310,7 +300,6 @@ export const getBrands = async (): Promise<Brand[]> => {
   }
 };
 
-// جلب أنواع السيارات
 export const getTypes = async (): Promise<Type[]> => {
   try {
     console.log("جارٍ جلب أنواع السيارات");
@@ -332,7 +321,6 @@ export const getTypes = async (): Promise<Type[]> => {
   }
 };
 
-// جلب نطاق الأسعار
 export const getPriceRange = async (): Promise<PriceRange> => {
   try {
     console.log("جارٍ جلب نطاق الأسعار");
@@ -351,7 +339,6 @@ export const getPriceRange = async (): Promise<PriceRange> => {
   }
 };
 
-// جلب قائمة السيارات
 export const getCars = async (
   brandId?: number,
   type?: string,
@@ -412,7 +399,6 @@ export const getCars = async (
   }
 };
 
-// جلب تفاصيل سيارة محددة
 export const showCarId = async (id: string): Promise<CarItem> => {
   try {
     console.log("جارٍ جلب تفاصيل السيارة:", id);
@@ -460,15 +446,12 @@ export const showCarId = async (id: string): Promise<CarItem> => {
   }
 };
 
-// حفظ الحجز
 export const saveBooking = async (id: string, bookingData: BookingData): Promise<any> => {
   try {
-    // التحقق من البيانات المطلوبة
     if (!bookingData.start_date || !bookingData.end_date || !bookingData.carmodel_id) {
       throw new Error('Missing required booking data');
     }
 
-    // التحقق من صحة location_id إذا كان هناك سائق إضافي
     if (bookingData.additional_driver === 1) {
       if (!bookingData.location_id || typeof bookingData.location_id !== 'number') {
         throw new Error('Invalid dropoff location for additional driver');
@@ -508,7 +491,6 @@ export const saveBooking = async (id: string, bookingData: BookingData): Promise
   }
 };
 
-// جلب قائمة الحجوزات
 export const getBookingList = async (): Promise<BookingItem[]> => {
   try {
     console.log("جارٍ جلب قائمة الحجوزات");
@@ -563,7 +545,6 @@ export const getBookingList = async (): Promise<BookingItem[]> => {
   }
 };
 
-// خدمة إدارة المواقع
 export const locationService = {
   async getActiveLocations(): Promise<Location[]> {
     try {
@@ -601,9 +582,7 @@ export const locationService = {
 
       console.log('استجابة إضافة الموقع:', response.data);
 
-      // إذا كانت الاستجابة تحتوي على رسالة نجاح فقط، نقوم بجلب المواقع وإيجاد الموقع المضاف
       if (response.data?.message === 'Location added successfully') {
-        // جلب قائمة المواقع المحدثة
         const locationsResponse = await apiClient.get('/api/user/user-locations');
         console.log('استجابة جلب المواقع:', locationsResponse.data);
         
@@ -611,14 +590,12 @@ export const locationService = {
           throw new Error('لا توجد بيانات مواقع في استجابة الخادم');
         }
         
-        // البحث عن الموقع المضاف حديثًا بناءً على الاسم والإحداثيات
         const addedLocation = locationsResponse.data.data.find((loc: any) => 
           loc.location === newLocation.location && 
           loc.latitude === newLocation.latitude && 
           loc.longitude === newLocation.longitude
         );
         
-        // إذا وجدنا الموقع المضاف
         if (addedLocation && addedLocation.id) {
           return {
             id: addedLocation.id,
@@ -630,7 +607,6 @@ export const locationService = {
           };
         }
         
-        // إذا لم نجد الموقع المضاف بالضبط، نأخذ آخر موقع مضاف
         if (locationsResponse.data.data.length > 0) {
           const latestLocation = locationsResponse.data.data[locationsResponse.data.data.length - 1];
           return {
@@ -644,12 +620,10 @@ export const locationService = {
         }
       }
 
-      // تحقق من وجود البيانات في الاستجابة
       if (!response.data) {
         throw new Error('لا توجد بيانات في استجابة الخادم');
       }
 
-      // إذا كانت الاستجابة تحتوي على بيانات الموقع مباشرة
       if (response.data.id) {
         return {
           id: response.data.id,
@@ -661,7 +635,6 @@ export const locationService = {
         };
       }
 
-      // إذا كانت الاستجابة تحتوي على data بداخلها
       if (response.data.data?.id) {
         return {
           id: response.data.data.id,
@@ -673,7 +646,6 @@ export const locationService = {
         };
       }
 
-      // إذا لم يتم العثور على ID في الاستجابة
       throw new Error('تعذر الحصول على معرف الموقع من الخادم');
     } catch (error) {
       console.error('Error adding location:', error);

@@ -137,7 +137,6 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
     cancelled: 'Cancelled',
   };
 
-  // Define the fixed pickup location here
   const FIXED_PICKUP_LOCATION = {
     location: 'Riyadh'
   };

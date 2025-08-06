@@ -11,7 +11,6 @@ export default {
       colors: {
         primary: '#E6911E',
         'primary-light': 'rgba(255, 179, 71, 0.7)',
-        // gray: '#7B7B7B'
       }
     }
   },

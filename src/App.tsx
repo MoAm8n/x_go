@@ -30,16 +30,18 @@ const App = () => {
     }
   }, [location]);
 
-  const isAuthPage =
-    location.pathname === "/signin" ||
-    location.pathname === "/signup" ||
-    location.pathname === "/forgotpassword" ||
-    location.pathname === "/DashboardOverview" ||
-    location.pathname === "/DashboardCars" ||
-    location.pathname === "/Dashboardlisting" ||
-    location.pathname === "/DashboardStatisics" ||
-    location.pathname === "/DashboardBrand" ||
-    location.pathname === "/SignInDashboard";
+  const authRoutes = [
+    "/signin",
+    "/signup",
+    "/forgotpassword",
+    "/DashboardOverview",
+    "/DashboardCars",
+    "/Dashboardlisting",
+    "/DashboardStatisics",
+    "/DashboardBrand",
+    "/SignInDashboard",
+  ];
+  const isAuthPage = authRoutes.includes(location.pathname);
 
   return (
     <>

@@ -168,45 +168,31 @@ const BookingsPage: React.FC = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="p-4 text-center text-red-500">
-          {error}
-          <div className="mt-4 flex gap-4 justify-center">
-            <button 
-              onClick={() => window.location.reload()}
-              className="bg-[#E6911E] text-white px-4 py-2 rounded-lg"
-            >
-              Reload
-            </button>
-            <button 
-              onClick={handleBackToList}
-              className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg"
-            >
-              Browse cars
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
 return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <main className="container mx-auto px-4 py-10">
         {!id ? (
           <>
             {bookings.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500 mb-4">No bookings found</p>
-                <button
-                  onClick={() => navigate('/carCollection')}
-                  className="bg-[#E6911E] text-white px-6 py-2 rounded-lg"
-                  aria-label="تصفح السيارات"
-                >
-                  Browse cars
-                </button>
+              <div className="text-center py-32">
+                <div className="p-4 text-center text-red-500">
+                  {error}
+                  <div className="mt-4 flex gap-4 justify-center">
+                    <button 
+                      onClick={() => window.location.reload()}
+                      className="bg-[#929292] text-white px-4 py-2 rounded-lg"
+                    >
+                      Reload
+                    </button>
+                    <button
+                      onClick={() => navigate('/')}
+                      className="bg-[#E6911E] text-white px-6 py-2 rounded-lg"
+                      aria-label="تصفح السيارات"
+                    >
+                      Browse cars
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <>

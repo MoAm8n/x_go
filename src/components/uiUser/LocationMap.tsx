@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, Polyline 
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// أنواع البيانات
 interface Location {
   lat: number;
   lng: number;
@@ -17,7 +16,6 @@ interface LocationMapProps {
   zoom?: number;
 }
 
-// إعداد أيقونات العلامات (مخبأة للكفاءة)
 const markerIcons = {
   pickup: new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
@@ -37,7 +35,6 @@ const markerIcons = {
   })
 };
 
-// مكون التحكم في الخريطة
 const MapController: React.FC<{ onLocationSelect: (location: Location) => void }> = ({ 
   onLocationSelect 
 }) => {
@@ -58,7 +55,6 @@ const MapController: React.FC<{ onLocationSelect: (location: Location) => void }
   return null;
 };
 
-// مكون الخريطة الرئيسي
 const LocationMap: React.FC<LocationMapProps> = ({
   pickupLocation,
   dropoffLocation,
@@ -68,7 +64,6 @@ const LocationMap: React.FC<LocationMapProps> = ({
 }) => {
   const mapRef = React.useRef<L.Map | null>(null);
 
-  // ضبط حجم الخريطة عند تغيير الأبعاد
   React.useEffect(() => {
     const handleResize = () => {
       mapRef.current?.invalidateSize();
@@ -86,10 +81,9 @@ const LocationMap: React.FC<LocationMapProps> = ({
         style={{ height: '100%', width: '100%' }}
         whenCreated={(map) => { 
           mapRef.current = map;
-          // تحقق من صحة الإحداثيات الأولية
           if (isNaN(pickupLocation.lat) || isNaN(pickupLocation.lng)) {
             console.error('إحداثيات أولية غير صالحة:', pickupLocation);
-            map.setView([24.7136, 46.6753], zoom); // استخدم إحداثيات افتراضية كحل بديل
+            map.setView([24.7136, 46.6753], zoom); 
           }
         }}
       >

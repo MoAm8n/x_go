@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { signupUser, saveBooking } from '../context/Data/DataUser';
-import type{BookingData} from '../context/Data/DataUser'
+import type { BookingData } from '../context/Data/DataUser';
+import { useTranslation } from "react-i18next";
 
 const SignUp: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,6 +12,7 @@ const SignUp: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const { t, i18n } = useTranslation();
 
   const [form, setForm] = useState({
     name: '',
@@ -19,6 +21,23 @@ const SignUp: React.FC = () => {
     password: '',
     password_confirmation: '',
   });
+
+  const languages = [
+    { code: "ar", label: "العربية", dir: "rtl" },
+    { code: "en", label: "English", dir: "ltr" },
+    { code: "ru", label: "Русский", dir: "ltr" },
+  ];
+
+  const [currentLanguage, setCurrentLanguage] = useState(
+    languages.find(lang => lang.code === i18n.language) || languages[0]
+  );
+
+  const handleLanguageChange = (lang: typeof languages[0]) => {
+    setCurrentLanguage(lang);
+    i18n.changeLanguage(lang.code);
+    document.documentElement.dir = lang.dir;
+    setOpen(false);
+  };
 
   useEffect(() => {
     if (location.state?.email) {
@@ -36,13 +55,13 @@ const SignUp: React.FC = () => {
     setError(null);
 
     if (!form.name || !form.email || !form.phone || !form.password || !form.password_confirmation) {
-      setError('الرجاء تعبئة جميع الحقول');
+      setError(t('signup.fill_all_fields'));
       setLoading(false);
       return;
     }
 
     if (form.password !== form.password_confirmation) {
-      setError('كلمة السر غير مطابقة');
+      setError(t('signup.password_mismatch'));
       setLoading(false);
       return;
     }
@@ -96,7 +115,7 @@ const SignUp: React.FC = () => {
 
       navigate('/bookings');
     } catch (error) {
-      let errorMessage = 'حدث خطأ غير متوقع أثناء التسجيل';
+      let errorMessage = t('signup.unexpected_error');
       if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -105,80 +124,82 @@ const SignUp: React.FC = () => {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#FFB347] via-[#FFE0B2] to-[#fdf9f2] sm:px-4 md:px-32">
       <div className="flex flex-col lg:flex-row justify-between item-center w-full bg-transparent overflow-hidden">
-        <div className="w-full flex flex-col justify-evenly max-lg:pt-16">
-           <div className="w-full max-lg:text-center">
-             <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 lg:w-3/4 max-lg:px-10 max-lg:py-2">
-               Welcome, Your next drive is waiting
-             </h2>
-             <p className="text-gray-600 lg:w-3/4 text-lg max-lg:px-6">
-               Lorem ipsum dolor sit amet consectetur. A tellus enim orci a eget porttitor et.
-             </p>
-           </div>
-           <div className="relative flex flex-col sm:flex-row items-center gap-4 max-lg:py-8">
-             <div className="relative">
-               <button
-                 onClick={() => setOpen((prev) => !prev)}
-                 className="px-4 py-2 rounded-lg font-medium text-[14px] bg-inherit border border-gray-300 lg:mr-10"
-                 type="button"
-               >
-                 🌐 Language
-               </button>
-               {open && (
-                 <ul className="absolute left-0 bottom-full my-2 bg-white border shadow-md w-40 z-50 rounded-lg">
-                   <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
-                     العربية
-                   </li>
-                   <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
-                     English
-                   </li>
-                   <li className="hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px]">
-                     Russian
-                   </li>
-                 </ul>
-               )}
-             </div>
-             <nav className="flex gap-4">
-               <a href="#" className="text-[14px] text-[#E6911E]">
-                 Terms
-               </a>
-               <a href="#" className="text-[14px] text-[#E6911E]">
-                 Plans
-               </a>
-               <a href="#" className="text-[14px] text-[#E6911E]">
-                 Contact Us
-               </a>
-             </nav>
-           </div>
-         </div>
+        <div className="w-full flex flex-col justify-evenly max-lg:pt-14">
+          <div className="w-full max-lg:text-center">
+            <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 lg:w-3/4 max-lg:px-10 max-lg:py-2">
+              {t("signup.welcome_message")}
+            </h2>
+            <p className="text-gray-600 lg:w-3/4 text-lg max-lg:px-6">
+              {t("signup.welcome_subtext")}
+            </p>
+          </div>
+          <div className="relative flex flex-col sm:flex-row items-center gap-4">
+            <div className="relative">
+              <button
+                onClick={() => setOpen((prev) => !prev)}
+                className="px-4 py-2 rounded-lg font-medium text-[14px] bg-inherit border border-gray-300 lg:mr-10 flex items-center gap-2"
+                type="button"
+              >
+                🌐 {currentLanguage.label}
+              </button>
+              {open && (
+                <ul className="absolute left-0 bg-white border shadow-md w-44 z-[1000] rounded-lg">
+                  {languages.map((lang) => (
+                    <li 
+                      key={lang.code}
+                      className={`hover:bg-gray-100 px-4 py-2 cursor-pointer text-[14px] ${
+                        lang.code === currentLanguage.code ? 'bg-gray-100' : ''
+                      }`}
+                      onClick={() => handleLanguageChange(lang)}
+                    >
+                      {lang.label}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <nav className="flex gap-4">
+              <a href="#" className="text-[14px] text-[#E6911E]">
+                {t("common.terms")}
+              </a>
+              <a href="#" className="text-[14px] text-[#E6911E]">
+                {t("common.plans")}
+              </a>
+              <a href="#" className="text-[14px] text-[#E6911E]">
+                {t("common.contact_us")}
+              </a>
+            </nav>
+          </div>
+        </div>
         <div className="w-full flex flex-col justify-center items-center bg-white shadow-lg rounded-lg">
           <form className="w-full px-8 py-2 mx-auto" onSubmit={handleSubmit}>
             {error && (
               <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-sm">
                 {error}
-                {error.includes('مسجل بالفعل') && (
+                {error.includes(t('signup.already_registered')) && (
                   <div className="mt-2">
                     <Link 
                       to="/signin" 
                       state={{ email: form.email }}
                       className="text-blue-600 hover:underline"
                     >
-                      الانتقال إلى تسجيل الدخول
+                      {t("signup.go_to_signin")}
                     </Link>
                   </div>
                 )}
               </div>
             )}
 
-            <h3 className="text-2xl font-extrabold text-gray-900 my-3">Sign Up</h3>
-            <p className="mb-4">Enter your details to create your account</p>
-
-            {/* حقول التسجيل */}
+            <h3 className="text-2xl font-extrabold text-gray-900 my-3">{t("signup.title")}</h3>
+            <p className="mb-4">{t("signup.subtitle")}</p>
+            
             <div>
               <label htmlFor="name" className="block my-2 text-sm font-semibold text-gray-700">
-                Name
+                {t("signup.name_label")}
               </label>
               <input
                 type="text"
@@ -187,14 +208,14 @@ const SignUp: React.FC = () => {
                 value={form.name}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-lg px-4 py-1 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-                placeholder="Your full name"
+                placeholder={t("signup.name_placeholder")}
                 required
               />
             </div>
 
             <div>
               <label htmlFor="email" className="block my-2 text-sm font-semibold text-gray-700">
-                Email
+                {t("signup.email_label")}
               </label>
               <input
                 type="email"
@@ -210,7 +231,7 @@ const SignUp: React.FC = () => {
 
             <div>
               <label htmlFor="phone" className="block my-2 text-sm font-semibold text-gray-700">
-                Phone
+                {t("signup.phone_label")}
               </label>
               <input
                 type="tel"
@@ -226,7 +247,7 @@ const SignUp: React.FC = () => {
 
             <div>
               <label className="block my-2 text-sm font-semibold text-gray-700">
-                Password
+                {t("signup.password_label")}
               </label>
               <div className="relative">
                 <input
@@ -245,17 +266,16 @@ const SignUp: React.FC = () => {
                   onClick={() => setShowPassword((prev) => !prev)}
                   tabIndex={-1}
                 >
-                  {/* أيقونة إظهار/إخفاء كلمة السر */}
                 </button>
               </div>
               <p className="text-xs text-gray-400 mt-1">
-                Use 8 or more characters with a mix of letters, numbers & symbols.
+                {t("signup.password_hint")}
               </p>
             </div>
 
             <div>
               <label className="block my-2 text-sm font-semibold text-gray-700">
-                Repeat Password
+                {t("signup.confirm_password_label")}
               </label>
               <div className="relative">
                 <input
@@ -274,7 +294,6 @@ const SignUp: React.FC = () => {
                   onClick={() => setShowRepeatPassword((prev) => !prev)}
                   tabIndex={-1}
                 >
-                  {/* أيقونة إظهار/إخفاء كلمة السر */}
                 </button>
               </div>
             </div>
@@ -285,15 +304,15 @@ const SignUp: React.FC = () => {
                 className="w-full text-white bg-[#E6911E] hover:bg-[#cc7f15] font-bold rounded-lg text-base px-5 py-2 text-center transition-colors shadow-lg"
                 disabled={loading}
               >
-                {loading ? 'Signing Up...' : 'Sign Up'}
+                {loading ? t('signup.signing_up') : t('signup.signup_button')}
               </button>
             </div>
           </form>
 
           <div className="text-sm text-center mt-4 mb-6">
-            Already have an account?{' '}
+            {t("signup.have_account")}{' '}
             <Link to="/signin" className="text-[#E6911E] hover:underline">
-              Sign In
+              {t("signup.signin_link")}
             </Link>
           </div>
         </div>

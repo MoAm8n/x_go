@@ -143,5 +143,52 @@
   "All Features": "All Features",
   "All Reviews": "All Reviews",
   "All Questions": "All Questions",
-  "All Answers": "All Answers"
+  "All Answers": "All Answers",
+ "common": {
+    "terms": "Terms",
+    "plans": "Plans",
+    "contact_us": "Contact Us",
+    "about_us": "About Us"
+  },
+  "signup": {
+    "welcome_message": "Welcome, your next journey awaits",
+    "welcome_subtext": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "title":  "Sign Up for a New Account",
+    "subtitle": "Enter your details to create your account",
+    "name_label": "Name",
+    "name_placeholder": "Full Name",
+    "email_label": "Email",
+    "phone_label": "Phone",
+    "password_label":   "Password",
+    "password_hint": "Use 8 or more characters with a mix of letters, numbers & symbols.",
+    "confirm_password_label": "Confirm Password",
+    "signup_button": "Sign Up",
+    "signing_up": "Signing up...",
+    "have_account": "Already have an account?",
+    "signin_link": "Sign In",
+    "fill_all_fields": "Please fill all fields",
+    "password_mismatch": "Passwords do not match",
+    "unexpected_error": "An unexpected error occurred during sign up",
+    "already_registered": "Already registered",
+    "go_to_signin": "Go to Sign In"
+  },
+    "signin": {
+    "welcome_message": "Welcome, your next journey awaits",
+    "welcome_subtext": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "title": "Sign In",
+    "subtitle": "Enter your email to sign in to your account",
+    "email_label": "Email",
+    "password_label": "Password",
+    "signin_button": "Sign In",
+    "signing_in": "Signing in...",
+    "forgot_password": "Forgot Password?",
+    "no_account": "Don't have an account?",
+    "signup_link": "Create Account",
+    "fill_all_fields": "Please fill all fields",
+    "invalid_email": "Invalid email address",
+    "unexpected_error": "An unexpected error occurred during sign in",
+    "incorrect_credentials": "Incorrect email or password",
+    "go_to_signup": "Go to Sign Up",
+    "create_account": "Create a New Account"
+  }
 }
