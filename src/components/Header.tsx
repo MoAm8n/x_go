@@ -6,11 +6,11 @@ import logo from "../../public/images/logo.png";
 import { HiMiniBars3CenterLeft } from "react-icons/hi2";
 import Sidebar from "./Sidebar";
 import { logoutUser } from "../context/Data/DataUser";
+import { useNavigate } from "react-router-dom";
 
 const LanguageDropdown = () => {
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
-
   const languages = [
     { code: "ar", label: "العربية" },
     { code: "ru", label: "Русский" },
@@ -67,7 +67,7 @@ const Header = () => {
   const [sidebar, setSidebar] = useState(false);
   const toggleSidebar = () => setSidebar(!sidebar);
   const { t } = useTranslation(); 
-
+  const navigate = useNavigate()
   const links = [
     { name: t("header.home"), path: "/#home" },
     { name: t("header.vehicles"), path: "/#vehicles" },
@@ -90,7 +90,7 @@ const Header = () => {
   const tokenUser = localStorage.getItem('tokenUser');
   const handleLogout = async () => {
     await logoutUser();
-    window.location.href = "/loading";
+    navigate("/loading");
   };
 
   return (

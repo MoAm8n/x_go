@@ -42,7 +42,13 @@ const App = () => {
     "/SignInDashboard",
   ];
   const isAuthPage = authRoutes.includes(location.pathname);
-
+  
+    useEffect(() => {
+      if (window.location.pathname !== "/") {
+        sessionStorage.redirect = window.location.pathname;
+      }
+    }, []);
+  
   return (
     <>
       {!isAuthPage && <Header />}
