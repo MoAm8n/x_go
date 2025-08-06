@@ -1,14 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer'
-import { readFileSync } from 'fs'
-
-const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
-const homepage = pkg.homepage || '/'
-const base = homepage.replace(/^https?:\/\/[^/]+/, '') || '/'
 
 export default defineConfig({
-  base,
+  base: "/x_go/",
   plugins: [
     react(),
     ViteImageOptimizer({
@@ -38,6 +33,7 @@ export default defineConfig({
     }
   },
   server: {
-    proxy: {}
+    proxy: {
+    }
   }
 })
