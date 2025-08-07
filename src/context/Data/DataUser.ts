@@ -83,6 +83,8 @@ export interface CarItem {
   fuel?: string;
   price?: number | string;
   type?: string;
+  year?: string;
+  images?: string | string[] | undefined;
 }
 
 export interface BookingData {
@@ -412,6 +414,7 @@ export const showCarId = async (id: string): Promise<CarItem> => {
         Brand?: { brand_name?: string; brand_id?: number };
         Types?: { type_name?: string };
         ['Model Names']?: { model_name?: string };
+        Images?: { image?: string }[];
       };
       attributes?: {
         image?: string;
@@ -435,6 +438,7 @@ export const showCarId = async (id: string): Promise<CarItem> => {
       fuel: item.attributes?.engine_type || '',
       price: Number(item.attributes?.price) || 0,
       type: item.relationship?.Types?.type_name || '',
+      images: item.relationship?.Images,
     };
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -534,6 +538,20 @@ export const getBookingList = async (): Promise<BookingItem[]> => {
           },
         },
       },
+      location: booking.location ? {
+        id: booking.location.id || 0,
+        location: booking.location.location || 'غير معروف',
+        latitude: booking.location.latitude,
+        longitude: booking.location.longitude,
+        is_active: booking.location.is_active
+      } : undefined,
+      user: {
+        id: booking.user?.id || 0,
+        name: booking.user?.name || 'غير معروف',
+        email: booking.user?.email || 'غير معروف',
+        phone: booking.user?.phone || 'غير معروف',
+      },
+      
     }));
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -544,6 +562,7 @@ export const getBookingList = async (): Promise<BookingItem[]> => {
     throw new Error('You have no bookings');
   }
 };
+console.log(location);
 
 export const locationService = {
   async getActiveLocations(): Promise<Location[]> {

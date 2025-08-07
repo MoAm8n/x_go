@@ -115,7 +115,7 @@ const Payment: React.FC = () => {
   }
 
   const finalPrice = parseFloat(booking.final_price) || 0;
-
+  
   return (
     <div className="min-h-screen flex flex-col">
       <main className="container mx-auto px-2 sm:px-4 max-md:py-8">

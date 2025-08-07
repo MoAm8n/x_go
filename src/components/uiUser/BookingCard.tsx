@@ -68,19 +68,17 @@ export interface BookingItem {
   status: string;
   additional_driver: number;
   car_model: CarModel;
-  dropoff_location?: string;
   location?: {
+    id: number;
     location: string;
-    id?: number;
+    latitude?: string;
+    longitude?: string;
+    is_active?: number;
   };
+  dropoff_location?: string;
   location_id?: number;
   pickup_location?: string;
-  user?: {
-    id: number;
-    name: string;
-    email: string;
-    phone: string;
-  };
+  user?: User;
   can_cancel?: boolean;
 }
 
@@ -212,9 +210,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
             <div className="bg-gray-50 p-3 rounded-lg">
               <p className="text-gray-500 text-sm">Dropoff Location</p>
               <p className="font-medium">
-                  {booking.dropoff_location || 
-                  booking.location?.location || 
-                  'Not specified'}
+                {booking.location?.location || booking.dropoff_location || 'Not specified'}
               </p>
             </div>
           </div>

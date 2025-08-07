@@ -23,7 +23,7 @@ const CarCollection = () => {
   const fetchCars = useCallback(async (page: number, filters: FilterState) => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`https://xgo.mlmcosmo.com/api/user/Home`, {
+      const response = await axios.post(`https://xgo.mlmcosmo.com/api/user/Home`, {
         params: {
           page,
           per_page: itemsPerPage,
@@ -35,7 +35,21 @@ const CarCollection = () => {
       });
 
       const { data, meta } = response.data;
-      setCars(data || []);
+      const mappedData: CarItem[] = (data || []).map((item: any) => ({
+        id: item.id,
+        name: item.relationship?.['Model Names']?.model_name || '',
+        image: item.attributes?.image || '',
+        brand: item.relationship?.Brand?.brand_name || '',
+        brandId: Number(item.relationship?.Brand?.brand_id) || 0,
+        seats: item.attributes?.seats_count || 0,
+        luggage: item.attributes?.seat_type || '',
+        transmission: item.attributes?.transmission_type || '',
+        fuel: item.attributes?.engine_type || '',
+        price: Number(item.attributes?.price) || 0,
+        type: item.relationship?.Types?.type_name || '',
+        year: item.attributes?.year || '2020'
+      }));
+      setCars(mappedData);
       setCurrentPage(meta.current_page);
       setTotalPages(meta.last_page);
     } catch (error) {
@@ -48,7 +62,7 @@ const CarCollection = () => {
   useEffect(() => {
     fetchCars(currentPage, filters);
   }, [currentPage, filters, fetchCars]);
-
+  
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
   };
@@ -89,10 +103,23 @@ const CarCollection = () => {
                     count={totalPages}
                     page={currentPage}
                     onChange={handlePageChange}
-                    color="primary"
                     showFirstButton
                     showLastButton
-                  />
+                    color="standard"
+                      sx={{
+                        '& .MuiPaginationItem-root': {
+                          color: '#e6911e',
+                          borderColor: '#e6911e',
+                        },
+                        '& .Mui-selected': {
+                          backgroundColor: '#e6911e',
+                          color: '#fff',
+                          '&:hover': {
+                            backgroundColor: '#d6820e',
+                          },
+                        },
+                      }}
+                    />
                 </div>
                 
                 {/* <div className="text-center mt-2 text-gray-600">
