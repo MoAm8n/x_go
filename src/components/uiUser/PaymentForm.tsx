@@ -1,10 +1,24 @@
 import { useState } from "react";
-import { API_URL } from "../../context/api/Api";
 import cashIcon from "../../assets/PaymentForm/ion_cash (1).png";
 import visaIcon from "../../assets/PaymentForm/Vector (7).png";
 import axios from "axios";
+import {API_URL} from "../../context/api/Api";
+import { toast } from "react-toastify";
 
-const PaymobButton = ({ bookingId, modelId }: { bookingId: number; modelId: number }) => {
+interface BookingItem {
+  id: number;
+  final_price: string | number;
+  car_model: {
+    id: number;
+  };
+}
+
+interface PaymentFormProps {
+  booking: BookingItem;
+  onPaymentSuccess: () => void;
+}
+
+const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [activeMethod, setActiveMethod] = useState<"cash" | "card" | null>(null);
@@ -18,28 +32,25 @@ const PaymobButton = ({ bookingId, modelId }: { bookingId: number; modelId: numb
   }) => {
     try {
       const res = await axios.post(
-        `/api/user/Model/${modelId}/car-booking/${bookingId}/payment-method`,
+        `${API_URL}/api/user/Model/${booking.car_model.id}/car-booking/${booking.id}/payment-method`,
         {
-          method: "POST",
+          payment_method,
+          transaction_id,
+        },
+        {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("tokenUser")}`,
           },
-          body: JSON.stringify({
-            payment_method,
-            transaction_id,
-          }),
         }
       );
 
-      const result = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(result.message || "Failed to save payment method");
+      if (res.data) {
+        toast.success("Payment method saved successfully!");
+        onPaymentSuccess();
+        return res.data;
       }
-
-      alert("Payment method saved successfully!");
-      return result;
+      throw new Error("Failed to save payment method");
     } catch (err) {
       console.error("Error saving payment method:", err);
       alert("Failed to save payment details");
@@ -71,7 +82,7 @@ const PaymobButton = ({ bookingId, modelId }: { bookingId: number; modelId: numb
       const authResponse = await axios.post(
         "https://accept.paymob.com/api/auth/tokens",
         {
-          api_key: API_URL,
+          api_key: import.meta.env.VITE_PAYMOB_API_KEY,
         }
       );
 
@@ -86,7 +97,7 @@ const PaymobButton = ({ bookingId, modelId }: { bookingId: number; modelId: numb
         {
           auth_token: token,
           delivery_needed: false,
-          amount_cents: "10000", 
+          amount_cents: "10000",
           currency: "EGP",
           items: [],
         }
@@ -100,7 +111,7 @@ const PaymobButton = ({ bookingId, modelId }: { bookingId: number; modelId: numb
         "https://accept.paymob.com/api/acceptance/payment_keys",
         {
           auth_token: token,
-          amount_cents: "10000",
+          amount_cents: (booking.final_price).replace('.', ''),
           expiration: 3600,
           order_id: orderResponse.data.id,
           billing_data: {
@@ -118,8 +129,8 @@ const PaymobButton = ({ bookingId, modelId }: { bookingId: number; modelId: numb
             last_name: "User",
             state: "Cairo",
           },
-          currency: "EGP",
-          integration_id: 5212114, 
+          currency: "Dolar",
+          integration_id: import.meta.env.VITE_PAYMOB_INTEGRATION_ID,
         }
       );
 
@@ -129,7 +140,6 @@ const PaymobButton = ({ bookingId, modelId }: { bookingId: number; modelId: numb
 
       const iframe = `https://accept.paymob.com/api/acceptance/iframes/943449?payment_token=${paymentKeyResponse.data.token}`;
       setIframeUrl(iframe);
-
     } catch (error) {
       console.error("Payment processing error:", error);
       alert("An error occurred during payment processing. Please try again.");
@@ -207,4 +217,4 @@ const PaymobButton = ({ bookingId, modelId }: { bookingId: number; modelId: numb
   );
 };
 
-export default PaymobButton;
+export default PaymentForm;

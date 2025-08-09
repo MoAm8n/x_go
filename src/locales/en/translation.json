@@ -41,7 +41,9 @@
     "Infiniti": "Infiniti",
     "Ford": "Ford",
     "Tesla": "Tesla",
-    "Chevrolet": "Chevrolet"
+    "Chevrolet": "Chevrolet",
+    "suv": "SUV",
+    "sedan": "Sedan"
   },
   "name": {
     "X5": "X5",
@@ -68,18 +70,27 @@
     "i9": "i9",
     "i20": "i20",
     "Elantra": "Elantra",
-    "Elantra LX": "Elantra LX"
+    "Elantra LX": "Elantra LX",
+    "suv": "SUV",
+    "SUV": "SUV",
+    "sedan": "Sedan"
+
   },
   "price": {
     "title": "Price",
     "description": "Price per vehicle"
   },
+  "Filters": "Filters",
+  "Filter Price": "Filter Price",
+  "Car Types": "Car Types",
+  "Car Brands": "Car Brands",
+  "Car Models": "Car Models",
   "Day": "Day",
   "Week": "Week",
   "Month": "Month",
   "Year": "Year",
   "per": "per",
-  "perDay": "per day",
+  "per Day": "per day",
   "perWeek": "per week",
   "perMonth": "per month",
   "perYear": "per year",
@@ -144,6 +155,29 @@
   "All Reviews": "All Reviews",
   "All Questions": "All Questions",
   "All Answers": "All Answers",
+  "number": {
+    "1": "one",
+    "2": "two",
+    "3": "three",
+    "4": "four",
+    "5": "five",
+    "6": "six",
+    "7": "seven",
+    "8": "eight",
+    "9": "nine",
+    "10": "ten"
+  },
+  "type": {
+    "Automatic": "Automatic",
+    "Manual": "Manual",
+    "seats": "seats"
+  },
+  "Gasoline": {
+    "Gasoline": "Gasoline",
+    "Diesel": "Diesel",
+    "Electric": "Electric",
+    "Hybrid": "Hybrid"
+  },
  "common": {
     "terms": "Terms",
     "plans": "Plans",

@@ -79,8 +79,8 @@ const CarCollection = () => {
       </div>
       
       <div className="container mx-auto py-4">
-        <div className="w-full flex flex-col lg:flex-row gap-4">
-          <div className="lg:w-1/4">
+        <div className="w-full flex flex-col md:flex-row gap-4">
+          <div className="md:w-2/4 lg:w-1/4">
             <CarFilterSidebar 
               onFilterChange={(newFilters) => {
                 setFilters(newFilters);
@@ -89,7 +89,7 @@ const CarCollection = () => {
             />
           </div>
           
-          <div className="lg:w-3/4">
+          <div className="md:w-2/4 lg:w-3/4">
             {isLoading ? (
               <div className="flex justify-center my-8">
                 <CircularProgress />
@@ -105,26 +105,21 @@ const CarCollection = () => {
                     onChange={handlePageChange}
                     showFirstButton
                     showLastButton
-                    color="standard"
-                      sx={{
-                        '& .MuiPaginationItem-root': {
-                          color: '#e6911e',
-                          borderColor: '#e6911e',
+                    sx={{
+                      '& .MuiPaginationItem-root': {
+                        color: '#e6911e',
+                        border: '1px solid #e6911e',
+                      },
+                      '& .MuiPaginationItem-root.Mui-selected': {
+                        backgroundColor: '#e6911e',
+                        color: '#fff',
+                        '&:hover': {
+                          backgroundColor: '#d6820e',
                         },
-                        '& .Mui-selected': {
-                          backgroundColor: '#e6911e',
-                          color: '#fff',
-                          '&:hover': {
-                            backgroundColor: '#d6820e',
-                          },
-                        },
-                      }}
+                      },
+                    }}
                     />
                 </div>
-                
-                {/* <div className="text-center mt-2 text-gray-600">
-                  عرض {cars.length} من أصل {totalItems} سيارة
-                </div> */}
               </>
             )}
           </div>

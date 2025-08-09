@@ -133,10 +133,10 @@ const Payment: React.FC = () => {
                 <img
                   src={booking.car_model?.attributes?.image || '/default-car.jpg'}
                   alt={booking.car_model.relationship.Types?.type_name || 'Car'}
-                  className="w-full object-cover rounded-lg"
+                  className="w-full h-60 rounded-lg"
                   loading="lazy"
                 />
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start mt-4 mb-2">
                   <div>
                     <h2 className="text-xl font-bold">
                       {booking.car_model.relationship.Brand?.brand_name}{' '}
@@ -161,7 +161,7 @@ const Payment: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex-grow">
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap justify-center gap-2 mb-4">
                     <div className="flex items-center gap-1 px-3 py-1 border rounded-full">
                       <EarbudsIcon fontSize="small" />
                       <span>{booking.car_model?.attributes?.transmission_type || 'Automatic'}</span>
@@ -193,9 +193,9 @@ const Payment: React.FC = () => {
                   </div>
                   <h3 className="text-amber-700 font-medium">Booking ID: {booking.id}</h3>
                   <p className="text-amber-700">Status: {booking.status}</p>
-                  <div className="mt-4 p-3 bg-amber-50 rounded-lg">
+                  <div className="mt-4 p-3 text-center bg-amber-50 rounded-lg">
                     <p className="text-lg font-bold mt-2">
-                      Total: ${finalPrice.toFixed(2)}
+                      Total: $<span className='text-[]'>{finalPrice.toFixed(2)}</span>
                     </p>
                   </div>
                 </div>

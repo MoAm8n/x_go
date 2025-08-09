@@ -96,7 +96,7 @@ const Header = () => {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 bg-white z-50">
-        <div className="container mx-auto px-6 lg:px-8 py-4 ">
+        <div className="container mx-auto max-sm:px-8 lg:px-8 py-4 ">
           <div className="flex items-center justify-between">
             <div className="md:hidden">
               <button
@@ -111,7 +111,7 @@ const Header = () => {
             <Link to="loading" className="text-2xl font-bold text-gray-800">
               <img src={logo} alt="الشعار" className="h-10" loading="lazy" />
             </Link>
-            <div className="space-x-4 max-md:hidden flex items-center">
+            <div className="space-x-2 lg:space-x-4 max-md:hidden flex items-center">
               {links.map((link) => (
                 <div key={link.name} className="inline-block lg:pe-4">
                   {link.path.includes("#") ? (
@@ -144,7 +144,7 @@ const Header = () => {
             <div>
               {tokenUser? (
                 <button
-                  className="bg-[#E53935CC] w-32 md:w-48 h-11 md:rounded-3xl rounded-xl text-white"
+                  className="bg-[#E53935CC] w-32 lg:w-48 h-11 md:rounded-3xl rounded-xl text-white"
                   onClick={handleLogout}
                   type="button"
                 >
@@ -153,7 +153,7 @@ const Header = () => {
               ): (
                 <Link to={'/signin'}>
                   <button 
-                    className="bg-[#E6911E] md:rounded-3xl h-12 w-32 md:w-48 rounded-xl text-white">
+                    className="bg-[#E6911E] md:rounded-3xl h-12 w-32 lg:w-48 rounded-xl text-white">
                     {t("header.login")}
                   </button>
                 </Link>

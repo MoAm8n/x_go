@@ -195,9 +195,9 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
 
   return (
     <aside className="sticky top-0 w-full">
-      <div className="p-6 w-full max-w-lg min-w-[350px] flex flex-col gap-6">
+      <div className="p-6 w-full max-w-lg min-w-[290px] flex flex-col gap-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">Filters</h2>
+          <h2 className="text-xl font-bold">{t("Filters")}</h2>
           <Button
             onClick={clearAllFilters}
             disabled={
@@ -212,7 +212,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
         </div>
 
         <div className="bg-gray-50 p-5 border border-gray-200 rounded-lg">
-          <h3 className="font-bold text-lg mb-3">Car Brands</h3>
+          <h3 className="font-bold text-lg mb-3">{t("Car Brands")}</h3>
           <ul className="flex flex-col gap-2">
             <li>
               <div className="flex justify-between items-center w-full">
@@ -255,7 +255,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
                   }
                   label={
                     <div className="flex items-center gap-2">
-                      <span>{brand.name}</span>
+                      <span>{t(`brand.${brand.name}`)}</span>
                       <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">
                         {getCarCountForBrand(brand.id)}
                       </span>
@@ -268,7 +268,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
         </div>
 
         <div className="bg-gray-50 p-5 border border-gray-200 rounded-lg">
-          <h3 className="font-bold text-lg mb-3">Filter Price</h3>
+          <h3 className="font-bold text-lg mb-3">{t('Filter Price')}</h3>
           {priceRange && (
             <>
               <input
@@ -293,7 +293,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
         </div>
 
         <div className="bg-gray-50 p-5 border border-gray-200 rounded-lg">
-          <h3 className="font-bold text-lg mb-3">Car Types</h3>
+          <h3 className="font-bold text-lg mb-3">{t('Car Types')}</h3>
           <ul className="flex flex-col gap-2">
             <li>
               <div className="flex justify-between items-center w-full">
@@ -336,7 +336,7 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
                   }
                   label={
                     <div className="flex items-center gap-2">
-                      <span>{type.name}</span>
+                      <span>{t(`name.${type.name}`)}</span>
                       <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">
                         {getCarCountForType(type.name)}
                       </span>
