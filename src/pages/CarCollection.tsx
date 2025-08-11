@@ -36,18 +36,18 @@ const CarCollection = () => {
 
       const { data, meta } = response.data;
       const mappedData: CarItem[] = (data || []).map((item: any) => ({
-        id: item.id,
-        name: item.relationship?.['Model Names']?.model_name || '',
-        image: item.attributes?.image || '',
-        brand: item.relationship?.Brand?.brand_name || '',
-        brandId: Number(item.relationship?.Brand?.brand_id) || 0,
+        id: String(item.id) || '',
+        name: item.relationships?.model_names?.model_name || item.attributes?.model_name || '',
+        image: item.attributes?.image || carImages[0] || '',
+        brand: item.relationships?.brand?.brand_name || item.attributes?.brand || '',
+        brandId: Number(item.relationships?.brand?.brand_id) || 0,
         seats: item.attributes?.seats_count || 0,
         luggage: item.attributes?.seat_type || '',
         transmission: item.attributes?.transmission_type || '',
         fuel: item.attributes?.engine_type || '',
         price: Number(item.attributes?.price) || 0,
-        type: item.relationship?.Types?.type_name || '',
-        year: item.attributes?.year || '2020'
+        type: item.relationships?.types?.type_name || '',
+        year: String(item.attributes?.year || '2020'),
       }));
       setCars(mappedData);
       setCurrentPage(meta.current_page);

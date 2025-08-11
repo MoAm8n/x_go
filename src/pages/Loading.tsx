@@ -149,7 +149,7 @@ const Home = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:gap-6 gap-2 md:px-10 py-8">
             {cars.length > 0 ? (
-              cars.slice(1, 7).map((car) => (
+              cars.slice(0, 7).map((car) => (
                 <Link key={car.id} to={`/car/${car.id}`}>
                   <div
                     key={car.id}

@@ -133,17 +133,17 @@ const SignUp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#FFB347] via-[#FFE0B2] to-[#fdf9f2] sm:px-4 md:px-32">
-      <div className="flex flex-col lg:flex-row justify-between item-center w-full bg-transparent">
-        <div className="w-full flex flex-col justify-evenly max-lg:pt-14">
+      <div className="flex flex-col lg:flex-row justify-between item-center w-full bg-transparent max-sm:pt-8">
+        <div className="w-full flex flex-col justify-evenly lg:pt-14">
           <div className="w-full max-lg:text-center">
-            <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 lg:w-3/4 max-lg:px-10 max-lg:py-2">
+            <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 lg:w-3/4 max-lg:px-10 lg:py-2">
               {t("signup.welcome_message")}
             </h2>
-            <p className="text-gray-600 lg:w-3/4 text-lg max-lg:px-6">
+            <p className="text-gray-600 lg:w-3/4 text-lg max-lg:px-6 max-sm:hidden">
               {t("signup.welcome_subtext")}
             </p>
           </div>
-          <div className="relative flex flex-col sm:flex-row items-center gap-4 max-lg:justify-center max-lg:py-8">
+          <div className="relative flex flex-col sm:flex-row items-center gap-4 max-lg:justify-center py-4 lg:py-8">
             <div className="relative">
               <button
                 onClick={() => setOpen((prev) => !prev)}
@@ -200,8 +200,8 @@ const SignUp: React.FC = () => {
               </div>
             )}
 
-            <h3 className="text-2xl font-extrabold text-gray-900 ">{t("signup.title")}</h3>
-            <p className="mb-6">{t("signup.subtitle")}</p>
+            <h3 className="text-xl font-extrabold text-gray-900 ">{t("signup.title")}</h3>
+            <p className="my-1">{t("signup.subtitle")}</p>
             
             <div className="mb-4">
               <label htmlFor="name" className="block my-1 text-sm font-semibold text-gray-700">
@@ -275,7 +275,7 @@ const SignUp: React.FC = () => {
                   {showRepeatPassword ? <VisibilityOffIcon style={{ fontSize: 18 }} /> : <VisibilityIcon style={{ fontSize: 18 }} />}
                 </button>
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs max-sm:text-[10px] text-gray-400 mt-1">
                 {t("signup.password_hint")}
               </p>
             </div>

@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import cashIcon from "../../assets/PaymentForm/ion_cash (1).png";
 import visaIcon from "../../assets/PaymentForm/Vector (7).png";
-import axios from "axios";
-import {API_URL} from "../../context/api/Api";
 import { toast } from "react-toastify";
+import { API_URL } from "../../context/api/Api";
 
 interface BookingItem {
   id: number;
-  final_price: string | number;
+  final_price: number | string;
   car_model: {
     id: number;
   };
@@ -20,134 +20,137 @@ interface PaymentFormProps {
 
 const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [activeMethod, setActiveMethod] = useState<"cash" | "card" | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const savePaymentMethod = async ({
-    payment_method,
-    transaction_id,
-  }: {
-    payment_method: string;
-    transaction_id: string | null;
-  }) => {
+  // Save payment method to your API
+  const savePaymentMethod = async (payment_method: string, transaction_id: string | null) => {
     try {
-      const res = await axios.post(
+      const token = localStorage.getItem("tokenUser");
+      if (!token) {
+        toast.error("You must be logged in first");
+        return;
+      }
+      await axios.post(
         `${API_URL}/api/user/Model/${booking.car_model.id}/car-booking/${booking.id}/payment-method`,
-        {
-          payment_method,
-          transaction_id,
-        },
+        { payment_method, transaction_id },
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("tokenUser")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
+      confirm("Payment recorded successfully");
+      onPaymentSuccess();
+    } catch (error: any) {
+      toast.error("An error occurred while recording the payment");
+      console.error("Save Payment Error:", error.response?.data || error.message);
+    }
+  };
 
-      if (res.data) {
-        toast.success("Payment method saved successfully!");
-        onPaymentSuccess();
-        return res.data;
+  // Handle messages from Paymob iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== "https://accept.paymob.com") return;
+
+      const data = event.data;
+      console.log("Message from Paymob iframe:", data);
+
+      if (data?.event === "payment_success" || data?.success === true) {
+        savePaymentMethod("visa", data.transaction?.id || null);
+        setIframeUrl(null);
+        setActiveMethod(null);
+      } else if (data?.event === "payment_failed") {
+        toast.error("Payment failed, please try again");
+        setIframeUrl(null);
+        setActiveMethod(null);
       }
-      throw new Error("Failed to save payment method");
-    } catch (err) {
-      console.error("Error saving payment method:", err);
-      alert("Failed to save payment details");
-      throw err;
-    }
-  };
+    };
 
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  // Pay with cash
   const handleCashPayment = async () => {
-    try {
-      setIsLoading(true);
-      setActiveMethod("cash");
-      await savePaymentMethod({
-        payment_method: "cash",
-        transaction_id: null,
-      });
-      setIframeUrl(null);
-    } catch (error) {
-      console.error("Cash payment error:", error);
-    } finally {
-      setIsLoading(false);
-      setActiveMethod(null);
-    }
+    setIsLoading(true);
+    setActiveMethod("cash");
+    await savePaymentMethod("cash", null);
+    setIsLoading(false);
+    setActiveMethod(null);
   };
 
+  // Pay with card via Paymob
   const handleCardPayment = async () => {
     setIsLoading(true);
     setActiveMethod("card");
+
     try {
-      const authResponse = await axios.post(
-        "https://accept.paymob.com/api/auth/tokens",
-        {
-          api_key: import.meta.env.VITE_PAYMOB_API_KEY,
-        }
-      );
+      const apiKey = import.meta.env.VITE_PAYMOB_API_KEY;
+      const integrationId = import.meta.env.VITE_PAYMOB_INTEGRATION_ID;
 
-      if (!authResponse.data.token) {
-        throw new Error("Failed to get authentication token");
+      if (!apiKey || !integrationId) {
+        toast.error("API Key or Integration ID is missing");
+        setIsLoading(false);
+        setActiveMethod(null);
+        return;
       }
 
-      const token = authResponse.data.token;
+      // Step 1: Get auth token
+      const authRes = await axios.post("https://accept.paymob.com/api/auth/tokens", {
+        api_key: apiKey,
+      });
+      const authToken = authRes.data.token;
+      if (!authToken) throw new Error("Failed to get auth token");
 
-      const orderResponse = await axios.post(
-        "https://accept.paymob.com/api/ecommerce/orders",
-        {
-          auth_token: token,
-          delivery_needed: false,
-          amount_cents: "10000",
-          currency: "EGP",
-          items: [],
-        }
-      );
+      // Step 2: Create order
+      const orderRes = await axios.post("https://accept.paymob.com/api/ecommerce/orders", {
+        auth_token: authToken,
+        delivery_needed: false,
+        amount_cents: Math.round(Number(booking.final_price) * 100),
+        currency: "EGP",
+        items: [],
+      });
+      const orderId = orderRes.data.id;
+      if (!orderId) throw new Error("Failed to create order");
 
-      if (!orderResponse.data.id) {
-        throw new Error("Failed to create order");
-      }
+      // Step 3: Request payment key
+      const paymentKeyRes = await axios.post("https://accept.paymob.com/api/acceptance/payment_keys", {
+        auth_token: authToken,
+        amount_cents: Math.round(Number(booking.final_price) * 100),
+        expiration: 3600,
+        order_id: orderId,
+        billing_data: {
+          apartment: "NA",
+          email: "user@example.com",
+          floor: "NA",
+          first_name: "Test",
+          street: "Test Street",
+          building: "NA",
+          phone_number: "+201000000000",
+          shipping_method: "NA",
+          postal_code: "NA",
+          city: "Cairo",
+          country: "EG",
+          last_name: "User",
+          state: "Cairo",
+        },
+        currency: "EGP",
+        integration_id: integrationId,
+      });
 
-      const paymentKeyResponse = await axios.post(
-        "https://accept.paymob.com/api/acceptance/payment_keys",
-        {
-          auth_token: token,
-          amount_cents: (booking.final_price).replace('.', ''),
-          expiration: 3600,
-          order_id: orderResponse.data.id,
-          billing_data: {
-            apartment: "NA",
-            email: "user@example.com",
-            floor: "NA",
-            first_name: "Test",
-            street: "Test Street",
-            building: "NA",
-            phone_number: "+201000000000",
-            shipping_method: "NA",
-            postal_code: "NA",
-            city: "Cairo",
-            country: "EG",
-            last_name: "User",
-            state: "Cairo",
-          },
-          currency: "Dolar",
-          integration_id: import.meta.env.VITE_PAYMOB_INTEGRATION_ID,
-        }
-      );
+      const paymentToken = paymentKeyRes.data.token;
+      if (!paymentToken) throw new Error("Failed to get payment token");
 
-      if (!paymentKeyResponse.data.token) {
-        throw new Error("Failed to get payment token");
-      }
-
-      const iframe = `https://accept.paymob.com/api/acceptance/iframes/943449?payment_token=${paymentKeyResponse.data.token}`;
+      const iframe = `https://accept.paymob.com/api/acceptance/iframes/943449?payment_token=${paymentToken}`;
       setIframeUrl(iframe);
-    } catch (error) {
-      console.error("Payment processing error:", error);
-      alert("An error occurred during payment processing. Please try again.");
+    } catch (error: any) {
+      toast.error("An error occurred while preparing the payment");
+      console.error("Card Payment Error:", error.response?.data || error.message);
+      setActiveMethod(null);
     } finally {
       setIsLoading(false);
-      if (!iframeUrl) {
-        setActiveMethod(null);
-      }
     }
   };
 
@@ -159,7 +162,7 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
   return (
     <div className="max-w-xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6 text-center">Select Payment Method</h1>
-      
+
       <div className="grid grid-cols-1 gap-4 mb-6">
         <button
           onClick={handleCashPayment}
@@ -168,11 +171,7 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
             ${isLoading && activeMethod !== "cash" ? "opacity-50 cursor-not-allowed" : "hover:bg-[#e6911eb3]"}`}
         >
           <img src={cashIcon} alt="Cash" className="w-8 h-8" />
-          {isLoading && activeMethod === "cash" ? (
-            <span>Processing...</span>
-          ) : (
-            <span>Pay with Cash</span>
-          )}
+          {isLoading && activeMethod === "cash" ? "Paying in Cash..." : "Pay in Cash"}
         </button>
 
         <button
@@ -182,11 +181,7 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
             ${isLoading && activeMethod !== "card" ? "opacity-50 cursor-not-allowed" : "hover:bg-[#e6911eb3]"}`}
         >
           <img src={visaIcon} alt="Credit Card" className="w-8 h-8" />
-          {isLoading && activeMethod === "card" ? (
-            <span>Processing...</span>
-          ) : (
-            <span>Pay with Credit Card</span>
-          )}
+          {isLoading && activeMethod === "card" ? "Paying with Card..." : "Pay with Card"}
         </button>
       </div>
 
@@ -196,9 +191,15 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
             <button
               onClick={handleCloseIframe}
               className="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 rounded-full p-2 z-10"
-              aria-label="Close payment"
+              aria-label="Close Payment"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -209,7 +210,7 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
               height="700px"
               className="rounded-lg"
               style={{ border: "none" }}
-            ></iframe>
+            />
           </div>
         </div>
       )}

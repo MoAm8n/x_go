@@ -56,8 +56,8 @@ const EXTRAS_LIST = [
 
 const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
   const [formData, setFormData] = useState({
-    pickupDate: '',
-    dropoffDate: '',
+    pickupDate: 'dd/mm/yyyy',
+    dropoffDate: 'dd/mm/yyyy',
     pickupTime: '10:00',
     dropoffTime: '10:00',
   });
@@ -191,7 +191,11 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
 
   const validateForm = useCallback((): boolean => {
     const errors: string[] = [];
-
+    
+    if (! localStorage.getItem('tokenUser')) {
+      errors.push('You must be logged in to complete booking');
+      navigate('/signin');
+    }
     if (!formData.pickupDate || !formData.dropoffDate) {
       errors.push('Please select pickup and dropoff dates');
     }
@@ -232,9 +236,7 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
   const handleBooking = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-
     setIsBooking(true);
-
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (!user?.id) {

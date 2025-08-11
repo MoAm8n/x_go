@@ -84,7 +84,7 @@ export interface CarItem {
   price?: number | string;
   type?: string;
   year?: string;
-  images?: string | string[] | undefined;
+  images?: string[];
 }
 
 export interface BookingData {
@@ -355,10 +355,11 @@ export const getCars = async (
     return response.data.data
       .map((item: {
         id: string;
-        relationship?: {
-          Brand?: { brand_name?: string; brand_id?: number };
-          Types?: { type_name?: string };
-          ['Model Names']?: { model_name?: string };
+        relationships?: {
+          brand?: { brand_name?: string; brand_id?: number };
+          types?: { type_name?: string };
+          model_names?: { model_name?: string };
+          cars?: Array<{ image?: string }>;
         };
         attributes?: {
           image?: string;
@@ -366,23 +367,31 @@ export const getCars = async (
           seat_type?: string;
           transmission_type?: string;
           engine_type?: string;
-          price?: number;
-          year?: number;
+          price?: number | string;
+          year?: number | string;
+          model_name?: string;
+          brand?: string;
         };
-      }) => ({
-        id: String(item.id) || '',
-        name: item.relationship?.['Model Names']?.model_name || '',
-        image: item.attributes?.image || '',
-        brand: item.relationship?.Brand?.brand_name || '',
-        brandId: Number(item.relationship?.Brand?.brand_id) || 0,
-        seats: item.attributes?.seats_count || 0,
-        luggage: item.attributes?.seat_type || '',
-        transmission: item.attributes?.transmission_type || '',
-        fuel: item.attributes?.engine_type || '',
-        price: Number(item.attributes?.price) || 0,
-        type: item.relationship?.Types?.type_name || '',
-        year: item.attributes?.year || '2020'
-      }))
+      }) => {
+        const carImages = item.relationships?.cars?.map(car => car.image).filter(Boolean) || [];
+        const mainImage = item.attributes?.image || carImages[0] || '';
+        
+        return {
+          id: String(item.id) || '',
+          name: item.relationships?.model_names?.model_name || item.attributes?.model_name || '',
+          image: mainImage,
+          brand: item.relationships?.brand?.brand_name || item.attributes?.brand || '',
+          brandId: Number(item.relationships?.brand?.brand_id) || 0,
+          seats: item.attributes?.seats_count || 0,
+          luggage: item.attributes?.seat_type || '',
+          transmission: item.attributes?.transmission_type || '',
+          fuel: item.attributes?.engine_type || '',
+          price: Number(item.attributes?.price) || 0,
+          type: item.relationships?.types?.type_name || '',
+          year: String(item.attributes?.year || '2020'),
+          images: carImages.length > 0 ? carImages : [mainImage].filter(Boolean)
+        };
+      })
       .filter((car: CarItem) => {
         const brandMatch = !brandId || car.brandId === brandId;
         const typeMatch = !type || car.type === type;
@@ -405,40 +414,30 @@ export const showCarId = async (id: string): Promise<CarItem> => {
   try {
     console.log("جارٍ جلب تفاصيل السيارة:", id);
     const response = await apiClient.get(`/api/user/Model/${id}`);
+
     if (!response.data?.data) {
       throw new Error('لم يتم العثور على بيانات السيارة');
     }
-    const item: {
-      id: string;
-      relationship?: {
-        Brand?: { brand_name?: string; brand_id?: number };
-        Types?: { type_name?: string };
-        ['Model Names']?: { model_name?: string };
-        Images?: { image?: string }[];
-      };
-      attributes?: {
-        image?: string;
-        seats_count?: number;
-        seat_type?: string;
-        transmission_type?: string;
-        engine_type?: string;
-        price?: number;
-        year?: number;
-      };
-    } = response.data.data;
+
+    const item = response.data.data;
+
+    const carImages = item.relationships?.cars?.map((car: any) => car.image).filter(Boolean) || [];
+    const mainImage = item.attributes?.image || carImages[0] || '';
+
     return {
       id: String(item.id) || '',
-      name: item.relationship?.['Model Names']?.model_name || '',
-      image: item.attributes?.image || '',
-      brand: item.relationship?.Brand?.brand_name || '',
-      brandId: Number(item.relationship?.Brand?.brand_id) || 0,
-      seats: item.attributes?.seats_count || 0,
+      name: item.relationships?.model_names?.model_name || item.attributes?.model_name || '',
+      image: mainImage,
+      brand: item.relationships?.brand?.brand_name || item.attributes?.brand || '',
+      brandId: Number(item.relationships?.brand?.brand_id) || 0,
+      seats: Number(item.attributes?.seats_count) || 0,
       luggage: item.attributes?.seat_type || '',
       transmission: item.attributes?.transmission_type || '',
       fuel: item.attributes?.engine_type || '',
       price: Number(item.attributes?.price) || 0,
-      type: item.relationship?.Types?.type_name || '',
-      images: item.relationship?.Images,
+      type: item.relationships?.types?.type_name || '',
+      year: String(item.attributes?.year || ''),
+      images: carImages.length > 0 ? carImages : [mainImage].filter(Boolean)
     };
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -449,6 +448,7 @@ export const showCarId = async (id: string): Promise<CarItem> => {
     throw error;
   }
 };
+
 
 export const saveBooking = async (id: string, bookingData: BookingData): Promise<any> => {
   try {
@@ -519,22 +519,22 @@ export const getBookingList = async (): Promise<BookingItem[]> => {
           price: booking.car_model?.attributes?.price || '0',
           engine_type: booking.car_model?.attributes?.engine_type || 'غير معروف',
           transmission_type: booking.car_model?.attributes?.transmission_type || 'تلقائي',
-          seat_type: booking.car_model?.attributes?.seat_type || 'غير معروف',
+          seat_type: booking.car_model?.relationships?.types?.type_name || '',
           seats_count: booking.car_model?.attributes?.seats_count || 4,
           image: booking.car_model?.attributes?.image || '/default-car.jpg',
         },
         relationship: {
           Brand: {
             brand_id: booking.car_model?.relationship?.Brand?.brand_id || 0,
-            brand_name: booking.car_model?.relationship?.Brand?.brand_name || 'غير معروف',
+            brand_name: booking.car_model?.relationships?.brand?.brand_name || booking.car_model?.attributes?.brand || '',
           },
           Types: {
             type_id: booking.car_model?.relationship?.Types?.type_id || 0,
-            type_name: booking.car_model?.relationship?.Types?.type_name || 'غير معروف',
+            type_name: booking.car_model?.relationships?.types?.type_name || '',
           },
           Model_Names: {
             model_name_id: booking.car_model?.relationship?.Model_Names?.model_name_id || 0,
-            model_name: booking.car_model?.relationship?.Model_Names?.model_name || 'غير معروف',
+            model_name: booking.car_model?.relationships?.model_names?.model_name || booking.car_model?.attributes?.model_name || '',
           },
         },
       },
