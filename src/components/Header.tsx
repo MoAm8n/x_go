@@ -143,16 +143,16 @@ const Header = () => {
             </div>
             <div>
               {tokenUser? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 md:gap-2">
                 <button
-                  className="bg-[#E53935CC] w-28 lg:w-44 h-11 max-md:text-sm md:rounded-3xl rounded-xl text-white"
+                  className="bg-[#E53935CC] w-[85px] lg:w-44 h-11 max-lg:text-xs md:rounded-3xl rounded-xl text-white"
                   onClick={handleLogout}
                   type="button"
                 >
                   {t("header.logout")}
                 </button>
                 <button
-                  className="bg-[#E6911E] w-28 lg:w-44 h-11 max-md:text-sm md:rounded-3xl rounded-xl text-white"
+                  className="bg-[#E6911E] w-[85px] lg:w-44 h-11 max-lg:text-xs md:rounded-3xl rounded-xl text-white"
                   onClick={() => navigate('/bookings')}
                   type="button"
                 >
@@ -162,7 +162,7 @@ const Header = () => {
               ): (
                 <Link to={'/signin'}>
                   <button 
-                    className="bg-[#E6911E] md:rounded-3xl h-12 w-28 lg:w-44 rounded-xl text-white">
+                    className="bg-[#E6911E] md:rounded-3xl h-11 max-md:text-xs w-20 md:w-44 rounded-xl text-white">
                     {t("header.login")}
                   </button>
                 </Link>
