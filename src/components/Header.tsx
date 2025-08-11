@@ -145,14 +145,14 @@ const Header = () => {
               {tokenUser? (
                 <div className="flex items-center gap-1 md:gap-2">
                 <button
-                  className="bg-[#E53935CC] w-[85px] lg:w-44 h-11 max-lg:text-xs md:rounded-3xl rounded-xl text-white"
+                  className="bg-[#E53935CC] w-[85px] lg:w-44 h-11 max-lg:text-xs md:rounded-3xl rounded-xl text-white font-bold"
                   onClick={handleLogout}
                   type="button"
                 >
                   {t("header.logout")}
                 </button>
                 <button
-                  className="bg-[#E6911E] w-[85px] lg:w-44 h-11 max-lg:text-xs md:rounded-3xl rounded-xl text-white"
+                  className="bg-[#E6911E] w-[85px] lg:w-44 h-11 max-lg:text-xs md:rounded-3xl rounded-xl text-white font-bold"
                   onClick={() => navigate('/bookings')}
                   type="button"
                 >

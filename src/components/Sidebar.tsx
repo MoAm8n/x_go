@@ -5,6 +5,10 @@ import { IoMdClose } from 'react-icons/io';
 import { useTranslation } from 'react-i18next';
 import logo from "../../public/images/logo.png";
 
+interface LanguageDropdownProps {
+  closeSidebar: () => void;
+}
+
 interface SidebarProps {
   isOpen: boolean;
   closeSidebar: () => void;
@@ -16,7 +20,7 @@ interface Language {
   dir?: 'ltr' | 'rtl';
 }
 
-const LanguageDropdown = () => {
+const LanguageDropdown: React.FC<LanguageDropdownProps> = ({ closeSidebar }) => {
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
 
@@ -38,6 +42,7 @@ const LanguageDropdown = () => {
       document.documentElement.dir = lang.dir;
     }
     setOpen(false);
+    closeSidebar();
   };
 
   return (
@@ -153,7 +158,7 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
             </nav>
 
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <LanguageDropdown />
+              <LanguageDropdown  closeSidebar={closeSidebar}/>
             </div>
           </motion.div>
         </>
