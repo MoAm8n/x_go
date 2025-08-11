@@ -111,9 +111,9 @@ const Header = () => {
             <Link to="loading" className="text-2xl font-bold text-gray-800">
               <img src={logo} alt="الشعار" className="h-10" loading="lazy" />
             </Link>
-            <div className="space-x-2 lg:space-x-4 max-md:hidden flex items-center">
+            <div className="space-x-2 xl:space-x-4 max-md:hidden flex items-center">
               {links.map((link) => (
-                <div key={link.name} className="inline-block lg:pe-4">
+                <div key={link.name} className="inline-block xl:pe-4">
                   {link.path.includes("#") ? (
                     <HashLink
                       to={link.path}
@@ -141,28 +141,28 @@ const Header = () => {
               ))}
               <LanguageDropdown />
             </div>
-            <div>
+            <div className="hidden md:flex items-center gap-2">
               {tokenUser? (
                 <div className="flex items-center gap-1 md:gap-2">
                 <button
-                  className="bg-[#E53935CC] w-[85px] lg:w-44 h-11 max-lg:text-xs md:rounded-3xl rounded-xl text-white font-bold"
-                  onClick={handleLogout}
-                  type="button"
-                >
-                  {t("header.logout")}
-                </button>
-                <button
-                  className="bg-[#E6911E] w-[85px] lg:w-44 h-11 max-lg:text-xs md:rounded-3xl rounded-xl text-white font-bold"
+                  className="bg-[#E6911E] w-[85px] lg:w-40 h-11 max-lg:text-xs md:rounded-3xl max-lg:hidden rounded-xl text-white font-bold"
                   onClick={() => navigate('/bookings')}
                   type="button"
                 >
                   {t("header.Bookings")}
                 </button>
+                <button
+                  className="bg-[#E53935CC] w-[85px] lg:w-40 h-11 max-lg:text-xs md:rounded-3xl max-md:hidden rounded-xl text-white font-bold"
+                  onClick={handleLogout}
+                  type="button"
+                >
+                  {t("header.logout")}
+                </button>
                 </div>
               ): (
                 <Link to={'/signin'}>
                   <button 
-                    className="bg-[#E6911E] md:rounded-3xl h-11 max-md:text-xs w-20 md:w-44 rounded-xl text-white">
+                    className="bg-[#E6911E] md:rounded-3xl h-11 max-md:text-xs w-20 md:w-40 max-md:hidden rounded-xl text-white">
                     {t("header.login")}
                   </button>
                 </Link>
