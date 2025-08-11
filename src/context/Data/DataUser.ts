@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_URL } from '../api/Api';
+import { createBrowserHistory } from 'history';
 
 const apiClient = axios.create({
   baseURL: API_URL,
@@ -20,12 +21,13 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+const history = createBrowserHistory();
 const handleUnauthorized = () => {
   if (localStorage.getItem('tokenUser')) {
     localStorage.removeItem('tokenUser');
     localStorage.removeItem('user');
     apiClient.defaults.headers.common['Authorization'] = '';
-    window.location.href = '/signin';
+    history.push(`${import.meta.env.BASE_URL}signin`);
   }
 };
 
