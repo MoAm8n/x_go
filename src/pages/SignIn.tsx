@@ -5,6 +5,7 @@ import type { BookingData } from '../context/Data/DataUser';
 import { useTranslation } from "react-i18next";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+
 const SignIn: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -50,17 +51,19 @@ const SignIn: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-  
+
     try {
       const { token, user } = await authUsers(form);
-      
+
       localStorage.setItem('tokenUser', token);
       localStorage.setItem('user', JSON.stringify(user));
 
-      const tempBookingData = location.state?.tempBookingData || 
+      const fromPath = location.state?.from || "/";
+      const tempBookingData = location.state?.tempBookingData ||
         JSON.parse(localStorage.getItem('tempBookingData') || '{}');
 
-      if (tempBookingData?.carmodel_id) {
+      // لو جاي من صفحة الحجز ومعاه بيانات حجز مؤقتة
+      if (fromPath.includes("/book") && tempBookingData?.carmodel_id) {
         try {
           const bookingData: BookingData = {
             start_date: tempBookingData.start_date,
@@ -72,10 +75,10 @@ const SignIn: React.FC = () => {
             dropoff_location: tempBookingData.dropoff_location
           };
 
-          const res = await saveBooking(tempBookingData.carmodel_id, bookingData);
+          await saveBooking(tempBookingData.carmodel_id, bookingData);
           localStorage.removeItem('tempBookingData');
-          
-          navigate(`/bookings/${res.bookingId}`, {
+
+          navigate(fromPath, {
             state: {
               carDetails: tempBookingData.carDetails,
               bookingDetails: {
@@ -83,24 +86,28 @@ const SignIn: React.FC = () => {
                 extras: tempBookingData.extras,
                 totalPrice: tempBookingData.totalPrice
               }
-            }
+            },
+            replace: true
           });
           return;
         } catch (bookingError) {
           console.error('Failed to complete booking:', bookingError);
         }
       }
-      navigate('/bookings');
+
+      // لو مش جاي من صفحة الحجز
+      navigate(fromPath, { replace: true });
+
     } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
+      const errorMessage = error instanceof Error
+        ? error.message
         : t('signin.unexpected_error');
-      
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#FFB347] via-[#FFE0B2] to-[#fdf9f2] sm:px-4 md:px-32">

@@ -143,17 +143,26 @@ const Header = () => {
             </div>
             <div>
               {tokenUser? (
+                <div className="flex items-center gap-2">
                 <button
-                  className="bg-[#E53935CC] w-32 lg:w-48 h-11 md:rounded-3xl rounded-xl text-white"
+                  className="bg-[#E53935CC] w-28 lg:w-44 h-11 max-md:text-sm md:rounded-3xl rounded-xl text-white"
                   onClick={handleLogout}
                   type="button"
                 >
                   {t("header.logout")}
                 </button>
+                <button
+                  className="bg-[#E6911E] w-28 lg:w-44 h-11 max-md:text-sm md:rounded-3xl rounded-xl text-white"
+                  onClick={() => navigate('/bookings')}
+                  type="button"
+                >
+                  {t("header.Bookings")}
+                </button>
+                </div>
               ): (
                 <Link to={'/signin'}>
                   <button 
-                    className="bg-[#E6911E] md:rounded-3xl h-12 w-32 lg:w-48 rounded-xl text-white">
+                    className="bg-[#E6911E] md:rounded-3xl h-12 w-28 lg:w-44 rounded-xl text-white">
                     {t("header.login")}
                   </button>
                 </Link>

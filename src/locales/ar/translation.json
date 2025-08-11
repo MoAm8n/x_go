@@ -6,7 +6,8 @@
     "charging": "شحن",
     "how_it_works": "كيف تعمل",
     "login": "تسجيل الدخول",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "Bookings": "الحجوزات"
   },
   "vehicle": {
     "title": "مركبة",

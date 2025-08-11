@@ -120,7 +120,10 @@ const SignUp: React.FC = () => {
         }
       }
 
-      navigate('/bookings');
+      navigate('/signin', {
+        state: { email: form.email },
+        replace: true
+      });
     } catch (error) {
       const errorMessage = error instanceof Error 
         ? error.message 
