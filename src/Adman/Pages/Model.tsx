@@ -2,21 +2,27 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../context/api/Api";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
+
+const TransmissionTypes = ["Manual", "Automatic", "Hydramatic", "CVT", "DCT"];
+const EngineTypes = ["Gasoline", "Electric", "Hybrid", "Plug-in Hybrid"];
+const SeatTypes = ["fabric", "leather", "accessible", "sport", "electric"];
+const statusCars = ["available", "rented", "maintenance"];
 
 export default function Model() {
+  const { t } = useTranslation();
   const [brands, setBrands] = useState([]);
   const [types, setTypes] = useState([]);
-  const [models, setModels] = useState([]);
+  const [modelNames, setModelNames] = useState([]);
+  const [existingModels, setExistingModels] = useState([]);
   const [modelsId, setModelsId] = useState(null);
 
   const [brandId, setBrandId] = useState("");
   const [typeId, setTypeId] = useState("");
-  const [modelId, setModelId] = useState("");
+  const [modelNameId, setModelNameId] = useState("");
+  const [selectedModelId, setSelectedModelId] = useState("");
 
-  const [newBrand, setNewBrand] = useState("");
-  const [newType, setNewType] = useState("");
   const [newModel, setNewModel] = useState("");
-
   const [year, setYear] = useState("");
   const [price, setPrice] = useState("");
   const [engineType, setEngineType] = useState("");
@@ -26,166 +32,207 @@ export default function Model() {
   const [acceleration, setAcceleration] = useState("");
   const [image, setImage] = useState(null);
   const [images, setImages] = useState([]);
-  const [images2, setImages2] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
   const [imagesPreview, setImagesPreview] = useState([]);
-  const [images2Preview, setImages2Preview] = useState([]);
 
-  // State for car details form
   const [showCarForm, setShowCarForm] = useState(false);
   const [plateNumber, setPlateNumber] = useState("");
   const [status, setStatus] = useState("");
   const [carImage, setCarImage] = useState(null);
+  const [carImagePreview, setCarImagePreview] = useState(null);
   const [color, setColor] = useState("");
   const [description, setDescription] = useState("");
   const [capacity, setCapacity] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const TransmissionTypes = ["Manual", "Automatic", "Hydramatic", "CVT", "DCT"];
-  const EngineTypes = ["Gasoline", "Electric", "Hybrid", "Plug-in Hybrid"];
-  const SeatTypes = ["fabric", "leather", "accessible", "sport", "electric"];
-  const statusCars = ["available", "rented", "maintenance"];
-  // Fetch brands on component mount
+  // Fetch Brands
   useEffect(() => {
     const token = localStorage.getItem("tokenAdman");
     if (!token) {
-      toast.error("Token not found. Please log in.");
+      toast.error(t("model.token_not_found"));
       return;
     }
+    setIsLoading(true);
     axios
       .get(`${API_URL}/api/admin/Brands`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
         setBrands(res.data.data);
-        console.log("Brands:", res.data.data);
-        toast.success("Brands fetched successfully");
+        toast.success(t("model.brands_fetched"));
       })
       .catch((err) => {
         console.error("Error fetching brands:", err);
-        toast.error("Failed to fetch brands");
-      });
-  }, []);
+        toast.error(t("model.error_fetching_brands"));
+      })
+      .finally(() => setIsLoading(false));
+  }, [t]);
 
-  // Fetch types when brandId changes
+  // Fetch Types
   useEffect(() => {
     if (brandId) {
       const token = localStorage.getItem("tokenAdman");
       if (!token) {
-        toast.error("Token not found. Please log in.");
+        toast.error(t("model.token_not_found"));
         return;
       }
+      setIsLoading(true);
       axios
         .get(`${API_URL}/api/admin/Brands/${brandId}/Types`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
           setTypes(res.data.data);
-          console.log("Types:", res.data.data);
-          toast.success("Types fetched successfully");
+          toast.success(t("model.types_fetched"));
         })
         .catch((err) => {
           console.error("Error fetching types:", err);
-          toast.error("Failed to fetch types");
-        });
+          toast.error(t("model.error_fetching_types"));
+        })
+        .finally(() => setIsLoading(false));
     } else {
       setTypes([]);
       setTypeId("");
+      setModelNames([]);
+      setModelNameId("");
+      setExistingModels([]);
+      setSelectedModelId("");
+      setShowCarForm(false);
     }
-  }, [brandId]);
+  }, [brandId, t]);
 
-  // Fetch model names when brandId or typeId changes
+  // Fetch Model Names
   useEffect(() => {
     if (brandId && typeId) {
       const token = localStorage.getItem("tokenAdman");
       if (!token) {
-        toast.error("Token not found. Please log in.");
+        toast.error(t("model.token_not_found"));
         return;
       }
+      setIsLoading(true);
       axios
-        .get(
-          `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
+        .get(`${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
         .then((res) => {
-          setModels(res.data.data);
-          console.log("Model Names:", res.data.data);
-          toast.success("Models fetched successfully");
+          setModelNames(res.data.data);
+          toast.success(t("model.models_fetched"));
         })
         .catch((err) => {
           console.error("Error fetching model names:", err);
-          toast.error("Failed to fetch models");
-        });
+          toast.error(t("model.error_fetching_models"));
+        })
+        .finally(() => setIsLoading(false));
     } else {
-      setModels([]);
-      setModelId("");
+      setModelNames([]);
+      setModelNameId("");
+      setExistingModels([]);
+      setSelectedModelId("");
+      setShowCarForm(false);
     }
-  }, [brandId, typeId]);
+  }, [brandId, typeId, t]);
 
-  // Handle adding new model
+  // Fetch Existing Models
+  useEffect(() => {
+    if (brandId && typeId && modelNameId) {
+      const token = localStorage.getItem("tokenAdman");
+      if (!token) {
+        toast.error(t("model.token_not_found"));
+        return;
+      }
+      setIsLoading(true);
+      axios
+        .get(
+          `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names/${modelNameId}/Models`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .then((res) => {
+          setExistingModels(res.data.data);
+          toast.success(t("model.existing_models_fetched"));
+        })
+        .catch((err) => {
+          console.error("Error fetching existing models:", err);
+          toast.error(t("model.error_fetching_existing_models"));
+        })
+        .finally(() => setIsLoading(false));
+    } else {
+      setExistingModels([]);
+      setSelectedModelId("");
+      setShowCarForm(false);
+    }
+  }, [brandId, typeId, modelNameId, t]);
+
+  // Populate fields when selecting an existing model
+  useEffect(() => {
+    if (selectedModelId) {
+      const selectedModel = existingModels.find((model) => model.id === selectedModelId);
+      if (selectedModel) {
+        setModelsId(selectedModel.id);
+        setShowCarForm(true);
+      }
+    } else {
+      setModelsId(null);
+      setShowCarForm(false);
+    }
+  }, [selectedModelId, existingModels]);
+
+  // Add New Model Name
   const handleAddNew = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("tokenAdman");
+    if (!token) {
+      toast.error(t("model.token_not_found"));
+      return;
+    }
 
     if (newModel && brandId && typeId) {
+      setIsLoading(true);
       try {
         await axios.post(
           `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names`,
           { name: newModel },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setNewModel("");
         axios
           .get(
             `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
+            { headers: { Authorization: `Bearer ${token}` } }
           )
           .then((res) => {
-            setModels(res.data.data);
-            console.log("Updated Model Names:", res.data.data);
-            toast.success("New model added successfully");
+            setModelNames(res.data.data);
+            toast.success(t("model.model_added"));
           })
           .catch((err) => {
             console.error("Error refetching model names:", err);
-            toast.error("Failed to refresh models");
+            toast.error(t("model.error_refetching_models"));
           });
       } catch (err) {
         const errorMsg =
-          err.response?.data?.message || err.message || "An error occurred";
+          err.response?.data?.message || t("model.error_adding_model");
         console.error("Error adding new model:", err.response?.data);
         toast.error(errorMsg);
+      } finally {
+        setIsLoading(false);
       }
     } else {
-      toast.warning("Please fill all required fields to add a new model");
+      toast.warning(t("model.fill_required_fields"));
     }
   };
 
-  // Handle saving model details
+  // Save Model Details
   const handleSaveDetails = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("tokenAdman");
     if (!token) {
-      toast.error("Token not found. Please log in.");
+      toast.error(t("model.token_not_found"));
       return;
     }
 
-    if (!brandId || !typeId || !modelId) {
-      toast.error("Please select a brand, type, and model.");
+    if (!brandId || !typeId || !modelNameId) {
+      toast.error(t("model.select_required_fields"));
       return;
     }
     if (
@@ -197,13 +244,31 @@ export default function Model() {
       !seatsCount ||
       !acceleration
     ) {
-      toast.error("All fields are required.");
+      toast.error(t("model.all_fields_required"));
       return;
     }
 
+    if (!/^\d{4}$/.test(year)) {
+      toast.error(t("model.invalid_year"));
+      return;
+    }
+    if (!/^\d+(\.\d{1,2})?$/.test(price)) {
+      toast.error(t("model.invalid_price"));
+      return;
+    }
+    if (!/^\d+$/.test(seatsCount) || parseInt(seatsCount) < 1) {
+      toast.error(t("model.invalid_seats_count"));
+      return;
+    }
+    if (!/^\d+(\.\d{1,2})?$/.test(acceleration) || parseFloat(acceleration) < 0) {
+      toast.error(t("model.invalid_acceleration"));
+      return;
+    }
+
+    setIsLoading(true);
     const formData = new FormData();
     const modelName =
-      models.find((m) => m.id === modelId)?.attributes?.name || newModel;
+      modelNames.find((m) => m.id === modelNameId)?.attributes?.name || newModel;
     if (modelName) formData.append("name", modelName);
     formData.append("year", year);
     formData.append("price", price);
@@ -213,17 +278,11 @@ export default function Model() {
     formData.append("seats_count", seatsCount);
     formData.append("acceleration", acceleration);
     if (image) formData.append("image", image);
-    images.forEach((img, index) => formData.append(`images`, img));
-    images2.forEach((img, index) => formData.append(`images[]`, img));
-
-    for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
-    }
+    images.forEach((img) => formData.append("images", img));
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names/${modelId}/Models`,
-
+        `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names/${modelNameId}/Models`,
         formData,
         {
           headers: {
@@ -232,11 +291,7 @@ export default function Model() {
           },
         }
       );
-      console.log("brandId", brandId);
-      console.log("typeId", typeId);
-      console.log("modelId", modelId);
-      console.log("API Response:", response.data.data.id);
-      setModelsId(response.data.data.id)
+      setModelsId(response.data.data.id);
       setYear("");
       setPrice("");
       setEngineType("");
@@ -246,18 +301,22 @@ export default function Model() {
       setAcceleration("");
       setImage(null);
       setImages([]);
-      setImages2([]);
       setImagePreview(null);
       setImagesPreview([]);
-      setImages2Preview([]);
-      toast.success("Model details updated successfully");
+      toast.success(t("model.model_details_updated"));
       setShowCarForm(true);
+      // Refetch models
+      axios
+        .get(
+          `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names/${modelNameId}/Models`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+        .then((res) => {
+          setExistingModels(res.data.data);
+        });
     } catch (err) {
-      console.log("brandId", brandId);
-      console.log("typeId", typeId);
-      console.log("modelId", modelId);
       const errorMsg =
-        err.response?.data?.message || err.message || "An error occurred";
+        err.response?.data?.message || t("model.error_updating_model");
       console.error("API Error:", err.response?.data);
       toast.error(errorMsg);
       if (err.response?.data?.errors) {
@@ -265,23 +324,26 @@ export default function Model() {
           errorArray.forEach((msg) => toast.error(msg))
         );
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Handle saving car details
+  // Save Car Details
   const handleSaveCarDetails = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("tokenAdman");
     if (!token) {
-      toast.error("Token not found. Please log in.");
+      toast.error(t("model.token_not_found"));
       return;
     }
 
     if (!plateNumber || !status || !color || !description || !capacity) {
-      toast.error("All fields are required for car details.");
+      toast.error(t("model.all_car_fields_required"));
       return;
     }
 
+    setIsLoading(true);
     const formData = new FormData();
     formData.append("plate_number", plateNumber);
     formData.append("status", status);
@@ -291,10 +353,8 @@ export default function Model() {
     formData.append("Capacity", capacity);
 
     try {
-      const response = await axios.post(
-        // `${API_URL}/api/admin/Brands//Types//Model-Names//Models`,
-
-        `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names/${modelId}/Models/${modelsId}/Cars`,
+      await axios.post(
+        `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names/${modelNameId}/Models/${modelsId}/Cars`,
         formData,
         {
           headers: {
@@ -303,33 +363,21 @@ export default function Model() {
           },
         }
       );
-      console.log(brandId);
-      console.log(typeId);
-      console.log(modelId);
-      console.log(models);
-      console.log("Car API Response:", response.data);
       setPlateNumber("");
       setStatus("");
       setCarImage(null);
+      setCarImagePreview(null);
       setColor("");
       setDescription("");
       setCapacity("");
-      toast.success("Car details saved successfully");
-      setShowCarForm(true);
+      toast.success(t("model.car_details_saved"));
+      // Keep showCarForm true to allow adding another car
     } catch (err) {
-      console.log(brandId);
-      console.log(typeId);
-      console.log(modelId);
-      console.log(models[0].id);
       const errorMsg =
-        err.response?.data?.message ||
-        err.message ||
-        "An error occurred while saving car details";
+        err.response?.data?.message || t("model.error_saving_car");
       console.error("Car API Error:", err.response?.data);
       if (err.response?.data?.includes("Data truncated for column 'status'")) {
-        toast.error(
-          "Error: The 'status' value is invalid or too long. Please use a valid value (e.g., 'available' or 'unavailable')."
-        );
+        toast.error(t("model.invalid_status"));
       } else if (err.response?.data?.errors) {
         Object.values(err.response.data.errors).forEach((errorArray) =>
           errorArray.forEach((msg) => toast.error(msg))
@@ -337,23 +385,40 @@ export default function Model() {
       } else {
         toast.error(errorMsg);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Handle image change for car
+  // Handle Image Changes
   const handleCarImageChange = (e) => {
     const file = e.target.files[0];
+    const maxSizeMB = 5;
+    if (file && file.size > maxSizeMB * 1024 * 1024) {
+      toast.error(t("model.image_too_large", { maxSize: maxSizeMB }));
+      return;
+    }
     setCarImage(file);
     if (file) {
-      toast.success("Car image selected successfully");
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCarImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      toast.success(t("model.car_image_selected"));
     } else {
-      toast.error("Failed to select car image");
+      setCarImagePreview(null);
+      toast.error(t("model.error_selecting_car_image"));
     }
   };
 
-  // Existing image handling functions remain unchanged
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    const maxSizeMB = 5;
+    if (file && file.size > maxSizeMB * 1024 * 1024) {
+      toast.error(t("model.image_too_large", { maxSize: maxSizeMB }));
+      return;
+    }
     setImage(file);
     if (file) {
       const reader = new FileReader();
@@ -361,15 +426,25 @@ export default function Model() {
         setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
-      toast.success("Image selected successfully");
+      toast.success(t("model.image_selected"));
     } else {
       setImagePreview(null);
-      toast.error("Failed to select image");
+      toast.error(t("model.error_selecting_image"));
     }
   };
 
   const handleImagesChange = (e) => {
     const newFiles = Array.from(e.target.files);
+    const maxImages = 5;
+    const maxSizeMB = 5;
+    if (newFiles.some((file) => file.size > maxSizeMB * 1024 * 1024)) {
+      toast.error(t("model.image_too_large", { maxSize: maxSizeMB }));
+      return;
+    }
+    if (images.length + newFiles.length > maxImages) {
+      toast.error(t("model.max_images_exceeded", { max: maxImages }));
+      return;
+    }
     setImages((prevImages) => [...prevImages, ...newFiles]);
     const newPreviews = newFiles.map((file) => {
       const reader = new FileReader();
@@ -382,36 +457,16 @@ export default function Model() {
       setImagesPreview((prevPreviews) => [...prevPreviews, ...results])
     );
     if (newFiles.length > 0) {
-      toast.success("Images selected successfully");
+      toast.success(t("model.images_selected"));
     } else {
-      toast.error("Failed to select images");
-    }
-  };
-
-  const handleImages2Change = (e) => {
-    const newFiles = Array.from(e.target.files);
-    setImages2((prevImages2) => [...prevImages2, ...newFiles]);
-    const newPreviews = newFiles.map((file) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      return new Promise((resolve) => {
-        reader.onloadend = () => resolve(reader.result);
-      });
-    });
-    Promise.all(newPreviews).then((results) =>
-      setImages2Preview((prevPreviews2) => [...prevPreviews2, ...results])
-    );
-    if (newFiles.length > 0) {
-      toast.success("Images2 selected successfully");
-    } else {
-      toast.error("Failed to select images2");
+      toast.error(t("model.error_selecting_images"));
     }
   };
 
   const removeImage = () => {
     setImage(null);
     setImagePreview(null);
-    toast.success("Image removed successfully");
+    toast.success(t("model.image_removed"));
   };
 
   const removeImageFromImages = (index) => {
@@ -419,33 +474,27 @@ export default function Model() {
     setImages(newImages);
     const newPreviews = imagesPreview.filter((_, i) => i !== index);
     setImagesPreview(newPreviews);
-    toast.success("Image removed from images successfully");
-  };
-
-  const removeImageFromImages2 = (index) => {
-    const newImages2 = images2.filter((_, i) => i !== index);
-    setImages2(newImages2);
-    const newPreviews2 = images2Preview.filter((_, i) => i !== index);
-    setImages2Preview(newPreviews2);
-    toast.success("Image removed from images2 successfully");
+    toast.success(t("model.image_removed_from_images"));
   };
 
   return (
     <div className="flex flex-col gap-6 max-w-xl mx-auto p-4 rounded-xl">
-      {/* First Form: Select Brand, Type, and Model */}
+      {/* Form for selecting brand, type, model name, and adding new model name */}
       <form
         onSubmit={handleAddNew}
         className="flex flex-col gap-3 bg-[#faf7f2] shadow rounded-xl p-6"
       >
+        <h3 className="text-lg font-bold">{t("model.select_model")}</h3>
         <div>
-          <label className="block mb-1">Choose Brand</label>
+          <label className="block mb-1">{t("model.choose_brand")}</label>
           <select
             className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
             value={brandId || ""}
             onChange={(e) => setBrandId(e.target.value)}
+            disabled={isLoading}
           >
             <option value="" disabled>
-              -- اختر برند --
+              {t("model.select_brand")}
             </option>
             {brands.map((brand) => (
               <option key={brand.id} value={brand.id}>
@@ -456,15 +505,15 @@ export default function Model() {
         </div>
 
         <div>
-          <label className="block mb-1">Choose Type</label>
+          <label className="block mb-1">{t("model.choose_type")}</label>
           <select
             className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
             value={typeId || ""}
             onChange={(e) => setTypeId(e.target.value)}
-            disabled={!brandId}
+            disabled={!brandId || isLoading}
           >
             <option value="" disabled>
-              -- اختر النوع --
+              {t("model.select_type")}
             </option>
             {types.map((type) => (
               <option key={type.id} value={type.id}>
@@ -475,17 +524,17 @@ export default function Model() {
         </div>
 
         <div>
-          <label className="block mb-1">Choose Model</label>
+          <label className="block mb-1">{t("model.choose_model_name")}</label>
           <select
             className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 mb-3 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-            value={modelId || ""}
-            onChange={(e) => setModelId(e.target.value)}
-            disabled={!typeId}
+            value={modelNameId || ""}
+            onChange={(e) => setModelNameId(e.target.value)}
+            disabled={!typeId || isLoading}
           >
             <option value="" disabled>
-              -- اختر موديل --
+              {t("model.select_model_name")}
             </option>
-            {models.map((model) => (
+            {modelNames.map((model) => (
               <option key={model.id} value={model.id}>
                 {model.attributes?.name || model.name}
               </option>
@@ -493,280 +542,347 @@ export default function Model() {
           </select>
           <input
             className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-            placeholder="أو أدخل موديل جديد"
+            placeholder={t("model.new_model_placeholder")}
             value={newModel}
             onChange={(e) => setNewModel(e.target.value)}
+            disabled={isLoading}
           />
+          <button
+            type="submit"
+            className="bg-[#E6911E] text-white rounded-xl py-2 mt-3"
+            disabled={isLoading}
+          >
+            {t("model.add_new_model_name")}
+          </button>
         </div>
 
-        <button
-          type="submit"
-          className="bg-[#E6911E] text-white rounded-xl py-2 mt-3"
-        >
-          حفظ أو إضافة جديد
-        </button>
+        <div>
+          <label className="block mb-1">{t("model.select_existing_model")}</label>
+          <select
+            className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+            value={selectedModelId || ""}
+            onChange={(e) => setSelectedModelId(e.target.value)}
+            disabled={!modelNameId || isLoading}
+          >
+            <option value="" disabled>
+              {t("model.select_model")}
+            </option>
+            {existingModels.map((model) => (
+              <option key={model.id} value={model.id}>
+                {model.attributes.name} ({model.attributes.year})
+              </option>
+            ))}
+          </select>
+        </div>
       </form>
 
-      {/* Second Form: Model Details */}
-      <form
-        onSubmit={handleSaveDetails}
-        className="flex flex-col gap-3 mt-4 bg-[#faf7f2] shadow rounded-xl p-6"
-      >
-        <h3 className="text-lg font-bold">تفاصيل الموديل</h3>
-        <div>
-          <label className="block mb-1">السنة (Year)</label>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            placeholder="مثال: 2024"
-          />
-        </div>
-        <div>
-          <label className="block mb-1">السعر (Price)</label>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="مثال: 1000"
-          />
-        </div>
-        <div>
-          <label className="block mb-1">نوع المحرك (Engine Type)</label>
-          <select
-            className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-            value={engineType}
-            onChange={(e) => setEngineType(e.target.value)}
-          >
-            <option value="" disabled>
-              -- اختر نوع المحرك --
-            </option>
-            {EngineTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block mb-1">
-            نوع الترانسيمشن (Transmission Type)
-          </label>
-          <select
-            className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-            value={transmissionType}
-            onChange={(e) => setTransmissionType(e.target.value)}
-          >
-            <option value="" disabled>
-              -- اختر نوع الترانسيمشن --
-            </option>
-            {TransmissionTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block mb-1">نوع المقاعد (Seat Type)</label>
-          <select
-            className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-            value={seatType}
-            onChange={(e) => setSeatType(e.target.value)}
-          >
-            <option value="" disabled>
-              -- اختر نوع المقاعد --
-            </option>
-            {SeatTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block mb-1">عدد المقاعد (Seats Count)</label>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-            value={seatsCount}
-            onChange={(e) => setSeatsCount(e.target.value)}
-            placeholder="مثال: 4"
-          />
-        </div>
-        <div>
-          <label className="block mb-1">التسارع (Acceleration)</label>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-            value={acceleration}
-            onChange={(e) => setAcceleration(e.target.value)}
-            placeholder="مثال: 3.1"
-          />
-        </div>
-        <div>
-          <label className="block mb-1">صورة واحدة (Image)</label>
-          <input
-            type="file"
-            className="w-full p-2 border rounded"
-            onChange={handleImageChange}
-          />
-          {imagePreview && (
-            <div className="mt-2 relative">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="max-w-[200px] max-h-[200px] object-cover rounded-xl border"
-              />
-              <button
-                type="button"
-                className="absolute top-1 left-1 bg-red-500 text-white px-2 py-2 rounded-xl"
-                onClick={removeImage}
-              >
-                x
-              </button>
-            </div>
-          )}
-        </div>
-        <div>
-          <label className="block mb-1">مجموعة صور الأولى (images[])</label>
-          <input
-            type="file"
-            className="w-full p-2 border rounded"
-            multiple
-            accept="image/*"
-            onChange={handleImagesChange}
-          />
-          {imagesPreview.length > 0 && (
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {imagesPreview.map((preview, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={preview}
-                    alt={`Preview ${index}`}
-                    className="max-w-[150px] max-h-[150px] object-cover rounded-xl border"
-                  />
-                  <button
-                    type="button"
-                    className="absolute top-1 left-1 bg-red-500 text-white px-2 py-2 rounded-xl"
-                    onClick={() => removeImageFromImages(index)}
-                  >
-                    X
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          <p className="text-sm text-gray-600">يمكنك اختيار أي عدد من الصور.</p>
-        </div>
-        <button
-          type="submit"
-          className="bg-[#E6911E] text-white rounded-xl py-2 mt-3"
-          disabled={!brandId || !typeId || !modelId}
-        >
-          حفظ التفاصيل
-        </button>
-      </form>
-
-      {/* Car Details Form */}
-      {showCarForm && (
+      {/* Form for adding new model details */}
+      {modelNameId && !selectedModelId && (
         <form
-          onSubmit={handleSaveCarDetails}
+          onSubmit={handleSaveDetails}
           className="flex flex-col gap-3 mt-4 bg-[#faf7f2] shadow rounded-xl p-6"
         >
-          <h3 className="text-lg font-bold">تفاصيل السيارة</h3>
+          <h3 className="text-lg font-bold">{t("model.new_model_details")}</h3>
           <div>
-            <label className="block mb-1">رقم اللوحة (Plate Number)</label>
+            <label className="block mb-1">{t("model.year")}</label>
             <input
-              type="text"
+              type="number"
+              min="1900"
+              max={new Date().getFullYear() + 1}
               className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-              value={plateNumber}
-              onChange={(e) => setPlateNumber(e.target.value)}
-              placeholder="مثال: 4693"
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              placeholder={t("model.year_placeholder")}
+              disabled={isLoading}
             />
           </div>
           <div>
-            <label className="block mb-1">الحالة (Status)</label>
-            {/* <input
-              type="text"
+            <label className="block mb-1">{t("model.price")}</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
               className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              placeholder="مثال: available"
-            /> */}
-            {/* <select
-              className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
-              <option>
-                {statusCars.map((statusCar) => (
-                  <option key={statusCar} value={statusCar}>
-                    {statusCar}
-                  </option>
-                ))}
-              </option>
-            </select> */}
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder={t("model.price_placeholder")}
+              disabled={isLoading}
+            />
+          </div>
+          <div>
+            <label className="block mb-1">{t("model.engine_type")}</label>
             <select
               className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              value={engineType}
+              onChange={(e) => setEngineType(e.target.value)}
+              disabled={isLoading}
             >
               <option value="" disabled>
-                -- اختر الحالة --
+                {t("model.select_engine_type")}
               </option>
-              {statusCars.map((statusCar) => (
-                <option key={statusCar} value={statusCar}>
-                  {statusCar}
+              {EngineTypes.map((type) => (
+                <option key={type} value={type}>
+                  {t(`model.engine_types.${type.toLowerCase().replace(" ", "_")}`)}
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block mb-1">الصورة (Image)</label>
+            <label className="block mb-1">{t("model.transmission_type")}</label>
+            <select
+              className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+              value={transmissionType}
+              onChange={(e) => setTransmissionType(e.target.value)}
+              disabled={isLoading}
+            >
+              <option value="" disabled>
+                {t("model.select_transmission_type")}
+              </option>
+              {TransmissionTypes.map((type) => (
+                <option key={type} value={type}>
+                  {t(`model.transmission_types.${type.toLowerCase()}`)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block mb-1">{t("model.seat_type")}</label>
+            <select
+              className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+              value={seatType}
+              onChange={(e) => setSeatType(e.target.value)}
+              disabled={isLoading}
+            >
+              <option value="" disabled>
+                {t("model.select_seat_type")}
+              </option>
+              {SeatTypes.map((type) => (
+                <option key={type} value={type}>
+                  {t(`model.seat_types.${type.toLowerCase()}`)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block mb-1">{t("model.seats_count")}</label>
             <input
-              type="file"
-              className="w-full p-2 border rounded"
-              onChange={handleCarImageChange}
+              type="number"
+              min="1"
+              className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+              value={seatsCount}
+              onChange={(e) => setSeatsCount(e.target.value)}
+              placeholder={t("model.seats_count_placeholder")}
+              disabled={isLoading}
             />
           </div>
           <div>
-            <label className="block mb-1">اللون (Color)</label>
+            <label className="block mb-1">{t("model.acceleration")}</label>
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+              value={acceleration}
+              onChange={(e) => setAcceleration(e.target.value)}
+              placeholder={t("model.acceleration_placeholder")}
+              disabled={isLoading}
+            />
+          </div>
+          <div className="flex flex-col items-center">
+            <label className="block mb-2 font-medium">{t("model.image")}</label>
+            <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed rounded-xl cursor-pointer bg-[#FAF7F2]">
+              <input
+                type="file"
+                className="hidden bg-[#FAF7F2] border border-[#E6911E]"
+                accept="image/*"
+                onChange={handleImageChange}
+                disabled={isLoading}
+              />
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt={t("model.image_preview")}
+                  className="w-12 h-12 object-contain"
+                />
+              ) : (
+                <span className="text-3xl text-gray-400">&#8682;</span>
+              )}
+            </label>
+            {imagePreview && (
+              <button
+                type="button"
+                className="mt-2 bg-red-500 text-white px-2 py-1 rounded-xl"
+                onClick={removeImage}
+                disabled={isLoading}
+              >
+                {t("model.remove_image")}
+              </button>
+            )}
+          </div>
+          <div className="flex flex-col items-center">
+            <label className="block mb-2 font-medium">{t("model.images")}</label>
+            <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed rounded-xl cursor-pointer bg-[#FAF7F2]">
+              <input
+                type="file"
+                className="hidden bg-[#FAF7F2] border border-[#E6911E]"
+                multiple
+                accept="image/*"
+                onChange={handleImagesChange}
+                disabled={isLoading}
+              />
+              {imagesPreview.length > 0 ? (
+                <img
+                  src={imagesPreview[0]}
+                  alt={t("model.images_preview")}
+                  className="w-12 h-12 object-contain"
+                />
+              ) : (
+                <span className="text-3xl text-gray-400">&#8682;</span>
+              )}
+            </label>
+            {imagesPreview.length > 0 && (
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {imagesPreview.map((preview, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={preview}
+                      alt={`${t("model.images_preview")} ${index}`}
+                      className="max-w-[150px] max-h-[150px] object-cover rounded-xl border"
+                    />
+                    <button
+                      type="button"
+                      className="absolute top-1 left-1 bg-red-500 text-white px-2 py-1 rounded-xl"
+                      onClick={() => removeImageFromImages(index)}
+                      disabled={isLoading}
+                    >
+                      {t("model.remove_image")}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-sm text-gray-600">{t("model.images_instruction")}</p>
+          </div>
+          <button
+            type="submit"
+            className="bg-[#E6911E] text-white rounded-xl py-2 mt-3"
+            disabled={isLoading}
+          >
+            {isLoading ? t("model.saving") : t("model.save_details")}
+          </button>
+        </form>
+      )}
+
+      {/* Form for adding car details */}
+      {showCarForm && (
+        <form
+          onSubmit={handleSaveCarDetails}
+          className="flex flex-col gap-3 mt-4 bg-[#faf7f2] shadow rounded-xl p-6"
+        >
+          <h3 className="text-lg font-bold">{t("model.car_details")}</h3>
+          <div>
+            <label className="block mb-1">{t("model.plate_number")}</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+              value={plateNumber}
+              onChange={(e) => setPlateNumber(e.target.value)}
+              placeholder={t("model.plate_number_placeholder")}
+              disabled={isLoading}
+            />
+          </div>
+          <div>
+            <label className="block mb-1">{t("model.status")}</label>
+            <select
+              className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              disabled={isLoading}
+            >
+              <option value="" disabled>
+                {t("model.select_status")}
+              </option>
+              {statusCars.map((statusCar) => (
+                <option key={statusCar} value={statusCar}>
+                  {t(`model.status_types.${statusCar}`)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col items-center">
+            <label className="block mb-2 font-medium">{t("model.car_image")}</label>
+            <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed rounded-xl cursor-pointer bg-[#FAF7F2]">
+              <input
+                type="file"
+                className="hidden bg-[#FAF7F2] border border-[#E6911E]"
+                accept="image/*"
+                onChange={handleCarImageChange}
+                disabled={isLoading}
+              />
+              {carImagePreview ? (
+                <img
+                  src={carImagePreview}
+                  alt={t("model.car_image_preview")}
+                  className="w-12 h-12 object-contain"
+                />
+              ) : (
+                <span className="text-3xl text-gray-400">&#8682;</span>
+              )}
+            </label>
+            {carImagePreview && (
+              <button
+                type="button"
+                className="mt-2 bg-red-500 text-white px-2 py-1 rounded-xl"
+                onClick={() => {
+                  setCarImage(null);
+                  setCarImagePreview(null);
+                  toast.success(t("model.car_image_removed"));
+                }}
+                disabled={isLoading}
+              >
+                {t("model.remove_image")}
+              </button>
+            )}
+          </div>
+          <div>
+            <label className="block mb-1">{t("model.color")}</label>
             <input
               type="text"
               className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              placeholder="مثال: silver"
+              placeholder={t("model.color_placeholder")}
+              disabled={isLoading}
             />
           </div>
           <div>
-            <label className="block mb-1">الوصف (Description)</label>
+            <label className="block mb-1">{t("model.description")}</label>
             <input
               type="text"
               className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="مثال: 33"
+              placeholder={t("model.description_placeholder")}
+              disabled={isLoading}
             />
           </div>
           <div>
-            <label className="block mb-1">السعة (Capacity)</label>
+            <label className="block mb-1">{t("model.capacity")}</label>
             <input
               type="text"
               className="w-full border border-gray-300 rounded-xl px-4 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
               value={capacity}
               onChange={(e) => setCapacity(e.target.value)}
-              placeholder="مثال: 322"
+              placeholder={t("model.capacity_placeholder")}
+              disabled={isLoading}
             />
           </div>
           <button
             type="submit"
             className="bg-[#E6911E] text-white rounded-xl py-2 mt-3"
+            disabled={isLoading}
           >
-            حفظ تفاصيل السيارة
+            {isLoading ? t("model.saving") : t("model.save_car_details")}
           </button>
         </form>
       )}

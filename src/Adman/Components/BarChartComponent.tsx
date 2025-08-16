@@ -1,5 +1,6 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useTranslation } from "react-i18next";
 
 const barData = [
   { name: "1", revenue: 400, comp: 240 },
@@ -36,6 +37,8 @@ const barData = [
 ];
 
 const BarChartComponent = () => {
+  const { t } = useTranslation();
+
   return (
     <div style={{ width: "100%", height: 250 }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -49,12 +52,24 @@ const BarChartComponent = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="revenue" fill="#E6911E" name="Total revenue" stackId="a" radius={[0,0,0,0]} />
-          <Bar dataKey="comp" fill="#8B919E" name="Total comp" stackId="a" radius={[8,8,0,0]} />
+          <Bar
+            dataKey="revenue"
+            fill="#E6911E"
+            name={t("bar_chart.total_revenue")}
+            stackId="a"
+            radius={[0, 0, 0, 0]}
+          />
+          <Bar
+            dataKey="comp"
+            fill="#8B919E"
+            name={t("bar_chart.total_comp")}
+            stackId="a"
+            radius={[8, 8, 0, 0]}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>
   );
 };
 
-export default BarChartComponent; 
+export default BarChartComponent;

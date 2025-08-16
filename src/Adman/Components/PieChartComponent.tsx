@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { API_URL } from "../../context/api/Api";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 const COLORS = ["#F4B400", "#4285F4", "#EA4335", "#00C4B4"];
 
 const TrendArrow = ({ trend }) => {
+  const { t } = useTranslation();
   if (trend === "up") {
     return (
       <svg
@@ -14,6 +16,7 @@ const TrendArrow = ({ trend }) => {
         stroke="currentColor"
         strokeWidth="2"
         viewBox="0 0 24 24"
+        aria-label={t("pie_chart.trend_up")}
       >
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
       </svg>
@@ -26,6 +29,7 @@ const TrendArrow = ({ trend }) => {
         stroke="currentColor"
         strokeWidth="2"
         viewBox="0 0 24 24"
+        aria-label={t("pie_chart.trend_down")}
       >
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
       </svg>
@@ -56,6 +60,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 const PieChartComponent = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("tokenAdman");
@@ -71,26 +76,26 @@ const PieChartComponent = () => {
         setStats(res.data.data);
       })
       .catch((err) => {
-        console.error("خطأ في جلب الإحصائيات:", err);
+        console.error(t("pie_chart.error_fetching_stats_log"), err);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [t]);
 
-  if (loading) return <p>جاري التحميل...</p>;
-  if (!stats) return <p>لا توجد بيانات متاحة</p>;
+  if (loading) return <p>{t("pie_chart.loading")}</p>;
+  if (!stats) return <p>{t("pie_chart.no_data")}</p>;
 
   const total = stats.initiated + stats.assigned + stats.canceled + stats.completed;
   const pieData = [
-    { name: "مبدأ", value: (stats.initiated / total) * 100, trend: "up" },
-    { name: "معين", value: (stats.assigned / total) * 100, trend: "up" },
-    { name: "ملغي", value: (stats.canceled / total) * 100, trend: "down" },
-    { name: "مكتمل", value: (stats.completed / total) * 100, trend: "up" },
+    { name: t("pie_chart.initiated"), value: (stats.initiated / total) * 100, trend: "up" },
+    { name: t("pie_chart.assigned"), value: (stats.assigned / total) * 100, trend: "up" },
+    { name: t("pie_chart.canceled"), value: (stats.canceled / total) * 100, trend: "down" },
+    { name: t("pie_chart.completed"), value: (stats.completed / total) * 100, trend: "up" },
   ];
 
   return (
-    <div style={{ width: "300px", height: 350 }} className="flex flex-col justify-center  items-center">
+    <div style={{ width: "300px", height: 350 }} className="flex flex-col justify-center items-center">
       <ResponsiveContainer width="100%" height={210}>
         <PieChart>
           <Pie
