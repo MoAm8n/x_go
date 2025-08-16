@@ -46,7 +46,7 @@ const Footer: React.FC = () => {
           </Link>
         </div>
 
-        <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 w-full text-center md:text-left">
+        <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 lg:gap-4 w-full text-center md:text-left">
           {FooterLinks.map((section) => (
             <div key={section.id} className="flex flex-col">
               <h3 className="font-normal text-base text-[#7B7B7B] mb-2">{section.title}</h3>

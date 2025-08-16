@@ -4,6 +4,7 @@ import AirlineSeatReclineExtraIcon from '@mui/icons-material/AirlineSeatReclineE
 import SettingsInputSvideoIcon from '@mui/icons-material/SettingsInputSvideo';
 import CircularProgress from '@mui/material/CircularProgress';
 import MdCancel from '@mui/icons-material/Cancel';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 
 export interface User {
   id: number;
@@ -68,19 +69,17 @@ export interface BookingItem {
   status: string;
   additional_driver: number;
   car_model: CarModel;
-  dropoff_location?: string;
   location?: {
+    id: number;
     location: string;
-    id?: number;
+    latitude?: string;
+    longitude?: string;
+    is_active?: number;
   };
+  dropoff_location?: string;
   location_id?: number;
   pickup_location?: string;
-  user?: {
-    id: number;
-    name: string;
-    email: string;
-    phone: string;
-  };
+  user?: User;
   can_cancel?: boolean;
 }
 
@@ -107,7 +106,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
 
   const formatDisplayDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ar-SA', {
+    return date.toLocaleDateString('en', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -117,7 +116,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('ar-SA', {
+    return date.toLocaleTimeString('en', {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -161,10 +160,12 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
 
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-xl font-bold">
-                {booking.car_model.relationship.Brand.brand_name}{' '}
-                {booking.car_model.relationship.Types?.type_name}
-              </h2>
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-xl font-bold">
+                  {booking.car_model.relationship.Brand.brand_name}{' '}
+                </h2>
+                ({booking.car_model.relationship.Model_Names.model_name})
+              </div>
               <p className="text-gray-500">{booking.car_model.attributes.year}</p>
             </div>
             <span
@@ -177,6 +178,10 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
           </div>
 
           <div className="flex justify-center gap-4 flex-wrap">
+            <div className="flex items-center gap-1 px-3 py-1 border rounded-full">
+              <DirectionsCarIcon fontSize="small" />
+              <span>{booking.car_model.relationship.Types?.type_name || 'automatic'}</span>
+            </div>
             <div className="flex items-center gap-1 px-3 py-1 border rounded-full">
               <SettingsInputSvideoIcon fontSize="small" />
               <span>{booking.car_model.attributes?.transmission_type || 'automatic'}</span>
@@ -212,9 +217,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
             <div className="bg-gray-50 p-3 rounded-lg">
               <p className="text-gray-500 text-sm">Dropoff Location</p>
               <p className="font-medium">
-                  {booking.dropoff_location || 
-                  booking.location?.location || 
-                  'Not specified'}
+                {booking.location?.location || booking.dropoff_location || 'Not specified'}
               </p>
             </div>
           </div>

@@ -1,9 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { IoMdClose } from 'react-icons/io';
 import { useTranslation } from 'react-i18next';
 import logo from "../../public/images/logo.png";
+import { logoutUser } from '../context/Data/DataUser';
+
+interface LanguageDropdownProps {
+  closeSidebar: () => void;
+}
 
 interface SidebarProps {
   isOpen: boolean;
@@ -16,7 +21,7 @@ interface Language {
   dir?: 'ltr' | 'rtl';
 }
 
-const LanguageDropdown = () => {
+const LanguageDropdown: React.FC<LanguageDropdownProps> = ({ closeSidebar }) => {
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
 
@@ -38,6 +43,7 @@ const LanguageDropdown = () => {
       document.documentElement.dir = lang.dir;
     }
     setOpen(false);
+    closeSidebar();
   };
 
   return (
@@ -83,8 +89,10 @@ const LanguageDropdown = () => {
   );
 };
 
-const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const linkKeys = [
     { key: 'home', path: '/' },
@@ -93,6 +101,32 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
     { key: 'charging', path: '/charging' },
     { key: 'vehicles', path: '/vehicles' },
   ];
+
+  const isHashActive = (path: string) => {
+    if (path.includes("#")) {
+      const [pathname, hash] = path.split("#");
+      return (
+        location.pathname === (pathname || "/") &&
+        location.hash === `#${hash}`
+      );
+    }
+    return location.pathname === path;
+  };
+
+  const tokenUser = localStorage.getItem('tokenUser');
+
+  const handleLogout = async () => {
+    await logoutUser();
+    navigate("/loading");
+    closeSidebar();
+  };
+  
+  const handleCheckBookings = () => {
+    if (tokenUser) {
+      navigate('/bookings');
+    }
+    closeSidebar()
+  };
 
   return (  
     <AnimatePresence>
@@ -113,7 +147,7 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
             className="fixed left-0 top-0 w-3/4 h-full bg-white p-4 lg:hidden overflow-y-auto z-50 shadow-lg flex flex-col"
           >
             <div className="flex justify-between items-center mb-6">
-              <div className='flex justify-center w-full'>
+              <div className='flex w-full'>
                 <img 
                   src={logo} 
                   alt={t('logo_alt') || "Company Logo"} 
@@ -138,7 +172,7 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
                       to={item.path}
                       className={({ isActive }) =>
                         `block py-3 px-4 rounded-md transition ${
-                          isActive
+                          isActive || isHashActive(item.path)
                             ? 'bg-orange-gradient text-white font-bold'
                             : 'text-gray-700 hover:bg-gray-100'
                         }`
@@ -152,8 +186,34 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
               </ul>
             </nav>
 
+            {tokenUser ? (
+              <div className="grid grid-flow-col-1 gap-2 mt-4">
+                <button
+                  className="bg-[#E6911E] h-11 text-lg w-full rounded-md text-white font-bold"
+                  onClick={handleCheckBookings}
+                  type="button"
+                >
+                  {t("header.Bookings")}
+                </button>
+                <button
+                  className="bg-[#E53935CC] h-11 text-lg w-full rounded-md text-white font-bold"
+                  onClick={handleLogout}
+                  type="button"
+                >
+                  {t("header.logout")}
+                </button>
+              </div>
+            ) : (
+              <Link to={'/signin'} className="mt-4">
+                <button 
+                  className="bg-[#E6911E] h-11 text-lg w-full rounded-md text-white">
+                  {t("header.login")}
+                </button>
+              </Link>
+            )}
+
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <LanguageDropdown />
+              <LanguageDropdown closeSidebar={closeSidebar} />
             </div>
           </motion.div>
         </>

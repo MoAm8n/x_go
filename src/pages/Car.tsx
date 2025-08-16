@@ -11,7 +11,8 @@ import EarbudsIcon from '@mui/icons-material/Earbuds';
 import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
 import { Link } from 'react-router-dom';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
-import { useNavigate } from 'react-router-dom';
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Car: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -54,6 +55,25 @@ const Car: React.FC = () => {
     
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    if (!car) return;
+
+    const timerId = setTimeout(() => {
+      if (!localStorage.getItem("tokenUser")) {
+        if(confirm("You need to sign in to book a car")){
+          navigate("/signin");
+        }else {
+          toast.info("You can book this car now!");
+        }
+      } else {
+        toast.success("You can book this car now!");
+      }
+    }, 1500);
+
+    return () => clearTimeout(timerId);
+  }, [car, navigate]);
+
 
   if (loading) {
     return (

@@ -6,7 +6,8 @@
     "charging": "شحن",
     "how_it_works": "كيف تعمل",
     "login": "تسجيل الدخول",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "Bookings": "الحجوزات"
   },
   "vehicle": {
     "title": "مركبة",
@@ -67,18 +68,26 @@
     "i9": "آي 9",
     "i20": "آي 20",
     "Elantra": "ايلانترا",
-    "Elantra LX": "ايلانترا ال اكس"
+    "Elantra LX": "ايلانترا ال اكس",
+    "suv": "اس يو في",
+    "SUV": "اس يو في",
+    "sedan": "سيدان"
   },
   "price": {
     "title": "سعر",
     "description": "سعر لكل مركبة"
   },
+  "Filters": "المرشحات",
+  "Filter Price": "تصفية السعر",
+  "Car Types": "أنواع السيارات",
+  "Car Brands": "ماركات السيارات",
+  "Car Models": "موديلات السيارات",
   "Day": "يوم",
   "Week": "أسبوع",
   "Month": "شهر",
   "Year": "سنة",
   "per": "لكل",
-  "perDay": "لكل يوم",
+  "per Day": "لكل يوم",
   "perWeek": "لكل أسبوع",
   "perMonth": "لكل شهر",
   "perYear": "لكل سنة",
@@ -143,10 +152,35 @@
   "All Reviews": "جميع التقييمات",
   "All Questions": "جميع الأسئلة",
   "All Answers": "جميع الإجابات",
+  "seats": "مقاعد",
+  "number": {
+    "1": "واحد",
+    "2": "اثنان",
+    "3": "ثلاثة",
+    "4": "أربعة",
+    "5": "خمسة",
+    "6": "ستة",
+    "7": "سبعة",
+    "8": "ثمانية",
+    "9": "تسعة",
+    "10": "عشرة"
+  },
+  "type": {
+    "Automatic": "أوتوماتيكي",
+    "Manual": "يدوي",
+    "seats": "مقاعد"
+  },
+  "Gasoline":{
+    "Gasoline": "بنزين",
+    "Diesel": "ديزل",
+    "Electric": "كهربائي",
+    "Hybrid": "هايبرد"
+  },
   "common": {
     "terms": "الشروط",
     "plans": "الخطط",
-    "contact_us": "اتصل بنا"
+    "contact_us": "اتصل بنا",
+    "language": "اللغة"
   },
   "signup": {
     "welcome_message": "مرحبًا، رحلتك القادمة تنتظرك",
@@ -602,6 +636,16 @@
     "data_loaded": "تم تحميل البيانات بنجاح",
     "total_rented_days": "إجمالي أيام الإيجار",
     "total_rented": "إجمالي المركبات المؤجرة",
-    "total_revenue": "إجمالي الإيرادات"
+    "total_revenue": "إجمالي الإيرادات",
+    "create_account": "إنشاء حساب جديد",
+    "forgot_password": "هل نسيت كلمة السر",
+    "Let’s get you back behind the wheel": "دعنا نعيدك إلى عجلة القيادة",
+    "Enter your email address below to receive a link to reset your password": "أدخل عنوان بريدك الإلكتروني أدناه لتلقي رابط لإعادة تعيين كلمة المرور",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "submit": "إرسال",
+    "cancel": "إلغاء",
+    "email_placeholder": "أدخل بريدك الإلكتروني",
+    "Enter your email to reset your password": "أدخل بريدك الإلكتروني لإعادة تعيين كلمة المرور"
   }
 }

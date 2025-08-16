@@ -6,11 +6,11 @@ import logo from "../../public/images/logo.png";
 import { HiMiniBars3CenterLeft } from "react-icons/hi2";
 import Sidebar from "./Sidebar";
 import { logoutUser } from "../context/Data/DataUser";
+import { useNavigate } from "react-router-dom";
 
 const LanguageDropdown = () => {
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
-
   const languages = [
     { code: "ar", label: "العربية" },
     { code: "ru", label: "Русский" },
@@ -67,7 +67,7 @@ const Header = () => {
   const [sidebar, setSidebar] = useState(false);
   const toggleSidebar = () => setSidebar(!sidebar);
   const { t } = useTranslation(); 
-
+  const navigate = useNavigate()
   const links = [
     { name: t("header.home"), path: "/#home" },
     { name: t("header.vehicles"), path: "/#vehicles" },
@@ -90,13 +90,13 @@ const Header = () => {
   const tokenUser = localStorage.getItem('tokenUser');
   const handleLogout = async () => {
     await logoutUser();
-    window.location.href = "/loading";
+    navigate("/loading");
   };
 
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 bg-white z-50">
-        <div className="container mx-auto px-6 lg:px-8 py-4 ">
+        <div className="container mx-auto max-sm:px-8 lg:px-8 py-4 ">
           <div className="flex items-center justify-between">
             <div className="md:hidden">
               <button
@@ -111,9 +111,9 @@ const Header = () => {
             <Link to="loading" className="text-2xl font-bold text-gray-800">
               <img src={logo} alt="الشعار" className="h-10" loading="lazy" />
             </Link>
-            <div className="space-x-4 max-md:hidden flex items-center">
+            <div className="space-x-2 xl:space-x-4 max-md:hidden flex items-center">
               {links.map((link) => (
-                <div key={link.name} className="inline-block lg:pe-4">
+                <div key={link.name} className="inline-block xl:pe-4">
                   {link.path.includes("#") ? (
                     <HashLink
                       to={link.path}
@@ -141,19 +141,28 @@ const Header = () => {
               ))}
               <LanguageDropdown />
             </div>
-            <div>
+            <div className="hidden md:flex items-center gap-2">
               {tokenUser? (
+                <div className="flex items-center gap-1 md:gap-2">
                 <button
-                  className="bg-[#E53935CC] w-32 md:w-48 h-11 md:rounded-3xl rounded-xl text-white"
+                  className="bg-[#E6911E] w-[85px] lg:w-40 h-11 max-lg:text-xs md:rounded-3xl max-lg:hidden rounded-xl text-white font-bold"
+                  onClick={() => navigate('/bookings')}
+                  type="button"
+                >
+                  {t("header.Bookings")}
+                </button>
+                <button
+                  className="bg-[#E53935CC] w-[85px] lg:w-40 h-11 max-lg:text-xs md:rounded-3xl max-md:hidden rounded-xl text-white font-bold"
                   onClick={handleLogout}
                   type="button"
                 >
                   {t("header.logout")}
                 </button>
+                </div>
               ): (
                 <Link to={'/signin'}>
                   <button 
-                    className="bg-[#E6911E] md:rounded-3xl h-12 w-32 md:w-48 rounded-xl text-white">
+                    className="bg-[#E6911E] md:rounded-3xl h-11 max-md:text-xs w-20 md:w-40 max-md:hidden rounded-xl text-white">
                     {t("header.login")}
                   </button>
                 </Link>

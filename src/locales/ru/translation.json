@@ -7,7 +7,8 @@
     "charging": "Зарядка",
     "register": "Регистрация",
     "login": "Вход",
-    "logout": "Выход"
+    "logout": "Выход",
+    "Bookings": "Бронирования"
   },
   "vehicle": {
     "title": "Транспортное средство",
@@ -41,7 +42,9 @@
     "Infiniti": "Инфинити",
     "Ford": "Форд",
     "Tesla": "Тесла",
-    "Chevrolet": "Шевроле"
+    "Chevrolet": "Шевроле",
+    "suv": "Внедорожник",
+    "sedan": "Седан"
   },
   "name": {
     "X5": "Х5",
@@ -68,18 +71,25 @@
     "i9": "i9",
     "i20": "i20",
     "Elantra": "Элантра",
-    "Elantra LX": "Элантра LX"
+    "Elantra LX": "Элантра LX",
+    "suv": "Внедорожник",
+    "SUV": "Внедорожник",
+    "sedan": "Седан"
   },
   "price": {
     "title": "Цена",
     "description": "Цена за транспортное средство"
   },
+  "Filters": "Фильтры",
+  "Filter Price": "Фильтр цены",
+  "Car Types": "Типы автомобилей",
+  "Car Brands": "Бренды автомобилей",
   "Day": "День",
   "Week": "Неделя",
   "Month": "Месяц",
   "Year": "Год",
   "per": "за",
-  "perDay": "в день",
+  "Per Day": "в день",
   "perWeek": "в неделю",
   "perMonth": "в месяц",
   "perYear": "в год",
@@ -144,10 +154,34 @@
   "All Reviews": "Все отзывы",
   "All Questions": "Все вопросы",
   "All Answers": "Все ответы",
-  "common": {
+  "number": {
+    "1": "один",
+    "2": "два",
+    "3": "три",
+    "4": "четыре",
+    "5": "пять",
+    "6": "шесть",
+    "7": "семь",
+    "8": "восемь",
+    "9": "девять",
+    "10": "десять"
+  },
+  "type": {
+    "Automatic": "Автоматическая",
+    "Manual": "Механическая",
+    "seats": "мест"
+  },
+  "Gasoline": {
+    "Gasoline": "Бензин",
+    "Diesel": "Дизель",
+    "Electric": "Электрический",
+    "Hybrid": "Гибрид"
+  },
+ "common": {
     "terms": "Условия",
     "plans": "Планы",
-    "contact_us": "Свяжитесь с нами"
+    "contact_us": "Свяжитесь с нами",
+    "language": "Язык"
   },
   "signup": {
     "welcome_message": "Добро пожаловать, ваше следующее путешествие ждет вас",
@@ -605,6 +639,17 @@
     "data_loaded": "Данные успешно загружены",
     "total_rented_days": "Общее количество дней аренды",
     "total_rented": "Общее количество арендованных автомобилей",
-    "total_revenue": "Общий доход"
+    "total_revenue": "Общий доход",
+
+    "create_account": "Создать новый аккаунт",
+    "forgot_password": "забыли_пароль",
+    "Let’s get you back behind the wheel": "Давайте вернем вас за руль",
+    "Enter your email address below to receive a link to reset your password": "Введите свой адрес электронной почты ниже, чтобы получить ссылку для сброса пароля",
+    "email": "Электронная почта",
+    "password": "Пароль",
+    "submit": "Отправить",
+    "cancel": "Отмена",
+    "email_placeholder": "Введите свой адрес электронной почты",
+    "Enter your email to reset your password": "Введите свой адрес электронной почты для сброса пароля"
   }
 }

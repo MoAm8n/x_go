@@ -230,15 +230,6 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                   </span>
                 </div>
               </div>
-              {booking.status === 'initiated' && (
-                <button
-                  onClick={() => onPayment(booking.id)}
-                  className="bg-[#E6911E] hover:bg-[#D6820E] text-white px-4 py-2 rounded-lg transition-colors"
-                  aria-label={`Complete payment for booking ${booking.id}`}
-                >
-                  Pay Now
-                </button>
-              )}
             </div>
           </div>
         </div>

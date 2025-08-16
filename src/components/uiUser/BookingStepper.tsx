@@ -21,13 +21,8 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
         <span className="text-[#E6911E]">P</span>ayment Process
       </h2>
       
-      <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 md:gap-0 relative">
-        <div 
-          className="absolute h-1.5 bg-gray-200 top-3 left-0 right-0 mx-4 md:hidden"
-          style={{
-            width: 'calc(100% - 2rem)'
-          }}
-        >
+      <div className="flex md:flex-row items-center justify-between w-full gap-4 md:gap-0 relative">
+        <div>
           <div 
             className="h-full bg-[#E6911E] transition-all duration-500 ease-in-out"
             style={{
@@ -62,15 +57,6 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
                 </div>
                 
                 <div className="flex flex-col items-center">
-                  {/* <span
-                    className={`font-medium text-xs md:text-sm ${
-                      isActive || isCompleted
-                        ? "text-[#E6911E] font-semibold"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    Step {stepNumber}
-                  </span> */}
                   <span
                     className={`font-medium text-sm md:text-base ${
                       isActive || isCompleted

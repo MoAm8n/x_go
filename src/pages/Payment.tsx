@@ -6,7 +6,12 @@ import AirlineSeatReclineExtraIcon from '@mui/icons-material/AirlineSeatReclineE
 import EarbudsIcon from '@mui/icons-material/Earbuds';
 import BookingStepper from '../components/uiUser/BookingStepper';
 import PaymentForm from '../components/uiUser/PaymentForm';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 
+export interface ModelName {
+  model_name_id: string;
+  model_name: string;
+}
 interface BookingItem {
   id: number;
   start_date: string;
@@ -50,7 +55,7 @@ const Payment: React.FC = () => {
 
   const formatDisplayDate = (dateString: string) => {
     if (!isValidDate(dateString)) return 'Invalid date';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('en', {
       day: 'numeric',
       month: 'long',
       year: 'numeric'
@@ -59,7 +64,7 @@ const Payment: React.FC = () => {
 
   const formatTime = (dateString: string) => {
     if (!isValidDate(dateString)) return '';
-    return new Date(dateString).toLocaleTimeString('en-US', {
+    return new Date(dateString).toLocaleTimeString('en', {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -115,7 +120,7 @@ const Payment: React.FC = () => {
   }
 
   const finalPrice = parseFloat(booking.final_price) || 0;
-
+  
   return (
     <div className="min-h-screen flex flex-col">
       <main className="container mx-auto px-2 sm:px-4 max-md:py-8">
@@ -133,15 +138,17 @@ const Payment: React.FC = () => {
                 <img
                   src={booking.car_model?.attributes?.image || '/default-car.jpg'}
                   alt={booking.car_model.relationship.Types?.type_name || 'Car'}
-                  className="w-full object-cover rounded-lg"
+                  className="w-full h-60 rounded-lg"
                   loading="lazy"
                 />
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start mt-4 mb-2">
                   <div>
-                    <h2 className="text-xl font-bold">
-                      {booking.car_model.relationship.Brand?.brand_name}{' '}
-                      {booking.car_model.relationship.Types?.type_name}
-                    </h2>
+                     <div className="flex items-center gap-2 mb-2">
+                        <h2 className="text-xl font-bold">
+                          {booking.car_model.relationship.Brand?.brand_name}{' '}
+                        </h2>
+                        ({booking.car_model.relationship.Model_Names?.model_name})
+                      </div>
                     <p className="text-gray-500">{booking.car_model.attributes.year}</p>
                   </div>
                   <span
@@ -161,7 +168,11 @@ const Payment: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex-grow">
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap justify-center gap-2 mb-4">
+                    <div className="flex items-center gap-1 px-3 py-1 border rounded-full">
+                      <DirectionsCarIcon fontSize="small" />
+                      <span>{booking.car_model.relationship.Types?.type_name || 'automatic'}</span>
+                    </div>
                     <div className="flex items-center gap-1 px-3 py-1 border rounded-full">
                       <EarbudsIcon fontSize="small" />
                       <span>{booking.car_model?.attributes?.transmission_type || 'Automatic'}</span>
@@ -191,11 +202,13 @@ const Payment: React.FC = () => {
                       </p>
                     </div>
                   </div>
+                  <div className='flex justify-between items-center'>
                   <h3 className="text-amber-700 font-medium">Booking ID: {booking.id}</h3>
                   <p className="text-amber-700">Status: {booking.status}</p>
-                  <div className="mt-4 p-3 bg-amber-50 rounded-lg">
+                  </div>
+                  <div className="mt-4 p-3 text-center bg-amber-50 rounded-lg">
                     <p className="text-lg font-bold mt-2">
-                      Total: ${finalPrice.toFixed(2)}
+                      Total:<span className='text-[#e6911e]'> ${finalPrice.toFixed(2)}</span>
                     </p>
                   </div>
                 </div>
