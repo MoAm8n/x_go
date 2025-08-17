@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getBookingList } from '../context/Data/DataUser';
 import { BookingStepper, BookingCard, BookingDetails } from '../components/uiUser';
 import { FaMoneyBillAlt } from 'react-icons/fa';
+import { t } from 'i18next';
 
 export interface User {
   id: number;
@@ -182,14 +183,14 @@ return (
                       onClick={() => window.location.reload()}
                       className="bg-[#929292] text-white px-4 py-2 rounded-lg"
                     >
-                      Reload
+                      {t("Reload")}
                     </button>
                     <button
                       onClick={() => navigate('/')}
                       className="bg-[#E6911E] text-white px-6 py-2 rounded-lg"
                       aria-label="تصفح السيارات"
                     >
-                      Browse cars
+                      {t("Browse cars")}
                     </button>
                   </div>
                 </div>
@@ -220,7 +221,7 @@ return (
                                 className='bg-[#E6911E] hover:bg-[#D58217] text-white w-full h-10 rounded transition-colors flex items-center justify-center gap-2 disabled:opacity-70'
                             >
                               <FaMoneyBillAlt /> 
-                              Pay for booking
+                              {t("Pay for booking")}
                             </button>
                         </div>
                       </>
@@ -248,22 +249,16 @@ return (
                         <h3 className="font-semibold mb-2">Payments</h3>
                         <ul className="list-disc pl-5 space-y-2">
                           <li className="text-gray-700">
-                            Lorem ipsum dolor sit amet consectetur. Mattis vestibulum nunc mattis aliquam arcu sed. 
-                            Diam in nisl maecenas sed lacus sit ligula. Id nulla felis pulvinar sed eu vel proin ultricies elementum. 
-                            Id odio ultrices sed arcu velit condimentum at purus duis. Morbi arcu sed mauris.
+                            {t("Lorem ipsum dolor sit amet consectetur. Mattis vestibulum nunc mattis aliquam arcu sed. Diam in nisl maecenas sed lacus sit ligula. Id nulla felis pulvinar sed eu vel proin ultricies elementum. Id odio ultrices sed arcu velit condimentum at purus duis. Morbi arcu sed mauris.")}
                           </li>
                           <li className="text-gray-700">
-                            Lorem ipsum dolor sit amet consectetur. Mattis vestibulum nunc mattis aliquam arcu sed. 
-                            Diam in nisl maecenas sed lacus sit ligula. Id nulla felis pulvinar sed eu vel proin ultricies elementum. 
-                            Id odio ultrices sed arcu velit condimentum at purus duis. Morbi arcu sed mauris.
+                            {t("Lorem ipsum dolor sit amet consectetur. Mattis vestibulum nunc mattis aliquam arcu sed. Diam in nisl maecenas sed lacus sit ligula. Id nulla felis pulvinar sed eu vel proin ultricies elementum. Id odio ultrices sed arcu velit condimentum at purus duis. Morbi arcu sed mauris.")}
                           </li>
                         </ul>
                         <h3 className="font-semibold mb-2">Contact Us</h3>
                         <ul className="list-disc pl-5 space-y-2">
                           <li className="text-gray-700">
-                            Lorem ipsum dolor sit amet consectetur. Mattis vestibulum nunc mattis aliquam arcu sed. 
-                            Diam in nisl maecenas sed lacus sit ligula. Id nulla felis pulvinar sed eu vel proin ultricies elementum. 
-                            Id odio ultrices sed arcu velit condimentum at purus duis. Morbi arcu sed mauris.
+                            {t("Lorem ipsum dolor sit amet consectetur. Mattis vestibulum nunc mattis aliquam arcu sed. Diam in nisl maecenas sed lacus sit ligula. Id nulla felis pulvinar sed eu vel proin ultricies elementum. Id odio ultrices sed arcu velit condimentum at purus duis. Morbi arcu sed mauris.")}
                           </li>
                         </ul>
                      </div>                   

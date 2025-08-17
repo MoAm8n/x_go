@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 import type { CarItem } from "../context/Data/DataUser";
+import { t } from "i18next";
 
 interface BookingDetails {
   start_date: string;
@@ -37,12 +38,12 @@ const BookingSuccess: React.FC = () => {
   return (
     <div className="booking-success">
       <div className="success-message">
-        <h2>Thank you for your booking!</h2>
-        <p>Your reservation has been confirmed.</p>
+        <h2>{t("Thank you for your booking!")}</h2>
+        <p>{t("Your reservation has been confirmed.")}</p>
       </div>
 
       <div className="booking-summary">
-        <h3>Booking Summary</h3>
+        <h3>{t("Booking Summary")}</h3>
         <div className="car-info">
           <img src={carDetails.image} alt={carDetails.name} loading="lazy"/>
           <h4>{carDetails.name}</h4>
@@ -52,14 +53,14 @@ const BookingSuccess: React.FC = () => {
 
         <div className="timing-info">
           <div className="pickup-info">
-            <h4>Pick-Up</h4>
+            <h4>{t("Pick-Up")}</h4>
             <p>{formatDate(bookingDetails.start_date)}</p>
             <p>{formatTime(bookingDetails.start_date)}</p>
             <p>Cairo Airport</p>
           </div>
 
           <div className="dropoff-info">
-            <h4>Drop-Off</h4>
+            <h4>{t("Drop-Off")}</h4>
             <p>{formatDate(bookingDetails.end_date)}</p>
             <p>{formatTime(bookingDetails.end_date)}</p>
             <p>Cairo Airport</p>

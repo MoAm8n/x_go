@@ -72,7 +72,7 @@
     "suv": "اس يو في",
     "SUV": "اس يو في",
     "sedan": "سيدان"
-  },
+    },
   "price": {
     "title": "سعر",
     "description": "سعر لكل مركبة"
@@ -98,7 +98,16 @@
   "Flexible Dates": "تواريخ مرنة",
   "Lorem ipsum dolor sit amet consectetur. Nulla dignissim donec vehicula elit senectus id. Et ultricies diam justo amet purus pharetra amet sit viverra.": "لوريم ايبسوم دولور سيت أميت كونسيكتيتور. نولا ديجنيسيم دونيك فيهيكولا إيليت سينيكتوس إيد. إت ألتريسيس ديام جوستو أميت بوروس فاريترا أميت سيت فيفيرا",
   "Lorem ipsum dolor sit amet consectetur. Au ele malesuada pretium sed porta. Augue massa ipsum odio urna vel nisl.": "لوريم ايبسوم دولور سيت أميت كونسيكتيتور. أو إلي ماليوسادا بريتيوم سيد بورتا. أوجوي ماسا إيبسوم أوديو أورنا فيل نيسل.",
+  "Lorem ipsum dolor sit amet consectetur. Nec duis dictum vulputate velit ipsum sed. Lectus varius volutpat elit id mauris sollicitudin scelerisque nulla. Quis nulli vulputate duis ante. Quis eget consequat dictum magna ullamcorper tortor ut donec sed. Elit varius nulla senectus tortor donec tellus morbi. Suspendisse ut egestas feugiat justo vulputate.": "لوريم ايبسوم دولور سيت أميت كونسيكتيتور. نيك دويس ديكتوم فولتباتي فيليت إيبسوم سيد. ليكتوس فارياس فولتبات إيلت إيد ماوريس سولليستودين سكوليريسك نولا. كويز نولي فولتبات دويس أنتي. كويز إيجيت كونسيكوات ديكتوم ماغنا أوللامكوربر تورتور أوت دونيك سيد. إليت فارياس نولا سينيكتوس تورتور دونيك تيلاس موربي. سوسبينديسي أوت إيجستاس فيهيت جوستو فولتباتي.",
   "Collection": "مجموعة",
+  "Description": "وصف",
+  "Overview": "نظرة عامة",
+  "Specifications": "المواصفات",
+  "Image Gallery": "معرض الصور",
+  "Reviews": "المراجعات",
+  "No reviews yet.": "لا توجد مراجعات بعد.",
+  "No specifications available.": "لا توجد مواصفات متاحة.",
+  "No images in the gallery.": "لا توجد صور في المعرض.",
   "How It Works": "كيف تعمل",
   "Step by step to rent a car on our platform": "خطوة بخطوة لاستئجار سيارة على منصتنا",
   "WHY CHOOSE US": "لماذا تختارنا",
@@ -129,6 +138,8 @@
   "Releases": "الإصدارات",
   "About us": "من نحن",
   "Careers": "وظائف",
+  "Car not found": "السيارة غير موجودة",
+  "Back to Home": "العودة إلى الرئيسية",
   "News": "أخبار",
   "Support": "الدعم",
   "Contact": "اتصل",
@@ -152,6 +163,8 @@
   "All Reviews": "جميع التقييمات",
   "All Questions": "جميع الأسئلة",
   "All Answers": "جميع الإجابات",
+  "You May Also Like": "قد يعجبك أيضًا",
+  "Car Details": "تفاصيل السيارة",
   "seats": "مقاعد",
   "number": {
     "1": "واحد",
@@ -169,7 +182,7 @@
     "Automatic": "أوتوماتيكي",
     "Manual": "يدوي",
     "seats": "مقاعد"
-  },
+    },
   "Gasoline":{
     "Gasoline": "بنزين",
     "Diesel": "ديزل",

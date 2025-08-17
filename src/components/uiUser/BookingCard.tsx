@@ -5,6 +5,7 @@ import SettingsInputSvideoIcon from '@mui/icons-material/SettingsInputSvideo';
 import CircularProgress from '@mui/material/CircularProgress';
 import MdCancel from '@mui/icons-material/Cancel';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import { t } from 'i18next';
 
 export interface User {
   id: number;
@@ -162,9 +163,9 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <h2 className="text-xl font-bold">
-                  {booking.car_model.relationship.Brand.brand_name}{' '}
+                  {t(`brand.${booking.car_model.relationship.Brand.brand_name}`)}{' '}
                 </h2>
-                ({booking.car_model.relationship.Model_Names.model_name})
+                {t(`name.${booking.car_model.relationship.Model_Names.model_name}`)}
               </div>
               <p className="text-gray-500">{booking.car_model.attributes.year}</p>
             </div>
@@ -184,26 +185,26 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
             </div>
             <div className="flex items-center gap-1 px-3 py-1 border rounded-full">
               <SettingsInputSvideoIcon fontSize="small" />
-              <span>{booking.car_model.attributes?.transmission_type || 'automatic'}</span>
+              <span>{t(`type.${booking.car_model.attributes?.transmission_type}`) || 'automatic'}</span>
             </div>
             <div className="flex items-center gap-1 px-3 py-1 border rounded-full">
               <AirlineSeatReclineExtraIcon fontSize="small" />
-              <span>{booking.car_model.attributes?.seats_count || '4'} seats</span>
+              <span>{booking.car_model.attributes?.seats_count || '4'} {t("seats")}</span>
             </div>
             <div className="flex items-center gap-1 px-3 py-1 border rounded-full">
               <LocalGasStationIcon fontSize="small" />
-              <span>{booking.car_model.attributes?.engine_type || 'petrol'}</span>
+              <span>{t(`Gasoline.${booking.car_model.attributes?.engine_type}`) || 'petrol'}</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-gray-500 text-sm">Date of Pickup</p>
+              <p className="text-gray-500 text-sm">{t("Date of Pickup")}</p>
               <p className="font-medium">{formatDisplayDate(booking.start_date)}</p>
               <p className="text-xs text-gray-500">{formatTime(booking.start_date)}</p>
             </div>
             <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-gray-500 text-sm">Date of Dropoff</p>
+              <p className="text-gray-500 text-sm">{t("Date of Dropoff")}</p>
               <p className="font-medium">{formatDisplayDate(booking.end_date)}</p>
               <p className="text-xs text-gray-500">{formatTime(booking.end_date)}</p>
             </div>
@@ -211,11 +212,11 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-gray-500 text-sm">Pickup Location</p>
+              <p className="text-gray-500 text-sm">{t("Pickup Location")}</p>
               <p className="font-medium">{FIXED_PICKUP_LOCATION.location}</p>
             </div>
             <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-gray-500 text-sm">Dropoff Location</p>
+              <p className="text-gray-500 text-sm">{t("Dropoff Location")}</p>
               <p className="font-medium">
                 {booking.location?.location || booking.dropoff_location || 'Not specified'}
               </p>
@@ -232,7 +233,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
                 onClick={() => onViewDetails(booking)}
                 className="bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 px-4 py-2 rounded-lg transition-colors"
               >
-                View Details
+                {t("View Details")}
               </button>
               
               {booking.status === 'initiated' && (
@@ -240,7 +241,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
                   onClick={() => onPayment(booking.id)}
                   className="bg-[#E6911E] hover:bg-[#D6820E] text-white px-4 py-2 rounded-lg transition-colors"
                 >
-                  Pay Now
+                  {t("Pay Now")}
                 </button>
               )}
               
@@ -255,7 +256,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onPay
                   ) : (
                     <>
                       <MdCancel fontSize="small" />
-                      Cancel
+                      {t("Cancel")}
                     </>
                   )}
                 </button>
