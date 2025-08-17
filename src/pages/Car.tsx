@@ -62,13 +62,13 @@ const Car: React.FC = () => {
 
     const timerId = setTimeout(() => {
       if (!localStorage.getItem("tokenUser")) {
-        if(confirm("You need to sign in to book a car")){
+        if(confirm(t("toast.need_sign"))){
           navigate("/signin");
         }else {
-          toast.info("Please sign in to book this car.");
+          toast.info(t("toast.please_sign_in_to_book"));
         }
       } else {
-        toast.success("You can book this car now!");
+        toast.success(t("toast.you_can_book_this_car_now!"));
       }
     }, 1500);
 

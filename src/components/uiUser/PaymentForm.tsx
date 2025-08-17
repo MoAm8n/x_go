@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { t } from "i18next";
 import cashIcon from "../../assets/PaymentForm/ion_cash (1).png";
 import visaIcon from "../../assets/PaymentForm/Vector (7).png";
 import { toast } from "react-toastify";
@@ -28,7 +29,7 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
     try {
       const token = localStorage.getItem("tokenUser");
       if (!token) {
-        toast.error("You must be logged in first");
+        toast.error(t("payment_form.must_be_logged_in"));
         return;
       }
       await axios.post(
@@ -41,11 +42,11 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
           },
         }
       );
-      confirm("Payment recorded successfully");
+      toast.success(t("payment_form.payment_recorded_success"));
       onPaymentSuccess();
     } catch (error: any) {
-      toast.error("An error occurred while recording the payment");
-      console.error("Save Payment Error:", error.response?.data || error.message);
+      toast.error(t("payment_form.error_recording_payment"));
+      console.error(t("payment_form.save_payment_error"), error.response?.data || error.message);
     }
   };
 
@@ -55,14 +56,14 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
       if (event.origin !== "https://accept.paymob.com") return;
 
       const data = event.data;
-      console.log("Message from Paymob iframe:", data);
+      console.log(t("payment_form.message_from_paymob"), data);
 
       if (data?.event === "payment_success" || data?.success === true) {
         savePaymentMethod("visa", data.transaction?.id || null);
         setIframeUrl(null);
         setActiveMethod(null);
       } else if (data?.event === "payment_failed") {
-        toast.error("Payment failed, please try again");
+        toast.error(t("payment_form.payment_failed"));
         setIframeUrl(null);
         setActiveMethod(null);
       }
@@ -91,7 +92,7 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
       const integrationId = import.meta.env.VITE_PAYMOB_INTEGRATION_ID;
 
       if (!apiKey || !integrationId) {
-        toast.error("API Key or Integration ID is missing");
+        toast.error(t("payment_form.missing_api_key"));
         setIsLoading(false);
         setActiveMethod(null);
         return;
@@ -102,7 +103,7 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
         api_key: apiKey,
       });
       const authToken = authRes.data.token;
-      if (!authToken) throw new Error("Failed to get auth token");
+      if (!authToken) throw new Error(t("payment_form.failed_auth_token"));
 
       // Step 2: Create order
       const orderRes = await axios.post("https://accept.paymob.com/api/ecommerce/orders", {
@@ -113,7 +114,7 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
         items: [],
       });
       const orderId = orderRes.data.id;
-      if (!orderId) throw new Error("Failed to create order");
+      if (!orderId) throw new Error(t("payment_form.failed_create_order"));
 
       // Step 3: Request payment key
       const paymentKeyRes = await axios.post("https://accept.paymob.com/api/acceptance/payment_keys", {
@@ -125,29 +126,29 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
           apartment: "NA",
           email: "user@example.com",
           floor: "NA",
-          first_name: "Test",
-          street: "Test Street",
+          first_name: t("payment_form.test_user"),
+          street: t("payment_form.test_street"),
           building: "NA",
           phone_number: "+201000000000",
           shipping_method: "NA",
           postal_code: "NA",
-          city: "Cairo",
+          city: t("payment_form.cairo"),
           country: "EG",
-          last_name: "User",
-          state: "Cairo",
+          last_name: t("payment_form.user"),
+          state: t("payment_form.cairo"),
         },
         currency: "EGP",
         integration_id: integrationId,
       });
 
       const paymentToken = paymentKeyRes.data.token;
-      if (!paymentToken) throw new Error("Failed to get payment token");
+      if (!paymentToken) throw new Error(t("payment_form.failed_payment_token"));
 
       const iframe = `https://accept.paymob.com/api/acceptance/iframes/943449?payment_token=${paymentToken}`;
       setIframeUrl(iframe);
     } catch (error: any) {
-      toast.error("An error occurred while preparing the payment");
-      console.error("Card Payment Error:", error.response?.data || error.message);
+      toast.error(t("payment_form.error_preparing_payment"));
+      console.error(t("payment_form.card_payment_error"), error.response?.data || error.message);
       setActiveMethod(null);
     } finally {
       setIsLoading(false);
@@ -160,8 +161,8 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6 text-center">Select Payment Method</h1>
+    <div className="max-w-xl mx-auto p-4" dir="rtl">
+      <h1 className="text-2xl font-bold mb-6 text-center">{t("payment_form.select_payment_method")}</h1>
 
       <div className="grid grid-cols-1 gap-4 mb-6">
         <button
@@ -170,8 +171,8 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
           className={`bg-[#E6911E] text-white px-6 py-2 rounded-lg shadow flex justify-center items-center gap-10 transition-all
             ${isLoading && activeMethod !== "cash" ? "opacity-50 cursor-not-allowed" : "hover:bg-[#e6911eb3]"}`}
         >
-          <img src={cashIcon} alt="Cash" className="w-8 h-8" />
-          {isLoading && activeMethod === "cash" ? "Paying in Cash..." : "Pay in Cash"}
+          <img src={cashIcon} alt={t("payment_form.cash")} className="w-8 h-8" />
+          {isLoading && activeMethod === "cash" ? t("payment_form.paying_cash") : t("payment_form.pay_cash")}
         </button>
 
         <button
@@ -180,8 +181,8 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
           className={`bg-[#E6911E] text-white px-6 py-2 rounded-lg shadow flex justify-center items-center gap-10 transition-all
             ${isLoading && activeMethod !== "card" ? "opacity-50 cursor-not-allowed" : "hover:bg-[#e6911eb3]"}`}
         >
-          <img src={visaIcon} alt="Credit Card" className="w-8 h-8" />
-          {isLoading && activeMethod === "card" ? "Paying with Card..." : "Pay with Card"}
+          <img src={visaIcon} alt={t("payment_form.card")} className="w-8 h-8" />
+          {isLoading && activeMethod === "card" ? t("payment_form.paying_card") : t("payment_form.pay_card")}
         </button>
       </div>
 
@@ -190,8 +191,8 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl relative">
             <button
               onClick={handleCloseIframe}
-              className="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 rounded-full p-2 z-10"
-              aria-label="Close Payment"
+              className="absolute top-4 left-4 bg-gray-200 hover:bg-gray-300 rounded-full p-2 z-10"
+              aria-label={t("payment_form.close_payment")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -205,7 +206,7 @@ const PaymentForm = ({ booking, onPaymentSuccess }: PaymentFormProps) => {
             </button>
             <iframe
               src={iframeUrl}
-              title="Secure Payment Gateway"
+              title={t("payment_form.secure_payment_gateway")}
               width="100%"
               height="700px"
               className="rounded-lg"

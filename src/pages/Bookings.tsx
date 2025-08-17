@@ -103,8 +103,8 @@ const BookingsPage: React.FC = () => {
                 }
               }
             } catch (err) {
-              console.error('Error:', err);
-              setError('You have no bookings');
+              console.error(t('bookings_page.error_loading_bookings'), err);
+              setError(t('bookings_page.no_bookings'));
             } finally {
               setLoading(false);
             }
@@ -113,7 +113,7 @@ const BookingsPage: React.FC = () => {
           loadData();
         }
       } catch (err) {
-        console.error('Failed to parse user data', err);
+        console.error(t('bookings_page.failed_parse_user'), err);
         navigate('/signin');
       }
     } else {
@@ -135,13 +135,13 @@ const BookingsPage: React.FC = () => {
       });
     } catch (error) {
       console.error('Error formatting date:', dateString, error);
-      return 'تاريخ غير محدد';
+      return 'invalid_time';
     }
   };
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('ar-SA', {
+    return date.toLocaleTimeString('en', {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -163,14 +163,15 @@ const BookingsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center" dir="rtl">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E6911E] mb-4"></div>
+        <p>{t('bookings_page.loading')}</p>
       </div>
     );
   }
 
-return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
       <main className="container mx-auto px-4 py-10">
         {!id ? (
           <>
@@ -183,14 +184,14 @@ return (
                       onClick={() => window.location.reload()}
                       className="bg-[#929292] text-white px-4 py-2 rounded-lg"
                     >
-                      {t("Reload")}
+                      {t('bookings_page.reload')}
                     </button>
                     <button
                       onClick={() => navigate('/')}
                       className="bg-[#E6911E] text-white px-6 py-2 rounded-lg"
-                      aria-label="تصفح السيارات"
+                      aria-label={t('bookings_page.browse_cars_aria')}
                     >
-                      {t("Browse cars")}
+                      {t('bookings_page.browse_cars')}
                     </button>
                   </div>
                 </div>
@@ -198,73 +199,74 @@ return (
             ) : (
               <>
                 <BookingStepper currentStep={2} />
-                <h1 className="text-2xl font-bold my-6">My Bookings</h1>
-              <div className='flex flex-col lg:flex-row gap-8'>
-                <div className="grid gap-6 w-full lg:w-1/2">
-                  {bookings.map((booking) => (
-                    <BookingCard 
-                      key={booking.id} 
-                      booking={booking} 
-                      onViewDetails={handleViewDetails}
-                      onPayment={handlePayment}
-                    />
-                  ))}
-                </div>
-                <div className="w-full lg:w-1/2">
-                  <div className="bg-white shadow-md hover:shadow-lg transition-shadow p-6 rounded-lg">
-                    {user ? (
-                      <>
-                        <h1 className='text-2xl text-gray-800 mb-5 text-center'>Welcome {user.name}</h1>
-                        <div className='my-4'>
+                <h1 className="text-2xl font-bold my-6">{t('bookings_page.my_bookings')}</h1>
+                <div className='flex flex-col lg:flex-row gap-8'>
+                  <div className="grid gap-6 w-full lg:w-1/2">
+                    {bookings.map((booking) => (
+                      <BookingCard 
+                        key={booking.id} 
+                        booking={booking} 
+                        onViewDetails={handleViewDetails}
+                        onPayment={handlePayment}
+                      />
+                    ))}
+                  </div>
+                  <div className="w-full lg:w-1/2">
+                    <div className="bg-white shadow-md hover:shadow-lg transition-shadow p-6 rounded-lg">
+                      {user ? (
+                        <>
+                          <h1 className='text-2xl text-gray-800 mb-5 text-center'>{t('bookings_page.welcome', { name: user.name })}</h1>
+                          <div className='my-4'>
                             <button 
-                                onClick={() => handlePayment(bookings[0].id)}  
-                                className='bg-[#E6911E] hover:bg-[#D58217] text-white w-full h-10 rounded transition-colors flex items-center justify-center gap-2 disabled:opacity-70'
+                              onClick={() => handlePayment(bookings[0].id)}  
+                              className='bg-[#E6911E] hover:bg-[#D58217] text-white w-full h-10 rounded transition-colors flex items-center justify-center gap-2 disabled:opacity-70'
+                              disabled={bookings.length === 0}
                             >
                               <FaMoneyBillAlt /> 
-                              {t("Pay for booking")}
+                              {t('bookings_page.pay_for_booking')}
                             </button>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <h1>Booking requires an account — log in or create one to continue</h1>
-                        <div className='flex flex-col gap-4 my-4'>
-                          <Link to={'/signUp'}>
-                            <button className='bg-[#E6911E] text-white w-full h-10'>
-                              Sign Up
-                            </button>
-                          </Link>
-                          <Link to={'/signIn'}>
-                            <button className='bg-[#E6911E] text-white w-full h-10'>
-                              Sign In
-                            </button>
-                          </Link>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  <div className="terms-conditions my-4 p-4 bg-white rounded-lg shadow-lg">
-                    <h1 className="text-xl font-bold mb-4">Terms and Conditions</h1>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <h1>{t('bookings_page.account_required')}</h1>
+                          <div className='flex flex-col gap-4 my-4'>
+                            <Link to={'/signUp'}>
+                              <button className='bg-[#E6911E] text-white w-full h-10'>
+                                {t('bookings_page.sign_up')}
+                              </button>
+                            </Link>
+                            <Link to={'/signIn'}>
+                              <button className='bg-[#E6911E] text-white w-full h-10'>
+                                {t('bookings_page.sign_in')}
+                              </button>
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div className="terms-conditions my-4 p-4 bg-white rounded-lg shadow-lg">
+                      <h1 className="text-xl font-bold mb-4">{t('bookings_page.terms_conditions')}</h1>
                       <div className="payment-terms">
-                        <h3 className="font-semibold mb-2">Payments</h3>
-                        <ul className="list-disc pl-5 space-y-2">
+                        <h3 className="font-semibold mb-2">{t('bookings_page.payments')}</h3>
+                        <ul className="list-disc pr-5 space-y-2">
                           <li className="text-gray-700">
-                            {t("Lorem ipsum dolor sit amet consectetur. Mattis vestibulum nunc mattis aliquam arcu sed. Diam in nisl maecenas sed lacus sit ligula. Id nulla felis pulvinar sed eu vel proin ultricies elementum. Id odio ultrices sed arcu velit condimentum at purus duis. Morbi arcu sed mauris.")}
+                            {t('bookings_page.payment_term_1')}
                           </li>
                           <li className="text-gray-700">
-                            {t("Lorem ipsum dolor sit amet consectetur. Mattis vestibulum nunc mattis aliquam arcu sed. Diam in nisl maecenas sed lacus sit ligula. Id nulla felis pulvinar sed eu vel proin ultricies elementum. Id odio ultrices sed arcu velit condimentum at purus duis. Morbi arcu sed mauris.")}
-                          </li>
-                        </ul>
-                        <h3 className="font-semibold mb-2">Contact Us</h3>
-                        <ul className="list-disc pl-5 space-y-2">
-                          <li className="text-gray-700">
-                            {t("Lorem ipsum dolor sit amet consectetur. Mattis vestibulum nunc mattis aliquam arcu sed. Diam in nisl maecenas sed lacus sit ligula. Id nulla felis pulvinar sed eu vel proin ultricies elementum. Id odio ultrices sed arcu velit condimentum at purus duis. Morbi arcu sed mauris.")}
+                            {t('bookings_page.payment_term_2')}
                           </li>
                         </ul>
-                     </div>                   
+                        <h3 className="font-semibold mb-2">{t('bookings_page.contact_us')}</h3>
+                        <ul className="list-disc pr-5 space-y-2">
+                          <li className="text-gray-700">
+                            {t('bookings_page.contact_us_text')}
+                          </li>
+                        </ul>
+                      </div>                   
+                    </div>
                   </div>
                 </div>
-              </div>
               </>
             )}
           </>
