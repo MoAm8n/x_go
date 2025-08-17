@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../context/api/Api";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 const carTypes = [
   "Sedan",
@@ -17,16 +18,15 @@ const carTypes = [
 ];
 
 export default function TypeDashboard() {
+  const { t } = useTranslation();
   const [brands, setBrands] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [typeName, setTypeName] = useState("");
 
-  // جلب البرندات
   useEffect(() => {
     const fetchBrands = async () => {
       try {
         const token = localStorage.getItem("tokenAdman");
-
         const res = await axios.get(`${API_URL}/api/admin/Brands`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -34,14 +34,11 @@ export default function TypeDashboard() {
         });
         setBrands(res.data.data);
       } catch (err) {
-        toast.error(
-          err.response?.data?.message 
-        );
+        toast.error(t("type_dashboard.error_fetching_brands"));
       }
     };
     fetchBrands();
-    console.log(brands);
-  }, []);
+  }, [t]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,11 +51,11 @@ export default function TypeDashboard() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      toast.success(" Car type added successfully");
+      toast.success(t("type_dashboard.success_adding_type"));
       setTypeName("");
       setSelectedBrand("");
     } catch (err) {
-toast.error("Car type already exists.");
+      toast.error(t("type_dashboard.error_type_exists"));
     }
   };
 
@@ -67,18 +64,16 @@ toast.error("Car type already exists.");
       onSubmit={handleSubmit}
       className="flex flex-col gap-3 mb-8 bg-[#faf7f2] p-4 rounded-xl shadow max-w-2xl mx-auto"
     >
-      {/* اختيار البرند */}
-
       <div>
         <label className="block mb-2 font-medium text-gray-700">
-          Choose the brand
+          {t("type_dashboard.choose_brand")}
         </label>
         <select
           value={selectedBrand}
           onChange={(e) => setSelectedBrand(e.target.value)}
           className="border border-[#E6911E] rounded-xl px-3 py-2 w-full bg-[#FAF7F2] focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
         >
-          <option value="">-- اختر برند --</option>
+          <option value="">{t("type_dashboard.select_brand")}</option>
           {brands.map((brand) => (
             <option key={brand.id} value={brand.id}>
               {brand.attributes.name}
@@ -87,30 +82,27 @@ toast.error("Car type already exists.");
         </select>
       </div>
 
-      {/* إدخال اسم النوع */}
-
       <div className="flex-1">
-        <label className="block mb-2 font-medium">Add Car Type</label>
+        <label className="block mb-2 font-medium">{t("type_dashboard.add_car_type")}</label>
         <select
           value={typeName}
           onChange={(e) => setTypeName(e.target.value)}
           className="border border-[#E6911E] rounded-xl px-3 py-2 w-full bg-[#FAF7F2] focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
         >
-          <option value="">Select Car Type</option>
+          <option value="">{t("type_dashboard.select_car_type")}</option>
           {carTypes.map((type) => (
             <option key={type} value={type}>
-              {type}
+              {t(`type_dashboard.car_types.${type.toLowerCase().replace(" ", "_")}`)}
             </option>
           ))}
         </select>
       </div>
 
-      {/* زر الإضافة */}
       <button
         type="submit"
         className="bg-gradient-to-r from-[#f4a825] via-[#f4a825] to-[#fdc77a] text-white py-2 rounded-xl mt-2"
       >
-        Add type
+        {t("type_dashboard.add_type")}
       </button>
     </form>
   );
