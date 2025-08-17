@@ -111,9 +111,12 @@ export default function Model() {
       }
       setIsLoading(true);
       axios
-        .get(`${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        .get(
+          `${API_URL}/api/admin/Brands/${brandId}/Types/${typeId}/Model-Names`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
         .then((res) => {
           setModelNames(res.data.data);
           toast.success(t("model.models_fetched"));
@@ -167,7 +170,9 @@ export default function Model() {
   // Populate fields when selecting an existing model
   useEffect(() => {
     if (selectedModelId) {
-      const selectedModel = existingModels.find((model) => model.id === selectedModelId);
+      const selectedModel = existingModels.find(
+        (model) => model.id === selectedModelId
+      );
       if (selectedModel) {
         setModelsId(selectedModel.id);
         setShowCarForm(true);
@@ -260,7 +265,10 @@ export default function Model() {
       toast.error(t("model.invalid_seats_count"));
       return;
     }
-    if (!/^\d+(\.\d{1,2})?$/.test(acceleration) || parseFloat(acceleration) < 0) {
+    if (
+      !/^\d+(\.\d{1,2})?$/.test(acceleration) ||
+      parseFloat(acceleration) < 0
+    ) {
       toast.error(t("model.invalid_acceleration"));
       return;
     }
@@ -268,7 +276,8 @@ export default function Model() {
     setIsLoading(true);
     const formData = new FormData();
     const modelName =
-      modelNames.find((m) => m.id === modelNameId)?.attributes?.name || newModel;
+      modelNames.find((m) => m.id === modelNameId)?.attributes?.name ||
+      newModel;
     if (modelName) formData.append("name", modelName);
     formData.append("year", year);
     formData.append("price", price);
@@ -278,7 +287,7 @@ export default function Model() {
     formData.append("seats_count", seatsCount);
     formData.append("acceleration", acceleration);
     if (image) formData.append("image", image);
-    images.forEach((img) => formData.append("images", img));
+    images.forEach((img) => formData.append("images[]", img)); // تعديل هنا: استخدام images[] بدل images
 
     try {
       const response = await axios.post(
@@ -484,7 +493,7 @@ export default function Model() {
         onSubmit={handleAddNew}
         className="flex flex-col gap-3 bg-[#faf7f2] shadow rounded-xl p-6"
       >
-        <h3 className="text-lg font-bold">{t("model.select_model")}</h3>
+        {/* <h3 className="text-lg font-bold">{t("model.choose_model_name")}</h3> */}
         <div>
           <label className="block mb-1">{t("model.choose_brand")}</label>
           <select
@@ -541,23 +550,27 @@ export default function Model() {
             ))}
           </select>
           <input
-            className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
+            className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E] my-3"
             placeholder={t("model.new_model_placeholder")}
             value={newModel}
             onChange={(e) => setNewModel(e.target.value)}
             disabled={isLoading}
           />
-          <button
-            type="submit"
-            className="bg-[#E6911E] text-white rounded-xl py-2 mt-3"
-            disabled={isLoading}
-          >
-            {t("model.add_new_model_name")}
-          </button>
+          <div className=" flex justify-center my-5">
+            <button
+              type="submit"
+              className="bg-[#E6911E] text-white rounded-xl py-2 mt-3 p-5 "
+              disabled={isLoading}
+            >
+              {t("model.add_new_model_name")}
+            </button>
+          </div>
         </div>
 
         <div>
-          <label className="block mb-1">{t("model.select_existing_model")}</label>
+          <label className="block mb-1">
+            {t("model.select_existing_model")}
+          </label>
           <select
             className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E6911E]"
             value={selectedModelId || ""}
@@ -622,7 +635,9 @@ export default function Model() {
               </option>
               {EngineTypes.map((type) => (
                 <option key={type} value={type}>
-                  {t(`model.engine_types.${type.toLowerCase().replace(" ", "_")}`)}
+                  {t(
+                    `model.engine_types.${type.toLowerCase().replace(" ", "_")}`
+                  )}
                 </option>
               ))}
             </select>
@@ -720,7 +735,9 @@ export default function Model() {
             )}
           </div>
           <div className="flex flex-col items-center">
-            <label className="block mb-2 font-medium">{t("model.images")}</label>
+            <label className="block mb-2 font-medium">
+              {t("model.images")}
+            </label>
             <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed rounded-xl cursor-pointer bg-[#FAF7F2]">
               <input
                 type="file"
@@ -761,7 +778,9 @@ export default function Model() {
                 ))}
               </div>
             )}
-            <p className="text-sm text-gray-600">{t("model.images_instruction")}</p>
+            <p className="text-sm text-gray-600">
+              {t("model.images_instruction")}
+            </p>
           </div>
           <button
             type="submit"
@@ -810,7 +829,9 @@ export default function Model() {
             </select>
           </div>
           <div className="flex flex-col items-center">
-            <label className="block mb-2 font-medium">{t("model.car_image")}</label>
+            <label className="block mb-2 font-medium">
+              {t("model.car_image")}
+            </label>
             <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed rounded-xl cursor-pointer bg-[#FAF7F2]">
               <input
                 type="file"
