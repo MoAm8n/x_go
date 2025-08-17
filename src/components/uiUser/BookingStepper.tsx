@@ -1,4 +1,5 @@
 import React from "react";
+import {t} from "i18next"
 
 interface BookingStepperProps {
   currentStep: 1 | 2 | 3;
@@ -6,9 +7,9 @@ interface BookingStepperProps {
 }
 
 const steps = [
-  { label: "Your Selection", icon: "🔍" },
-  { label: "Your Details", icon: "📝" },
-  { label: "Confirmation", icon: "✅" },
+  { label: t("booking_stepper.your_selection"), icon: "🔍" },
+  { label: t("booking_stepper.your_details"), icon: "📝" },
+  { label: t("booking_stepper.confirmation"), icon: "✅" },
 ];
 
 const BookingStepper: React.FC<BookingStepperProps> = ({ 
@@ -18,8 +19,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   return (
     <div className={`w-full ${className}`}>
       <h2 className="text-2xl font-bold text-center mb-4">
-        <span className="text-[#E6911E]">P</span>ayment Process
-      </h2>
+        <span className="text-[#E6911E]">{t('booking_stepper.payment_process_letter')}</span>{t('booking_stepper.payment_process')}      </h2>
       
       <div className="flex md:flex-row items-center justify-between w-full gap-4 md:gap-0 relative">
         <div>

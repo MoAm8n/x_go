@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { t } from "i18next";
 
 const Car: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -61,13 +62,13 @@ const Car: React.FC = () => {
 
     const timerId = setTimeout(() => {
       if (!localStorage.getItem("tokenUser")) {
-        if(confirm("You need to sign in to book a car")){
+        if(confirm(t("toast.need_sign"))){
           navigate("/signin");
         }else {
-          toast.info("You can book this car now!");
+          toast.info(t("toast.please_sign_in_to_book"));
         }
       } else {
-        toast.success("You can book this car now!");
+        toast.success(t("toast.you_can_book_this_car_now!"));
       }
     }, 1500);
 
@@ -91,7 +92,7 @@ const Car: React.FC = () => {
           onClick={() => window.location.reload()}
           className="bg-[#E6911E] text-white px-4 py-2 rounded-lg hover:bg-[#D6820E] transition"
         >
-          Retry
+          {t("Retry")}
         </button>
       </div>
     );
@@ -100,12 +101,12 @@ const Car: React.FC = () => {
   if (!car) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <p className="text-lg mb-4">Car not found</p>
+        <p className="text-lg mb-4">{t("Car not found")}</p>
         <Link 
           to="loading" 
           className="bg-[#E6911E] text-white px-4 py-2 rounded-lg hover:bg-[#D6820E] transition"
         >
-          Back to Home
+          {t("Back to Home")}
         </Link>
       </div>
     );
@@ -142,10 +143,10 @@ const Car: React.FC = () => {
           <section className="flex flex-col lg:flex-row w-full gap-6 lg:mt-8">
             <div className="flex flex-col my-6 lg:w-[70%] bg-white p-6 rounded-xl shadow-sm">
               <div className='flex justify-between items-center mb-4'>
-                <h2 className="text-2xl font-bold">{car.brand || 'Unnamed Car'}</h2>
+                <h2 className="text-2xl font-bold">{t(`brand.${car.brand}`) || 'Unnamed Car'}</h2>
                 {car.name && (
                   <div className='bg-[#E5393533] px-4 py-1 rounded-2xl flex items-center justify-center text-sm font-medium'>
-                    {car.name}
+                    {t(`name.${car.name}`)}
                   </div>
                 )}
               </div>
@@ -153,25 +154,25 @@ const Car: React.FC = () => {
                 {car.type && (
                   <div className='flex justify-center items-center gap-2 bg-gray-100 p-3 rounded-xl'>
                     <DirectionsCarIcon fontSize="small"/>
-                    <span className="font-medium text-sm">{car.type}</span>
+                    <span className="font-medium text-sm">{t(`name.${car.type}`)}</span>
                   </div>
                 )}
                 {car.seats && (
                   <div className='flex justify-center items-center gap-2 bg-gray-100 p-3 rounded-xl'>
                     <AirlineSeatReclineExtraIcon fontSize="small"/>
-                    <span className="text-sm">{car.seats} seats</span>
+                    <span className="text-sm">{car.seats} {t("seats")}</span>
                   </div>
                 )}
                 {car.transmission && (
                   <div className='flex justify-center items-center gap-2 bg-gray-100 p-3 rounded-xl'>
                     <EarbudsIcon fontSize="small"/>
-                    <span className="text-sm">{car.transmission}</span>
+                    <span className="text-sm">{t(`type.${car.transmission}`)}</span>
                   </div>
                 )}
                 {car.fuel && (
                   <div className='flex justify-center items-center gap-2 bg-gray-100 p-3 rounded-xl'>
                     <LocalGasStationIcon fontSize="small"/>
-                    <span className="text-sm">{car.fuel}</span>
+                    <span className="text-sm">{t(`Gasoline.${car.fuel}`)}</span>
                   </div>
                 )}
               </div>
@@ -186,7 +187,7 @@ const Car: React.FC = () => {
           </section>
 
           <section className="max-w-6xl mx-auto mt-12 mb-10">
-            <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
+            <h2 className="text-2xl font-bold mb-6">{t("You May Also Like")}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {relatedCars.map((relatedCar) => (
                 <Link key={relatedCar.id} to={`/car/${relatedCar.id}`} className="hover:no-underline">
@@ -199,10 +200,10 @@ const Car: React.FC = () => {
                         loading="lazy"
                       />
                       <div className='flex justify-between items-center px-2'>
-                        <h2 className="text-xl font-bold mb-2">{relatedCar.name || 'Unnamed Car'}</h2>
-                        {relatedCar.brand && (
+                        <h2 className="text-xl font-bold mb-2">{t(`brand.${relatedCar.brand}`) || 'Unnamed Car'}</h2>
+                        {relatedCar.name && (
                           <div className='bg-[#E5393533] px-3 py-1 rounded-2xl flex items-center justify-center text-sm'>
-                            {relatedCar.brand}
+                            {t(`name.${relatedCar.name}`)}
                           </div>
                         )}
                       </div>
@@ -210,25 +211,25 @@ const Car: React.FC = () => {
                         {relatedCar.type && (
                           <div className='flex justify-center items-center gap-2 bg-gray-100 p-3 rounded-xl'>
                             <DirectionsCarIcon fontSize="small"/>
-                            <span className="font-medium text-sm">{relatedCar.type}</span>
+                            <span className="font-medium text-sm">{t(`name.${relatedCar.type}`)}</span>
                           </div>
                         )}
                         {relatedCar.seats && (
                           <div className='flex justify-center items-center gap-2 bg-gray-100 p-3 rounded-xl'>
                             <AirlineSeatReclineExtraIcon fontSize="small"/>
-                            <span className="text-sm">{relatedCar.seats} seats</span>
+                            <span className="text-sm">{relatedCar.seats} {t("seats")}</span>
                           </div>
                         )}
                         {relatedCar.transmission && (
                           <div className='flex justify-center items-center gap-2 bg-gray-100 p-3 rounded-xl'>
                             <EarbudsIcon fontSize="small"/>
-                            <span className="text-sm">{relatedCar.transmission}</span>
+                            <span className="text-sm">{t(`type.${relatedCar.transmission}`)}</span>
                           </div>
                         )}
                         {relatedCar.fuel && (
                           <div className='flex justify-center items-center gap-2 bg-gray-100 p-3 rounded-xl'>
                             <LocalGasStationIcon fontSize="small"/>
-                            <span className="text-sm">{relatedCar.fuel}</span>
+                            <span className="text-sm">{t(`Gasoline.${relatedCar.fuel}`)}</span>
                           </div>
                         )}
                       </div>
@@ -238,7 +239,7 @@ const Car: React.FC = () => {
                             ${typeof relatedCar.price === 'number' 
                               ? relatedCar.price.toLocaleString() 
                               : relatedCar.price}
-                            <span className='font-medium text-black text-base ml-1'> / day</span>
+                            <span className='font-medium text-black text-base ml-1'> / {t("Day")}</span>
                           </p>
                           <button className='border border-[#E6911E] rounded-full flex items-center justify-center h-10 w-10 hover:bg-[#E6911E] hover:text-white transition-colors'>
                             <ArrowOutwardIcon fontSize="small" />

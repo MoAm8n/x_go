@@ -74,7 +74,7 @@ export default function DashboardStatisics() {
                 />
                 <StatCard
                   icon={<Car size={40} />}
-                  title={t("dashboard.total_rented")}
+                  title={t("Statisics.total_rented")}
                   value={data.total_rented.toLocaleString()}
                 />
                 <StatCard

@@ -10,7 +10,7 @@ const HowItWorks: React.FC = () => {
     const cars = [
       {
         id: 1,
-        name: t("Ferrari"),
+        name: t("Toyota"),
         description: t("Luxury black sports car with high performance and elegant design."),
         image: car1,
         bookedDays: 7,
@@ -19,7 +19,7 @@ const HowItWorks: React.FC = () => {
       },
       {
         id: 2,
-        name: t("Ferrari"),
+        name: t("Toyota"),
         description: t("Premium white sports car, perfect for city driving."),
         image: car1,
         bookedDays: 7,
@@ -28,7 +28,7 @@ const HowItWorks: React.FC = () => {
       },
       {
         id: 3,
-        name: t("Ferrari"),
+        name: t("Toyota"),
         description: t("Ionic model suitable for multiple application uses."),
         image: car1,
         bookedDays: 7,
@@ -37,7 +37,7 @@ const HowItWorks: React.FC = () => {
       },
       {
         id: 4,
-        name: t("Ferrari"),
+        name: t("Toyota"),
         description: t("Additional icon representing a feature or service."),
         image: car1,
         bookedDays: 7,
@@ -46,7 +46,7 @@ const HowItWorks: React.FC = () => {
       },
       {
         id: 5,
-        name: t("Ferrari"),
+        name: t("Toyota"),
         description: t("Icon showing the possibility of booking at any time."),
         image: car1,
         bookedDays: 7,
@@ -139,7 +139,7 @@ const HowItWorks: React.FC = () => {
               key={car.id}
               className="flex-shrink-0 flex flex-col gap-y-3 w-64 h-[380px] selection:rounded-lg"
             >
-              <h1 className="font-semibold text-base md:text-xl text-center">
+              <h1 className="font-semibold text-base md:text-base text-center">
                 {t("200+ Car Available")}
               </h1>
               <img

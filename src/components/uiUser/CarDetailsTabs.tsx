@@ -1,4 +1,5 @@
 import * as Tabs from "@radix-ui/react-tabs";
+import { t } from "i18next";
 
 const CarDetailsTabs = () => {
   return (
@@ -11,76 +12,59 @@ const CarDetailsTabs = () => {
           value="description"
           className="tab-trigger lg:px-4 py-2 text-xs md:text-sm font-bold data-[state=active]:text-black text-gray-500 transition-colors"
         >
-          Description
+          {t("Description")}
         </Tabs.Trigger>
         <Tabs.Trigger
           value="specs"
           className="tab-trigger lg:px-4 py-2 text-xs md:text-sm font-bold data-[state=active]:text-black text-gray-500 transition-colors"
         >
-          Specifications
+          {t("Specifications")}
         </Tabs.Trigger>
         <Tabs.Trigger
           value="gallery"
           className="tab-trigger lg:px-4 py-2 text-xs md:text-sm font-bold data-[state=active]:text-black text-gray-500 transition-colors"
         >
-          Image Gallery
+          {t("Image Gallery")}
         </Tabs.Trigger>
         <Tabs.Trigger
           value="reviews"
           className="tab-trigger lg:px-4 py-2 text-xs md:text-sm font-bold data-[state=active]:text-black text-gray-500 transition-colors"
         >
-          Reviews
+          {t("Reviews")}
         </Tabs.Trigger>
       </Tabs.List>
 
       <Tabs.Content value="description" className="focus-visible:outline-none">
         <div className="w-full p-2">
-          <h2 className="text-lg font-semibold mb-4">Description</h2>
+          <h2 className="text-lg font-semibold mb-4">{t("Description")}</h2>
           <p className="text-gray-700 leading-relaxed mb-6">
-            Lorem ipsum dolor sit amet consectetur. Nec duis dictum vulputate
-            velit ipsum sed. Lectus varius volutpat elit id mauris sollicitudin
-            scelerisque nulla. Quis nulli vulputate duis ante. Quis eget
-            consequat dictum magna ullamcorper tortor ut donec sed. Elit varius
-            nulla senectus tortor donec tellus morbi. Suspendisse ut egestas
-            feugiat justo vulputate.
+            {t("Lorem ipsum dolor sit amet consectetur. Nec duis dictum vulputate velit ipsum sed. Lectus varius volutpat elit id mauris sollicitudin scelerisque nulla. Quis nulli vulputate duis ante. Quis eget consequat dictum magna ullamcorper tortor ut donec sed. Elit varius nulla senectus tortor donec tellus morbi. Suspendisse ut egestas feugiat justo vulputate.")}
           </p>
-          <h3 className="text-base font-bold mb-3">Overview</h3>
+          <h3 className="text-base font-bold mb-3">{t("Overview")}</h3>
           <p className="text-gray-700 leading-relaxed">
-            Lorem ipsum dolor sit amet consectetur. Congue duis eu tortor
-            libero. Nunc vestibulum neque mi enim eu vestibulum. Tempor sit
-            pellentesque lobortis fermentum magna. Senectus purus enim
-            scelerisque viverra sit vitae semper adipiscing. Faucibus mi varius
-            potenti et sit. Morbi erat gravida lectus ultricies ac sit. Nisi
-            euismod cursus tellus adipiscing pharetra libero cursus. Tortor
-            nullam porttitor egestas consectetur. A nunc neque malesuada
-            sagittis eget egestas sagittis egestas. Sed urna quam venenatis
-            tristique scelerisque morbi gravida morbi vulputate. Feugiat
-            fringilla vestibulum sagittis fermentum ac. Vestibulum egestas nunc
-            in aenean justo in fermentum enim eu. Accumsan tincidunt facilisis
-            sit amet amet placerat eros. Volutpat viverra hac sit nisl ridiculus
-            lorem scelerisque risus.
+            {t("Lorem ipsum dolor sit amet consectetur. Nec duis dictum vulputate velit ipsum sed. Lectus varius volutpat elit id mauris sollicitudin scelerisque nulla. Quis nulli vulputate duis ante. Quis eget consequat dictum magna ullamcorper tortor ut donec sed. Elit varius nulla senectus tortor donec tellus morbi. Suspendisse ut egestas feugiat justo vulputate.")}
           </p>
         </div>
       </Tabs.Content>
 
       <Tabs.Content value="specs" className="focus-visible:outline-none">
         <div className="w-full p-2">
-          <h2 className="text-lg font-semibold mb-4">Specifications</h2>
-          <p className="text-gray-500">No specifications available.</p>
+          <h2 className="text-lg font-semibold mb-4">{t("Specifications")}</h2>
+          <p className="text-gray-500">{t("No specifications available.")}</p>
         </div>
       </Tabs.Content>
 
       <Tabs.Content value="gallery" className="focus-visible:outline-none">
         <div className="w-full p-2">
-          <h2 className="text-lg font-semibold mb-4">Image Gallery</h2>
-          <p className="text-gray-500">No images in the gallery.</p>
+          <h2 className="text-lg font-semibold mb-4">{t("Image Gallery")}</h2>
+          <p className="text-gray-500">{t("No images in the gallery.")}</p>
         </div>
       </Tabs.Content>
 
       <Tabs.Content value="reviews" className="focus-visible:outline-none">
         <div className="w-full p-2">
-          <h2 className="text-lg font-semibold mb-4">Reviews</h2>
-          <p className="text-gray-500">No reviews yet.</p>
+          <h2 className="text-lg font-semibold mb-4">{t("Reviews")}</h2>
+          <p className="text-gray-500">{t("No reviews yet.")}</p>
         </div>
       </Tabs.Content>
     </Tabs.Root>

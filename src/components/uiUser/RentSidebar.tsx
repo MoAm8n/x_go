@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { t } from 'i18next';
 import LocationMap from './LocationMap';
 import { locationService, saveBooking } from '../../context/Data/DataUser';
 import { VITE_OPENCAGE_API_KEY } from '../../context/api/Api';
@@ -46,12 +47,12 @@ interface RentSidebarProps {
 const FIXED_PICKUP_LOCATION = {
   lat: 24.7136,
   lng: 46.6753,
-  location: 'Riyadh',
+  location: t('rent_sidebar.Riyadh'),
   id: 0,
 };
 
 const EXTRAS_LIST = [
-  { label: 'Additional Driver', price: 55, id: 'driver' },
+  { label: t('booking_details.additional_driver'), price: 55, id: 'driver' },
 ];
 
 const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
@@ -75,8 +76,8 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
       isNaN(lat) || isNaN(lng) ||
       lat < -90 || lat > 90 || lng < -180 || lng > 180
     ) {
-      console.error('Invalid coordinates:', { lat, lng });
-      return 'Unknown location';
+      console.error(t('rent_sidebar.invalid_coordinates'), { lat, lng });
+      return t('rent_sidebar.unknown_location');
     }
     
     const roundedLat = Number(lat.toFixed(6));
@@ -89,24 +90,24 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
 
     try {
       const response = await fetch(
-        `https://api.opencagedata.com/geocode/v1/json?q=${roundedLat}+${roundedLng}&key=${apiKey}&language=en&no_annotations=1`
+        `https://api.opencagedata.com/geocode/v1/json?q=${roundedLat}+${roundedLng}&key=${apiKey}&language=ar&no_annotations=1`
       );
-      if (!response.ok) throw new Error('Failed to fetch location data');
+      if (!response.ok) throw new Error(t('rent_sidebar.failed_fetch_location'));
       
       const data = await response.json();
       if (data.results?.length > 0) {
         const components = data.results[0].components;
         const placeTypes = [
-          { key: 'village', label: 'Village' },
-          { key: 'hamlet', label: 'Hamlet' },
-          { key: 'suburb', label: 'Suburb' },
-          { key: 'town', label: 'Town' },
-          { key: 'city', label: 'City' },
-          { key: 'neighbourhood', label: 'Neighbourhood' },
-          { key: 'road', label: 'Road' },
-          { key: 'street', label: 'Street' },
-          { key: 'footway', label: 'Footway' },
-          { key: 'county', label: 'County' },
+          { key: 'village', label: t('location_types.village') },
+          { key: 'hamlet', label: t('location_types.hamlet') },
+          { key: 'suburb', label: t('location_types.suburb') },
+          { key: 'town', label: t('location_types.town') },
+          { key: 'city', label: t('location_types.city') },
+          { key: 'neighbourhood', label: t('location_types.neighbourhood') },
+          { key: 'road', label: t('location_types.road') },
+          { key: 'street', label: t('location_types.street') },
+          { key: 'footway', label: t('location_types.footway') },
+          { key: 'county', label: t('location_types.county') },
         ];
 
         let locationLabel = '';
@@ -118,16 +119,16 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
         }
         
         if (!locationLabel) {
-          locationLabel = data.results[0]?.formatted?.split(',')[0]?.trim() || 'Unknown location';
+          locationLabel = data.results[0]?.formatted?.split(',')[0]?.trim() || t('rent_sidebar.unknown_location');
         }
 
         localStorage.setItem(cacheKey, locationLabel);
         return locationLabel;
       }
-      return 'Unknown location';
+      return t('rent_sidebar.unknown_location');
     } catch (error) {
-      console.error('Error fetching location name:', error);
-      return 'Unknown location';
+      console.error(t('rent_sidebar.error_fetch_location_name'), error);
+      return t('rent_sidebar.unknown_location');
     }
   }, []);
 
@@ -145,7 +146,7 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
         setDropoffLocation(defaultLocation);
       }
     } catch (error) {
-      console.error('Failed to load locations:', error);
+      console.error(t('rent_sidebar.failed_load_locations'), error);
     }
   }, [dropoffLocation]);
 
@@ -169,13 +170,13 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
 
         setDropoffLocation(formattedLocation);
         setLocations(prev => [...prev, savedLocation]);
-        toast.success('Location saved successfully');
+        toast.success(t('rent_sidebar.location_saved_success'));
       } catch (saveError) {
-        console.error('Error saving location:', saveError);
-        toast.error('Failed to save location. Please login again.');
+        console.error(t('rent_sidebar.error_saving_location'), saveError);
+        toast.error(t('rent_sidebar.failed_save_location'));
       }
     } catch (error) {
-      console.error('Error getting location name:', error);
+      console.error(t('rent_sidebar.error_getting_location_name'), error);
     } finally {
       setLoadingLocation(false);
       setShowMap(false);
@@ -192,46 +193,47 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
   const validateForm = useCallback((): boolean => {
     const errors: string[] = [];
     
-    if (! localStorage.getItem('tokenUser')) {
-      errors.push('You must be logged in to complete booking');
+    if (!localStorage.getItem('tokenUser')) {
+      errors.push(t('rent_sidebar.must_login_to_book'));
       navigate('/signin');
     }
     if (!formData.pickupDate || !formData.dropoffDate) {
-      errors.push('Please select pickup and dropoff dates');
+      errors.push(t('rent_sidebar.select_dates'));
     }
 
     if (!formData.pickupTime || !formData.dropoffTime) {
-      errors.push('Please select pickup and dropoff times');
+      errors.push(t('rent_sidebar.select_times'));
     }
 
     if (selectedExtras.includes('driver') && !dropoffLocation) {
-      errors.push('Please select a dropoff location for additional driver');
+      errors.push(t('rent_sidebar.select_dropoff_for_driver'));
     }
 
     const start = new Date(`${formData.pickupDate}T${formData.pickupTime}`);
     const end = new Date(`${formData.dropoffDate}T${formData.dropoffTime}`);
 
     if (start >= end) {
-      errors.push('Dropoff time must be after pickup time');
+      errors.push(t('rent_sidebar.dropoff_after_pickup'));
     } else if ((end.getTime() - start.getTime()) / (1000 * 60 * 60) < 4) {
-      errors.push('Minimum booking duration is 4 hours');
+      errors.push(t('rent_sidebar.min_duration'));
     }
 
-      if (!dropoffLocation) {
-      errors.push('يجب تحديد موقع الإنزال للسائق الإضافي');
+    if (!dropoffLocation) {
+      errors.push(t('rent_sidebar.select_dropoff_for_driver'));
     } else {
       const isValidLocation = locations.some(loc => loc.id === dropoffLocation.id);
       if (!isValidLocation) {
-        errors.push('الموقع المحدد غير صالح. الرجاء اختيار موقع آخر');
+        errors.push(t('toast.invalid_status'));
       }
     }
 
     if (errors.length > 0) {
+      errors.forEach(error => toast.error(error));
       return false;
     }
 
     return true;
-  }, [formData, selectedExtras, dropoffLocation]);
+  }, [formData, selectedExtras, dropoffLocation, navigate]);
 
   const handleBooking = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,7 +242,7 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (!user?.id) {
-        throw new Error('You must be logged in to complete booking');
+        throw new Error(t('rent_sidebar.must_login_to_book'));
       }
 
       const bookingPayload: BookingData = {
@@ -256,13 +258,13 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
 
       const res = await saveBooking(carId, bookingPayload);
       
-      toast.success('Booking created successfully! Redirecting...');
+      toast.success(t('rent_sidebar.booking_created_success'));
       setTimeout(() => {
         navigate(`/bookings/${res.bookingId}`);
       }, 1500);
     } catch (error) {
-      console.error('Booking error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to complete booking');
+      console.error(t('rent_sidebar.booking_error'), error);
+      toast.error(error instanceof Error ? error.message : t('rent_sidebar.failed_complete_booking'));
     } finally {
       setIsBooking(false);
     }
@@ -302,7 +304,7 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
             <React.Fragment key={type}>
               <div className="form-group">
                 <label className="block mb-2 text-sm font-medium">
-                  {type === 'pickup' ? 'Pickup Date' : 'Dropoff Date'}
+                  {t(`rent_sidebar.${type}_date`)}
                 </label>
                 <input
                   type="date"
@@ -316,7 +318,7 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
               </div>
               <div className="form-group">
                 <label className="block mb-2 text-sm font-medium">
-                  {type === 'pickup' ? 'Pickup Time' : 'Dropoff Time'}
+                  {t(`rent_sidebar.${type}_time`)}
                 </label>
                 <input
                   type="time"
@@ -331,7 +333,7 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
           ))}
         </div>
         <div className="extras-section my-4">
-          <h3 className="font-medium mb-2 text-sm">Extras:</h3>
+          <h3 className="font-medium mb-2 text-sm">{t('rent_sidebar.extras')}:</h3>
           {EXTRAS_LIST.map((extra) => (
             <label key={extra.id} className="flex items-center mb-2 text-sm">
               <input
@@ -349,20 +351,20 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
         {selectedExtras.includes('driver') && (
           <div className="my-4">
             <div className='my-4'>
-              <label className="block mb-2 text-sm font-medium">Pickup Location</label>
+              <label className="block mb-2 text-sm font-medium">{t('rent_sidebar.pickup_location')}</label>
               <div className="p-2 bg-gray-100 rounded-lg">
                 <p className="font-medium">{FIXED_PICKUP_LOCATION.location}</p>
               </div>
             </div>
-            <label className="block mb-2 text-sm font-medium">Dropoff Location</label>
+            <label className="block mb-2 text-sm font-medium">{t('rent_sidebar.dropoff_location')}</label>
             <div className="flex lg:flex-col gap-2">
               <div className="flex-1 p-2 bg-gray-100 rounded-lg">
                 {dropoffLocation ? (
                   <p className="font-medium text-right">
-                    {dropoffLocation.location || 'Dropoff location not selected'}
+                    {dropoffLocation.location || t('rent_sidebar.dropoff_location_not_selected')}
                   </p>
                 ) : (
-                  <p className="text-gray-500">Dropoff location not selected</p>
+                  <p className="text-gray-500">{t('rent_sidebar.dropoff_location_not_selected')}</p>
                 )}
               </div>
               <button
@@ -370,36 +372,36 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
                 onClick={() => setShowMap(true)}
                 className="px-4 py-2 bg-[#E6911E] text-white rounded-lg"
               >
-                Select on Map
+                {t('rent_sidebar.select_on_map')}
               </button>
               <button
                 type="button"
                 onClick={resetDropoffLocation}
                 className="px-4 py-2 bg-gray-500 text-white rounded-lg"
               >
-                Reset
+                {t('rent_sidebar.reset')}
               </button>
             </div>
           </div>
         )}
         <div className="price-summary bg-gray-50 p-4 rounded-lg my-4">
-          <h3 className="font-bold mb-3 text-lg">Price Summary:</h3>
+          <h3 className="font-bold mb-3 text-lg">{t('rent_sidebar.price_summary')}:</h3>
           <div className="price-row flex justify-between mb-2 text-sm">
-            <span>Base Price:</span>
+            <span>{t('rent_sidebar.base_price')}:</span>
             <span>{typeof car.price === 'number' ? car.price.toFixed(2) : parseFloat(car.price).toFixed(2)} $</span>
           </div>
           {selectedExtras.length > 0 && (
             <div className="price-row flex justify-between mb-2 text-sm">
-              <span>Extras:</span>
+              <span>{t('rent_sidebar.extras')}:</span>
               <span>{selectedExtras.includes('driver') ? '55.00' : '0.00'} $</span>
             </div>
           )}
           <div className="price-row flex justify-between mb-2 text-sm">
-            <span>Tax:</span>
+            <span>{t('rent_sidebar.tax')}:</span>
             <span>50.00 $</span>
           </div>
           <div className="price-row flex justify-between font-bold text-lg pt-2 border-t border-gray-200">
-            <span>Total:</span>
+            <span>{t('rent_sidebar.total')}:</span>
             <span className="text-[#E6911E]">{calculateTotal().toFixed(2)} $</span>
           </div>
         </div>
@@ -425,17 +427,17 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              Processing...
+              {t('rent_sidebar.processing')}...
             </>
           ) : (
-            'Book Now'
+            t('rent_sidebar.book_now')
           )}
         </button>
       </form>
       {showMap && (
         <div className="fixed inset-0 z-50 bg-white flex flex-col">
           <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Select Dropoff Location</h2>
+            <h2 className="text-lg font-semibold">{t('rent_sidebar.select_dropoff_location')}</h2>
             <button
               onClick={() => setShowMap(false)}
               className="p-2 rounded hover:bg-gray-200"
@@ -451,14 +453,12 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
               </svg>
             </button>
           </div>
-
           <div className="relative flex-1">
             <LocationMap
               pickupLocation={FIXED_PICKUP_LOCATION}
               dropoffLocation={dropoffLocation}
               onLocationSelect={handleLocationSelect}
             />
-
             {loadingLocation && (
               <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                 <div className="bg-white p-4 rounded-lg shadow-lg flex items-center">
@@ -475,14 +475,14 @@ const RentSidebar: React.FC<RentSidebarProps> = React.memo(({ car, carId }) => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  <span>Loading location...</span>
+                  <span>{t('rent_sidebar.loading_location')}...</span>
                 </div>
               </div>
             )}
           </div>
         </div>
       )}
-    <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
     </div>
   );
 });
