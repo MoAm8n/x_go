@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import type { CarItem } from "../../context/Data/DataUser";
 import type { FilterState } from "./CarFilterSidebar";
@@ -17,7 +17,7 @@ interface Props {
 const CarDetailsCard: React.FC<Props> = ({ filters, cars }) => {
   const { t } = useTranslation();
   
-  const filteredCars = cars.filter(
+  const filteredCars = useMemo(() => cars.filter(
     (car) =>
       (filters.selectedBrands.length === 0 ||
         (car.brandId && filters.selectedBrands.includes(car.brandId))) &&
@@ -29,7 +29,7 @@ const CarDetailsCard: React.FC<Props> = ({ filters, cars }) => {
       typeof car.price === "number" &&
       car.price >= filters.priceRange[0] &&
       car.price <= filters.priceRange[1]
-  );
+  ), [cars, filters]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
@@ -106,4 +106,4 @@ const CarDetailsCard: React.FC<Props> = ({ filters, cars }) => {
   );
 };
 
-export default CarDetailsCard;
+export default React.memo(CarDetailsCard);

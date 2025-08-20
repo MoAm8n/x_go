@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -123,9 +123,14 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
     fetchFilterOptions();
   }, [fetchFilterOptions]);
 
+  const onFilterChangeRef = useRef(onFilterChange);
   useEffect(() => {
-    onFilterChange(filters);
-  }, [filters, onFilterChange]);
+    onFilterChangeRef.current = onFilterChange;
+  }, [onFilterChange]);
+
+  useEffect(() => {
+    onFilterChangeRef.current(filters);
+  }, [filters]);
 
   const handleBrandToggle = useCallback((brandId: number) => {
     setFilters(prev => {
@@ -135,10 +140,9 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
           ? prev.selectedBrands.filter(b => b !== brandId)
           : [...prev.selectedBrands, brandId]
       };
-      onFilterChange(newFilters);
       return newFilters;
     });
-  }, [onFilterChange]);
+  }, []);
 
   const handleTypeToggle = useCallback((typeName: string) => {
     setFilters((prev) => {
@@ -170,15 +174,15 @@ const CarFilterSidebar: React.FC<Props> = ({ onFilterChange }) => {
     });
   }, [priceRange]);
 
-  const getCarCountForBrand = (brandId: number) => {
+  const getCarCountForBrand = useCallback((brandId: number) => {
     return cars.filter((car) => car.brandId === brandId).length;
-  };
+  }, [cars]);
 
-  const getCarCountForType = (typeName: string) => {
+  const getCarCountForType = useCallback((typeName: string) => {
     return cars.filter(
       (car) => car.type?.toLowerCase() === typeName.toLowerCase()
     ).length;
-  };
+  }, [cars]);
 
   const totalCarsCount = cars.length;
 
