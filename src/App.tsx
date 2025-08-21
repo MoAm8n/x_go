@@ -1,24 +1,84 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { Header } from './components'
-import  Footer  from './components/ui/Footer'
-import { Loading, CarCollection, Car } from './pages'
-import './App.css'
-import './index.css'
+import { Route, Routes, Navigate, useLocation } from 'react-router-dom'
+import { Car, CarCollection, SignIn, SignUp, Payment, BookingSuccess, Loading, Bookings, ForgotPassword } from './pages'
+import Header from './components/Header'
+import Footer from './components/Footer'
+import { useTranslation } from 'react-i18next'
+import { useEffect } from 'react'
+import DashboardOverview from "./Adman/Pages/DashboardOverview";
+import DashboardCars from "./Adman/Pages/DashboardCars";
+import Dashboardlisting from "./Adman/Pages/DashboardListing";
+import DashboardStatisics from "./Adman/Pages/DashboardStatisics";
+import BrandDashboard from "./Adman/Pages/BrandDashboard";
+import SignInAdmin from "./Adman/Pages/SignInDashboard";
+import NotFound from './pages/NotFound'
 const App = () => {
+  const location = useLocation();
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    const currentLang = i18n.language;
+    document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  }, [i18n.language]);
+
+  useEffect(() => {
+    if (
+      !location.pathname.includes("/booking") &&
+      !location.pathname.includes("/signin") &&
+      !location.pathname.includes("/signup")
+    ) {
+      localStorage.removeItem("tempBookingData");
+    }
+  }, [location]);
+
+  const authRoutes = [
+    "/signin",
+    "/signup",
+    "/forgotpassword",
+    "/DashboardOverview",
+    "/DashboardCars",
+    "/Dashboardlisting",
+    "/DashboardStatisics",
+    "/DashboardBrand",
+    "/SignInDashboard",
+  ];
+  const isAuthPage = authRoutes.includes(location.pathname);
+  
+    useEffect(() => {
+      if (window.location.pathname !== "/") {
+        sessionStorage.redirect = window.location.pathname;
+      }
+    }, []);
+  
   return (
     <>
-      <BrowserRouter>
-      <Header/>
+      {!isAuthPage && <Header />}
+      <main className={isAuthPage ? "" : "pt-20"}>
         <Routes>
-          <Route path="/" element={<Loading/>} />
-          <Route path="/loading" element={<Loading/>} />
-          <Route path="/cartCollection" element={<CarCollection/>} />
-          <Route path="/car/:id" element={<Car/>} />
-        </Routes>
-        <Footer />
-      </BrowserRouter>
-    </>
-  )
-}
+          <Route path="/" element={<Navigate to="/loading" />} />
+          <Route path="/loading" element={<Loading />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/carCollection" element={<CarCollection />} />
+          <Route path="/car/:id" element={<Car />} />
+          <Route path="/bookings" element={<Bookings />} />
+          <Route path="/bookings/:id" element={<Bookings />} />
+          <Route path="/bookings/:id/payment" element={<Payment />} />
+          <Route path="/booking-success" element={<BookingSuccess />} />
+          <Route path="/forgotpassword" element={<ForgotPassword />} />
 
-export default App
+          {/* Admin Dashboard Pages */}
+          <Route path="/DashboardOverview" element={<DashboardOverview />} />
+          <Route path="/DashboardCars" element={<DashboardCars />} />
+          <Route path="/Dashboardlisting" element={<Dashboardlisting />} />
+          <Route path="/DashboardStatisics" element={<DashboardStatisics />} />
+          <Route path="/DashboardBrand" element={<BrandDashboard />} />
+          <Route path="/SignInDashboard" element={<SignInAdmin />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+      {!isAuthPage && <Footer />}
+    </>
+  );
+};
+
+export default App;
